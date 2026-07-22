@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Volume2, Trash2, ArrowLeft, Settings, RotateCcw, Lock, X, Play, BookOpen } from 'lucide-react';
+import { Volume2, Trash2, ArrowLeft, Settings, RotateCcw, Lock, X, Play, BookOpen, Menu } from 'lucide-react';
 import {
   subjectCards,
   verbCards,
@@ -16,6 +16,7 @@ import type { AACCard } from './data';
 import { textToSpeech, saveSentence, getCustomCards, getCategories, getIcons, rephraseSentence, type CustomCardData, type IconData } from './api';
 import { AuthModal } from './components/AuthModal';
 import { ParentPortal } from './components/ParentPortal';
+import { ConcentrationGame } from './components/ConcentrationGame';
 import './index.css';
 
 type Screen3Category = 'objects' | 'numbers' | 'directions' | 'locations' | 'body_parts' | 'feelings' | 'activities';
@@ -32,6 +33,10 @@ export function App() {
   const [screen3Category, setScreen3Category] = useState<Screen3Category>('objects');
   const [isSentenceFinished, setIsSentenceFinished] = useState(false);
   const [rephrasedText, setRephrasedText] = useState<string | null>(null);
+
+  // Side drawer & game state
+  const [showDrawer, setShowDrawer] = useState(false);
+  const [showGame, setShowGame] = useState(false);
 
   // Requirement 5 & 6: Unified Card Renderer for Admin DB Cards vs Parent Upload Cards
   const renderCardButton = (
@@ -480,6 +485,12 @@ export function App() {
     );
   }
 
+  if (showGame) {
+    return (
+      <ConcentrationGame onBack={() => setShowGame(false)} />
+    );
+  }
+
   return (
     <div className="app-container">
       {/* Caregiver Auth Modal Overlay */}
@@ -488,6 +499,42 @@ export function App() {
           onClose={() => setShowAuthModal(false)}
           onSuccess={handleAuthSuccess}
         />
+      )}
+
+      {/* Side Drawer Overlay */}
+      {showDrawer && (
+        <div className="drawer-overlay" onClick={() => setShowDrawer(false)}>
+          <div className="drawer-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="drawer-header">
+              <h2 className="drawer-title">🎈 Menu</h2>
+              <button className="drawer-close-btn" onClick={() => setShowDrawer(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="drawer-content">
+              <button
+                className="drawer-item drawer-game-item"
+                onClick={() => { setShowDrawer(false); setShowGame(true); }}
+              >
+                <span className="drawer-item-icon game-icon-bounce">🎮</span>
+                <div className="drawer-item-text">
+                  <span className="drawer-item-label">Memory Game</span>
+                  <span className="drawer-item-sublabel">တိရစ္ဆာန် memory ကစားပွဲ</span>
+                </div>
+              </button>
+              <button
+                className="drawer-item"
+                onClick={() => { setShowDrawer(false); handleOpenParentModal(); }}
+              >
+                <span className="drawer-item-icon">⚙️</span>
+                <div className="drawer-item-text">
+                  <span className="drawer-item-label">Caregiver Settings</span>
+                  <span className="drawer-item-sublabel">မိဘ/ဆရာမ ပြင်ဆင်ရန်</span>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Hidden Caregiver Settings Icon on top right */}
@@ -603,6 +650,13 @@ export function App() {
       {/* Top Header Bar */}
       <header className="app-header">
         <div className="app-title-area">
+          <button
+            className="hamburger-btn"
+            onClick={() => setShowDrawer(true)}
+            aria-label="Open menu"
+          >
+            <Menu size={22} />
+          </button>
           <span className="app-title-text" style={{ minWidth: '40px' }}></span>
         </div>
 
