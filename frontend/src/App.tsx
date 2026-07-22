@@ -70,8 +70,9 @@ function App() {
   // ── Card interaction ──
   const handleCardClick = (card: AACCard | ShortcutCard) => {
     if ('nextCategories' in card) {
-      // Grammar card — add to sentence (no auto-switch)
+      // Grammar card — add to sentence + speak
       setSelectedCards((prev) => [...prev, card]);
+      speakText(card.burmese);
     } else {
       // Shortcut / emergency — replace and speak immediately
       setSelectedCards([card]);
@@ -129,14 +130,17 @@ function App() {
         audio.onended = () => setSpeaking(false);
         audio.play();
       } else {
+        // Fallback: browser TTS
         const u = new SpeechSynthesisUtterance(text);
         u.lang = 'my';
+        u.rate = 0.9;
         u.onend = () => setSpeaking(false);
         speechSynthesis.speak(u);
       }
     } catch {
       const u = new SpeechSynthesisUtterance(text);
       u.lang = 'my';
+      u.rate = 0.9;
       u.onend = () => setSpeaking(false);
       speechSynthesis.speak(u);
     }
@@ -188,11 +192,15 @@ function App() {
         onChipRemove={handleChipRemove}
       />
 
-      {/* Category Tabs */}
+      {/* Category Tabs — speak category name on tab */}
       <CategoryTabs
         categories={categories}
         activeCategory={activeCategory}
-        onCategoryChange={setActiveCategory}
+        onCategoryChange={(id) => {
+          setActiveCategory(id);
+          const cat = categories.find((c) => c.id === id);
+          if (cat) speakText(cat.name_my);
+        }}
       />
 
       {/* Card Grid */}
