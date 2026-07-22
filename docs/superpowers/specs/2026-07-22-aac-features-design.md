@@ -17,26 +17,28 @@ Monolithic Flask app, debug-mode server, JSON file storage, heavy PyTorch models
 ### Target Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│  Vercel (Serverless Functions via WSGI Adapter)         │
-│                                                          │
-│  ┌──────────────────────────────────────────────────┐   │
-│  │              Flask Application                    │   │
-│  │                                                    │   │
-│  │  ┌──────────────┐  ┌─────────────────────────┐   │   │
-│  │  │ Auth Module   │  │ AAC Routes              │   │   │
-│  │  │ (login/reg/   │  │ comm board, sentence   │   │   │
-│  │  │  logout)      │  │ builder, TTS, STT       │   │   │
-│  │  └──────────────┘  └─────────────────────────┘   │   │
-│  │                                                    │   │
-│  │  ┌──────────────────┐  ┌──────────────────────┐   │   │
-│  │  │ AI Module        │  │ Data Layer           │   │   │
-│  │  │ (Anthropic API)  │  │ Vercel Blob / JSON  │   │   │
-│  │  │ image→capt→trans │  │ + localStorage sync │   │   │
-│  │  │ suggestions       │  └──────────────────────┘   │   │
-│  │  └──────────────────┘                               │   │
-│  └──────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│  Vercel (Serverless Functions via WSGI Adapter)             │
+│                                                              │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │              Flask Application                        │   │
+│  │                                                        │   │
+│  │  ┌──────────────┐  ┌─────────────────────────────┐   │   │
+│  │  │ Auth Module   │  │ AAC Routes                  │   │   │
+│  │  │ (Supabase     │  │ comm board, sentence        │   │   │
+│  │  │  + password   │  │ builder, TTS, STT,         │   │   │
+│  │  │   hashing)    │  │ feelings, routines          │   │   │
+│  │  └──────────────┘  └─────────────────────────────┘   │   │
+│  │                                                        │   │
+│  │  ┌──────────────────────┐  ┌──────────────────────┐   │   │
+│  │  │ AI Module            │  │ Supabase DB Client   │   │   │
+│  │  │ (Anthropic API)      │  │ PostgreSQL (neondb)  │   │   │
+│  │  │ image→capt→trans     │  │ tables: users, icons │   │   │
+│  │  │ suggestions + Eleven │  │ categories, routines │   │   │
+│  │  │  Labs TTS            │  │ sentences, favorites │   │   │
+│  │  └──────────────────────┘  └──────────────────────┘   │   │
+│  └──────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ### Key Architectural Decisions
@@ -45,11 +47,11 @@ Monolithic Flask app, debug-mode server, JSON file storage, heavy PyTorch models
 
 2. **Vercel WSGI Adapter** — Flask runs inside a serverless function via `vercel/python` runtime with `vercel.json` configuration.
 
-3. **Data Storage** — JSON file persists via Vercel Blob (or a writable `/tmp` for the hackathon MVP). Favorites use localStorage for instant UI feedback with async backend sync.
+3. **Data Storage — Supabase (PostgreSQL)** — Replaces flat JSON file with proper relational DB. Tables: `users`, `icons`, `categories`, `sentences`, `routines`, `routine_steps`, `favorites`. Supabase free tier includes 500MB DB, auth, and JS/Python SDK. `SUPABASE_URL` and `SUPABASE_KEY` env vars.
 
 4. **TTS** — Replace gTTS + Google Translate TTS proxy with **ElevenLabs API**. ElevenLabs has a Burmese voice option ("ထားဝယ်" or standard Burmese) and produces natural, child-friendly speech. Requires `ELEVENLABS_API_KEY` environment variable.
 
-5. **Config** — Move to environment variables (`ANTHROPIC_API_KEY`, `ELEVENLABS_API_KEY`, `SECRET_KEY`, etc.) via `.env` and `python-dotenv`.
+5. **Config** — Move to environment variables (`ANTHROPIC_API_KEY`, `ELEVENLABS_API_KEY`, `SUPABASE_URL`, `SUPABASE_KEY`, `SECRET_KEY`) via `.env` and `python-dotenv`.
 
 ### Parallel Work Breakdown
 
@@ -110,7 +112,7 @@ Monolithic Flask app, debug-mode server, JSON file storage, heavy PyTorch models
 - Star (⭐) toggle on each communication card
 - Favorited icons appear in a sticky toolbar at the top of the communication board
 - **Client-side:** localStorage for instant add/remove feedback
-- **Server-side:** Flask endpoint syncs favorites on page load/save (stored per-user in JSON)
+- **Server-side:** Flask endpoint syncs favorites on page load/save (stored per-user in `favorites` table in Supabase)
 - Maximum 8 visible favorites in bar; "Show all" expander if more
 - **Edge case:** Empty favorites → bar is hidden. First-time user gets a small hint: "Tap the ⭐ to save your favorite words here."
 
@@ -125,7 +127,7 @@ Monolithic Flask app, debug-mode server, JSON file storage, heavy PyTorch models
 - Drag-and-drop reordering (sortable JS library or simple up/down buttons)
 - Add steps by selecting icons from the existing icon library (typed in search or category filter)
 - Each step: icon + short label (e.g., 🪥 "Brush Teeth")
-- Stored in `data.json` as a new `routines` array
+- Stored in Supabase `routines` + `routine_steps` tables
 
 **Child side:**
 - Route: `/my_routines` — lists available routines set by caregiver
@@ -134,20 +136,22 @@ Monolithic Flask app, debug-mode server, JSON file storage, heavy PyTorch models
 - On completion: celebration screen with animation + optional audio ("Good job!")
 - **Edge case:** No routines configured → show "Ask your caregiver to set up a routine for you" with a friendly illustration
 
-**Data structure addition to `data.json`:**
-```json
-{
-  "routines": [
-    {
-      "id": "uuid",
-      "name": "Morning Routine",
-      "steps": [
-        {"icon_id": "abc", "label": "Wash Face", "order": 1},
-        {"icon_id": "def", "label": "Brush Teeth", "order": 2}
-      ]
-    }
-  ]
-}
+**Database tables:**
+```sql
+CREATE TABLE routines (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  caregiver_id UUID REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE routine_steps (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  routine_id UUID REFERENCES routines(id) ON DELETE CASCADE,
+  icon_id TEXT NOT NULL,
+  label TEXT NOT NULL,
+  step_order INTEGER NOT NULL
+);
 ```
 
 ### 2.5 AI Sentence Suggestions
@@ -174,7 +178,7 @@ Monolithic Flask app, debug-mode server, JSON file storage, heavy PyTorch models
 
 - Strip at bottom of sentence builder showing last 10 built sentences
 - Each entry: sentence text + play button (🔊)
-- Stored in session or per-user in JSON
+- Stored in Supabase `sentences` table (per-user, ordered by newest)
 - Newest at left, scrollable horizontally
 - Syncs from localStorage on page load, posts to backend periodically
 - **Edge case:** No history → strip hidden. First sentence built → strip appears.
@@ -213,7 +217,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 - `wsgi.py` entry point wrapping the Flask app
 - Move `app.secret_key` to env var
 - `ANTHROPIC_API_KEY` and `ELEVENLABS_API_KEY` as environment variables
-- Data persistence: for hackathon MVP, `/tmp` JSON (ephemeral) is acceptable. Long-term use Vercel Blob.
+- Data persistence: Supabase PostgreSQL (persistent across redeploys, included in free tier)
 - Optimize cold starts: keep function lean by removing all PyTorch dependencies
 - Post-deployment verification checklist:
   - [ ] All routes respond correctly
@@ -251,7 +255,7 @@ Page load (sentence builder)
 ```
 Child taps "Start Routine"
   → GET /routine/<id>/play
-    → Loads routine steps from data.json
+    → Loads routine steps from Supabase routines + routine_steps tables
     → Shows step 1: large icon + label + "Done ✅" button
   → Tap "Done ✅"
     → Confetti animation (CSS)
@@ -290,7 +294,8 @@ Child taps "Start Routine"
 | `config.py` | **New file** — environment variable management |
 | `vercel.json` | **New file** — Vercel deployment config |
 | `wsgi.py` | **New file** — Vercel WSGI entry point |
-| `requirements.txt` | Replace torch/transformers/gtts/sentencepiece with anthropic, elevenlabs, python-dotenv |
+| `requirements.txt` | Replace torch/transformers/gtts/sentencepiece with anthropic, elevenlabs, python-dotenv, supabase-py |
+| `db.py` | **New file** — Supabase PostgreSQL client wrapper replacing JSON load_data/save_data with queries for all tables |
 | `static/js/script.js` | Add favorites sync, sentence suggestions fetch, routine player, feelings board interactions |
 | `static/css/style.css` | Complete redesign for child-friendly UX (big buttons, colors, animations) |
 | `templates/base.html` | Update nav to icon-based bottom bar |
@@ -306,7 +311,7 @@ Child taps "Start Routine"
 ## 6. Out of Scope (For This 12h Sprint)
 
 - Unit tests (add after hackathon)
-- PostgreSQL / proper database migration (JSON stays for MVP)
+- Unit tests (add after hackathon)
 - User profile pictures
 - Real-time multiplayer / shared boards
 - Mobile native app (PWA is sufficient)
