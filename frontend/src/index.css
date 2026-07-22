@@ -422,7 +422,7 @@ body::before {
 }
 
 .portal-modal {
-  background-color: rgba(255, 255, 255, 0.95);
+  background-color: rgba(255, 253, 245, 0.97);
   border-radius: 24px;
   padding: 32px 28px;
   max-width: 440px;
@@ -433,8 +433,7 @@ body::before {
   align-items: center;
   text-align: center;
   position: relative;
-  border: 2px solid rgba(102, 126, 234, 0.15);
-  backdrop-filter: blur(10px);
+  border: 2px solid rgba(102, 126, 234, 0.12);
 }
 
 .portal-modal-close {
@@ -1114,7 +1113,7 @@ body::before {
   width: 280px;
   max-width: 80vw;
   height: 100%;
-  background: linear-gradient(180deg, #FFFFFF, #F9FAFB);
+  background: linear-gradient(180deg, #FFFDF5, #FFF9E6);
   box-shadow: 8px 0 30px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
@@ -1819,9 +1818,8 @@ body::before {
 
 /* Portal sidebar overrides for light theme */
 .portal-space-container .portal-sidebar {
-  background: linear-gradient(180deg, #FFFFFF, #F9FAFB);
+  background: linear-gradient(180deg, #FFFDF5, #FFF9E6);
   border-right: 1px solid rgba(102, 126, 234, 0.1);
-  backdrop-filter: blur(10px);
 }
 
 /* Portal top bar mobile toggle */
