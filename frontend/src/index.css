@@ -1786,6 +1786,7 @@ body::before {
 .portal-space-container {
   position: relative;
   min-height: 100vh;
+  background: #FFFDF5;
 }
 
 .portal-starfield-overlay {
@@ -1800,7 +1801,7 @@ body::before {
   position: absolute;
   width: 2px;
   height: 2px;
-  background: #e0f2fe;
+  background: #667eea;
   border-radius: 50%;
   animation: twinkle 3s ease-in-out infinite alternate;
 }
@@ -1816,11 +1817,11 @@ body::before {
   z-index: 1;
 }
 
-/* Portal sidebar overrides for space theme */
+/* Portal sidebar overrides for light theme */
 .portal-space-container .portal-sidebar {
-  background: linear-gradient(180deg, rgba(15, 22, 56, 0.95), rgba(10, 14, 39, 0.98));
-  border-right: 1px solid rgba(56, 189, 248, 0.15);
-  backdrop-filter: blur(12px);
+  background: linear-gradient(180deg, #FFFFFF, #F9FAFB);
+  border-right: 1px solid rgba(102, 126, 234, 0.1);
+  backdrop-filter: blur(10px);
 }
 
 /* Portal top bar mobile toggle */
@@ -1828,9 +1829,9 @@ body::before {
   width: 38px;
   height: 38px;
   border-radius: 12px;
-  background: rgba(14, 165, 233, 0.15);
-  border: 1px solid rgba(56, 189, 248, 0.2);
-  color: #38bdf8;
+  background: rgba(102, 126, 234, 0.1);
+  border: 1px solid rgba(102, 126, 234, 0.15);
+  color: #667eea;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1839,6 +1840,6 @@ body::before {
 }
 
 .portal-mobile-toggle:hover {
-  background: rgba(14, 165, 233, 0.25);
-  border-color: rgba(56, 189, 248, 0.35);
+  background: rgba(102, 126, 234, 0.2);
+  border-color: rgba(102, 126, 234, 0.3);
 }

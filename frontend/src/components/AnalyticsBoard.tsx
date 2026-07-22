@@ -78,9 +78,9 @@ export const AnalyticsBoard: React.FC<AnalyticsBoardProps> = ({ userId, childNic
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', maxWidth: '960px' }}>
       
       {/* Header Banner */}
-      <div style={{ background: 'linear-gradient(135deg, #1E293B, #0F172A)', borderRadius: '24px', padding: '24px 28px', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 8px 24px rgba(15,23,42,0.15)', flexWrap: 'wrap', gap: '12px' }}>
+      <div style={{ background: 'linear-gradient(135deg, #667eea, #764ba2)', borderRadius: '24px', padding: '24px 28px', color: '#FFF', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 8px 24px rgba(102,126,234,0.2)', flexWrap: 'wrap', gap: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '46px', height: '46px', background: 'linear-gradient(135deg, #3B82F6, #1D4ED8)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', boxShadow: '0 4px 12px rgba(37,99,235,0.3)' }}>
+            <div style={{ width: '46px', height: '46px', background: 'rgba(255,255,255,0.2)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', boxShadow: '0 4px 12px rgba(255,255,255,0.15)' }}>
             <BarChart3 size={26} />
           </div>
           <div>
@@ -95,7 +95,7 @@ export const AnalyticsBoard: React.FC<AnalyticsBoardProps> = ({ userId, childNic
 
         <button 
           onClick={fetchAnalytics}
-          style={{ padding: '10px 16px', borderRadius: '12px', background: '#334155', color: '#F8FAFC', border: 'none', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+          style={{ padding: '10px 16px', borderRadius: '12px', background: 'rgba(255,255,255,0.2)', color: '#FFF', border: 'none', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
         >
           <RefreshCw size={16} /> Data Refresh
         </button>
