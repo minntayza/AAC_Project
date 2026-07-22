@@ -41,15 +41,15 @@ Monolithic Flask app, debug-mode server, JSON file storage, heavy PyTorch models
 
 ### Key Architectural Decisions
 
-1. **Replace PyTorch/BLIP/mBART with Anthropic API** — a single Claude call (haiku-4.5 for speed, sonnet-4 for image processing) handles image captioning + Burmese translation. Eliminates ~2.4GB of model dependencies.
+1. **Replace PyTorch/BLIP/mBART with Anthropic API** — a single `mimo-v2.5-pro` call handles image captioning + Burmese translation. Eliminates ~2.4GB of model dependencies.
 
 2. **Vercel WSGI Adapter** — Flask runs inside a serverless function via `vercel/python` runtime with `vercel.json` configuration.
 
 3. **Data Storage** — JSON file persists via Vercel Blob (or a writable `/tmp` for the hackathon MVP). Favorites use localStorage for instant UI feedback with async backend sync.
 
-4. **TTS** — Keep existing Google Translate TTS proxy (lightweight, no external dependencies). gTTS stays for offline-generated audio in image-to-speech flow.
+4. **TTS** — Replace gTTS + Google Translate TTS proxy with **ElevenLabs API**. ElevenLabs has a Burmese voice option ("ထားဝယ်" or standard Burmese) and produces natural, child-friendly speech. Requires `ELEVENLABS_API_KEY` environment variable.
 
-5. **Config** — Move to environment variables (`ANTHROPIC_API_KEY`, `SECRET_KEY`, etc.) via `.env` and `python-dotenv`.
+5. **Config** — Move to environment variables (`ANTHROPIC_API_KEY`, `ELEVENLABS_API_KEY`, `SECRET_KEY`, etc.) via `.env` and `python-dotenv`.
 
 ### Parallel Work Breakdown
 
@@ -76,8 +76,10 @@ Monolithic Flask app, debug-mode server, JSON file storage, heavy PyTorch models
 - New module `ai_module.py` with:
   - `process_image_for_aac(image_bytes: bytes) -> dict` — sends image to Claude with prompt: *"Describe this image in one simple sentence suitable for an autistic child. Then translate that sentence to Burmese. Return JSON with 'english_text' and 'burmese_text' fields."*
   - `suggest_sentences(context: dict) -> list[str]` — sends time of day, recent icons, and optional mood; returns 3-4 suggested sentences
+  - Text-to-speech via ElevenLabs API (`POST /api/tts`) — sends Burmese text, returns MP3 audio
 - Endpoint: `POST /api/ai/process_image` (replaces current `/image_to_speech/process`)
 - Endpoint: `POST /api/ai/suggest_sentences`
+- Endpoint: `GET /api/tts?text=...&lang=my` — ElevenLabs TTS (replaces current `/tts` Google Translate proxy)
 - **Fallback:** If API call fails, show user-friendly error with retry button. For image processing, allow manual text input as fallback.
 
 **Model choice:** Use `mimo-v2.5-pro` for image processing (vision + translation in one call). Use `claude-haiku-4-5` for sentence suggestions (fast, cheap, <$0.10/1000 suggestions).
@@ -210,13 +212,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 - `vercel.json` with Python runtime configuration
 - `wsgi.py` entry point wrapping the Flask app
 - Move `app.secret_key` to env var
-- `ANTHROPIC_API_KEY` as environment variable
+- `ANTHROPIC_API_KEY` and `ELEVENLABS_API_KEY` as environment variables
 - Data persistence: for hackathon MVP, `/tmp` JSON (ephemeral) is acceptable. Long-term use Vercel Blob.
 - Optimize cold starts: keep function lean by removing all PyTorch dependencies
 - Post-deployment verification checklist:
   - [ ] All routes respond correctly
   - [ ] Anthropic API calls work
-  - [ ] TTS audio plays
+  - [ ] ElevenLabs TTS audio plays for Burmese text
   - [ ] Auth flow works end-to-end
   - [ ] Image upload processes correctly
 
@@ -230,7 +232,7 @@ User uploads image
   → POST /api/ai/process_image
     → Anthropic API (mimo-v2.5-pro)
       → "A red car" + "ကားနီ"
-    → gTTS generates Burmese audio
+    → ElevenLabs TTS generates Burmese audio
     → Returns JSON { english_text, burmese_text, audio_url }
   → Client renders text + plays audio
 ```
@@ -265,6 +267,7 @@ Child taps "Start Routine"
 | Scenario | Handling |
 |---|---|
 | Anthropic API timeout/error | Show "Couldn't process right now" + retry button. Sentence suggestions hide silently. |
+| ElevenLabs API timeout/error | Fall back to browser's built-in SpeechSynthesis (Web Speech API) for basic TTS |
 | Image upload too large | Reject with friendly message. Max 5MB. |
 | Unsupported image format | Show "Please upload a PNG or JPG" message. |
 | Browser no SpeechRecognition | Show "Type instead" text fallback |
@@ -287,7 +290,7 @@ Child taps "Start Routine"
 | `config.py` | **New file** — environment variable management |
 | `vercel.json` | **New file** — Vercel deployment config |
 | `wsgi.py` | **New file** — Vercel WSGI entry point |
-| `requirements.txt` | Replace torch/transformers with anthropic, python-dotenv |
+| `requirements.txt` | Replace torch/transformers/gtts/sentencepiece with anthropic, elevenlabs, python-dotenv |
 | `static/js/script.js` | Add favorites sync, sentence suggestions fetch, routine player, feelings board interactions |
 | `static/css/style.css` | Complete redesign for child-friendly UX (big buttons, colors, animations) |
 | `templates/base.html` | Update nav to icon-based bottom bar |
