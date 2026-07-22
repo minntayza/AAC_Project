@@ -13,7 +13,7 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   return res.json();
 }
 
-export interface Category {
+export interface CategoryData {
   id: string;
   name_en: string;
   name_my: string;
@@ -21,27 +21,102 @@ export interface Category {
   icon_order: number;
 }
 
-export interface Icon {
+export interface IconData {
   id: string;
   category_id: string;
   label_en: string;
   label_my: string;
-  image_url: string; // emoji stored here
+  image_url: string;
   icon_order: number;
 }
 
-export function getCategories(): Promise<Category[]> {
+export interface RecentSentence {
+  id: string;
+  text_my: string;
+  text_en?: string;
+  created_at: string;
+}
+
+export function getCategories(): Promise<CategoryData[]> {
   return fetchJson("/categories");
 }
 
-export function getIcons(categoryId?: string): Promise<Icon[]> {
+export function getIcons(categoryId?: string): Promise<IconData[]> {
   const qs = categoryId ? `?category_id=${encodeURIComponent(categoryId)}` : "";
   return fetchJson(`/icons${qs}`);
 }
 
 export function textToSpeech(text: string): Promise<Response> {
-  return fetch(
-    `${API_BASE}/tts?text=${encodeURIComponent(text)}`,
-    { credentials: "include" }
-  );
+  return fetch(`${API_BASE}/tts?text=${encodeURIComponent(text)}`, {
+    credentials: "include",
+  });
 }
+
+export function saveSentence(text_my: string, text_en?: string): Promise<{ ok: boolean }> {
+  return fetchJson("/sentences/save", {
+    method: "POST",
+    body: JSON.stringify({ text_my, text_en }),
+  });
+}
+
+export function getRecentSentences(limit = 10): Promise<RecentSentence[]> {
+  return fetchJson(`/sentences/recent?limit=${limit}`);
+}
+
+export function loginUser(username: string, password: string): Promise<{ id: string; username: string; role: string }> {
+  return fetchJson("/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ username, password }),
+  });
+}
+
+export function registerUser(username: string, password: string, role = "user"): Promise<{ id: string; username: string; role: string }> {
+  return fetchJson("/auth/register", {
+    method: "POST",
+    body: JSON.stringify({ username, password, role }),
+  });
+}
+
+export function changePassword(userId: string, newPassword: string): Promise<{ ok: boolean; message?: string }> {
+  return fetchJson("/auth/change_password", {
+    method: "POST",
+    body: JSON.stringify({ user_id: userId, new_password: newPassword }),
+  });
+}
+
+export interface CustomCardData {
+  id?: string;
+  category: string;
+  burmese: string;
+  englishMeaning: string;
+  emoji?: string;
+  image_url?: string;
+  audio_url?: string;
+  card_type?: string;
+}
+
+export function saveCustomCard(card: CustomCardData): Promise<CustomCardData> {
+  return fetchJson("/cards/custom", {
+    method: "POST",
+    body: JSON.stringify(card),
+  });
+}
+
+export function getCustomCards(): Promise<CustomCardData[]> {
+  return fetchJson("/cards/custom");
+}
+
+export function deleteCustomCard(id: string): Promise<{ ok: boolean }> {
+  return fetchJson(`/cards/custom/${id}`, {
+    method: "DELETE",
+  });
+}
+
+export function updateCustomCard(id: string, card: CustomCardData): Promise<CustomCardData> {
+  return fetchJson(`/cards/custom/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(card),
+  });
+}
+
+
