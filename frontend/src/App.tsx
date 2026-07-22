@@ -31,6 +31,7 @@ export function App() {
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [screen3Category, setScreen3Category] = useState<Screen3Category>('objects');
   const [isSentenceFinished, setIsSentenceFinished] = useState(false);
+  const [rephrasedText, setRephrasedText] = useState<string | null>(null);
   const [parentMode, setParentMode] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
@@ -308,6 +309,7 @@ export function App() {
     setCurrentStep(1);
     setScreen3Category('objects');
     setIsSentenceFinished(false);
+    setRephrasedText(null);
   };
 
   const handleBack = () => {
@@ -344,9 +346,15 @@ export function App() {
     let speakText_ = rawText;
     try {
       const { rephrased } = await rephraseSentence(rawText);
-      if (rephrased && rephrased !== rawText) speakText_ = rephrased;
+      if (rephrased && rephrased !== rawText) {
+        speakText_ = rephrased;
+        setRephrasedText(rephrased);
+      } else {
+        setRephrasedText(null);
+      }
     } catch (e) {
       console.warn('Rephrase failed, using original:', e);
+      setRephrasedText(null);
     }
     speakText(speakText_);
     logSentenceToSupabase(selectedCards);
@@ -599,6 +607,13 @@ export function App() {
                 </div>
               ))}
             </div>
+
+            {rephrasedText && (
+              <div className="rephrase-banner">
+                <span className="rephrase-icon">🤖</span>
+                <span>ပြောမည့်စာကြောင်း: {rephrasedText}</span>
+              </div>
+            )}
 
             <div className="complete-actions">
               <button className="btn btn-primary" style={{ padding: '12px 28px', fontSize: '1.15rem' }} onClick={handleSpeakSentence}>
