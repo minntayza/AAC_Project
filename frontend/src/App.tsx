@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Volume2, Trash2, ArrowLeft, Settings, RotateCcw, Lock, X, Play, BookOpen, Menu } from 'lucide-react';
+import { Volume2, Trash2, ArrowLeft, RotateCcw, Lock, X, Play, BookOpen, Menu } from 'lucide-react';
 import {
   subjectCards,
   verbCards,
@@ -536,16 +536,6 @@ export function App() {
           </div>
         </div>
       )}
-
-      {/* Hidden Caregiver Settings Icon on top right */}
-      <button 
-        className="hidden-parent-icon"
-        onClick={handleOpenParentModal}
-        aria-label="Caregiver Portal"
-        title="Caregiver Portal"
-      >
-        <Settings size={18} />
-      </button>
 
       {/* Caregiver Portal Math Question Modal Overlay */}
       {showPortalModal && (

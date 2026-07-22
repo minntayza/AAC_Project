@@ -365,32 +365,6 @@ body {
   transform: scale(0.95);
 }
 
-/* Requirement 2: Hidden Parent Portal Icon on Top Right Corner */
-.hidden-parent-icon {
-  position: absolute;
-  top: 12px;
-  left: 14px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: transparent;
-  border: none;
-  color: #1675e8;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  opacity: 0.35;
-  transition: opacity 0.2s, color 0.2s;
-  z-index: 100;
-}
-
-.hidden-parent-icon:hover {
-  opacity: 1;
-  color: #64748B;
-  background-color: rgba(0, 0, 0, 0.04);
-}
-
 /* Caregiver Portal Modal Lock Screen */
 .modal-overlay {
   position: fixed;
