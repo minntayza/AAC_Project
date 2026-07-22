@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>AAC Demo — ကလေးများအတွက်</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Noto+Sans+Myanmar:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+
+:root{
+  --bg:#FFF8F0;
+  --card-bg:#FFFFFF;
+  --text:#2D2D2D;
+  --text-light:#888;
+  --shadow:0 4px 20px rgba(0,0,0,0.08);
+  --radius:20px;
+  --nav-bg:#FFFFFF;
+  --green:#4CAF50;
+  --blue:#2196F3;
+  --red:#F44336;
+  --purple:#9C27B0;
+  --orange:#FF9800;
+  --yellow:#FFC107;
+  --brown:#795548;
+  --pink:#E91E63;
+  --teal:#009688;
+}
+
+body{
+  font-family:'Nunito','Noto Sans Myanmar',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  overflow-x:hidden;
+  max-width:480px;
+  margin:0 auto;
+  min-height:100vh;
+  position:relative;
+}
+
+/* ─── SCREENS ─── */
+.screen{display:none;padding:20px 16px 90px;animation:fadeIn .3s ease}
+.screen.active{display:block}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes confettiFall{0%{transform:translateY(-100vh) rotate(0)}100%{transform:translateY(100vh) rotate(720deg)}}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* ─── BOTTOM NAV ─── */
+.bottom-nav{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:480px;
+  background:var(--nav-bg);
+  display:flex;justify-content:space-around;
+  padding:8px 0 env(safe-area-inset-bottom,8px);
+  box-shadow:0 -4px 20px rgba(0,0,0,0.08);
+  z-index:100;
+  border-radius:24px 24px 0 0;
+}
+.nav-item{
+  display:flex;flex-direction:column;align-items:center;
+  gap:2px;padding:6px 12px;border:none;background:none;
+  font-family:inherit;font-size:10px;color:var(--text-light);
+  cursor:pointer;border-radius:12px;transition:.2s;
+  min-width:60px;
+}
+.nav-item .nav-icon{font-size:26px;line-height:1}
+.nav-item.active{color:#4A90D9;background:rgba(74,144,217,0.1)}
+.nav-item.active .nav-icon{transform:scale(1.1)}
+
+/* ─── TOP BAR ─── */
+.top-bar{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 0 16px;
+}
+.top-bar h1{font-size:20px;font-weight:800}
+.top-bar .badge{font-size:11px;padding:4px 10px;border-radius:20px;background:#E8F5E9;color:#2E7D32;font-weight:700}
+
+/* ─── HEADER WITH BACK ─── */
+.header-with-back{
+  display:flex;align-items:center;gap:12px;padding:8px 0 16px;
+}
+.header-with-back button{
+  width:44px;height:44px;border:none;border-radius:14px;
+  background:var(--card-bg);box-shadow:var(--shadow);
+  font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.header-with-back h1{font-size:20px;font-weight:800;flex:1}
+
+/* ─── CARDS ─── */
+.card{
+  background:var(--card-bg);border-radius:var(--radius);
+  padding:16px;box-shadow:var(--shadow);margin-bottom:12px;
+}
+
+/* ─── FAVORITES BAR ─── */
+.fav-bar{
+  background:linear-gradient(135deg,#FFF8E1,#FFECB3);
+  border-radius:16px;padding:10px 14px;margin-bottom:16px;
+  display:flex;align-items:center;gap:8px;overflow-x:auto;
+  scrollbar-width:none;
+}
+.fav-bar::-webkit-scrollbar{display:none}
+.fav-bar .fav-label{font-size:11px;font-weight:800;color:#F57F17;white-space:nowrap}
+.fav-chip{
+  min-width:52px;height:52px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;background:#FFF;box-shadow:0 2px 8px rgba(0,0,0,0.06);
+  flex-shrink:0;cursor:pointer;border:2px solid transparent;transition:.15s;
+}
+.fav-chip:active{transform:scale(0.92);border-color:#FFC107}
+
+/* ─── CATEGORY TABS ─── */
+.cat-tabs{
+  display:flex;gap:6px;overflow-x:auto;padding-bottom:12px;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch;
+}
+.cat-tabs::-webkit-scrollbar{display:none}
+.cat-tab{
+  padding:8px 18px;border-radius:30px;border:2px solid #E0E0E0;
+  background:#FFF;font-family:inherit;font-size:13px;font-weight:700;
+  white-space:nowrap;cursor:pointer;transition:.15s;flex-shrink:0;
+}
+.cat-tab.active{background:#4A90D9;color:#FFF;border-color:#4A90D9}
+.cat-tab:active{transform:scale(0.95)}
+
+/* ─── ICON GRID ─── */
+.icon-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:12px;
+}
+.icon-card{
+  aspect-ratio:1;border-radius:18px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;cursor:pointer;border:none;font-family:inherit;
+  box-shadow:0 3px 12px rgba(0,0,0,0.06);transition:.15s;
+  background:#FFF;position:relative;
+}
+.icon-card:active{transform:scale(0.92)}
+.icon-card .emoji{font-size:36px;line-height:1}
+.icon-card .label{font-size:11px;font-weight:700;color:var(--text);text-align:center;line-height:1.2}
+.icon-card .star-btn{
+  position:absolute;top:4px;right:4px;
+  width:24px;height:24px;border:none;background:none;
+  font-size:14px;cursor:pointer;opacity:0.4;transition:.15s;
+}
+.icon-card .star-btn.active{opacity:1;animation:pop .3s}
+
+/* color themes per category */
+.cat-vehicles .icon-card{background:#E3F2FD}
+.cat-animals .icon-card{background:#E8F5E9}
+.cat-food .icon-card{background:#FFF3E0}
+.cat-body .icon-card{background:#FCE4EC}
+.cat-colors .icon-card{background:#F3E5F5}
+.cat-flowers .icon-card{background:#E0F7FA}
+.cat-fruits .icon-card{background:#FFF8E1}
+.cat-feelings .icon-card{background:#FFEBEE}
+
+/* ─── FEELINGS BOARD ─── */
+.feelings-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:16px;
+}
+.feel-card{
+  aspect-ratio:1;border-radius:24px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;cursor:pointer;border:none;font-family:inherit;
+  box-shadow:0 6px 24px rgba(0,0,0,0.1);transition:.15s;
+  padding:20px;position:relative;overflow:hidden;
+}
+.feel-card:active{transform:scale(0.94)}
+.feel-card .emoji{font-size:64px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1))}
+.feel-card .label{font-size:16px;font-weight:800;color:#FFF;text-shadow:0 1px 3px rgba(0,0,0,0.2)}
+.feel-card .sub{font-size:11px;color:rgba(255,255,255,0.8)}
+.feel-happy{background:linear-gradient(135deg,#66BB6A,#43A047)}
+.feel-sad{background:linear-gradient(135deg,#42A5F5,#1E88E5)}
+.feel-angry{background:linear-gradient(135deg,#EF5350,#E53935)}
+.feel-scared{background:linear-gradient(135deg,#AB47BC,#8E24AA)}
+.feel-tired{background:linear-gradient(135deg,#8D6E63,#6D4C41)}
+.feel-hungry{background:linear-gradient(135deg,#FFA726,#FB8C00)}
+.feel-sick{background:linear-gradient(135deg,#A5D6A7,#81C784)}
+.feel-loved{background:linear-gradient(135deg,#EC407A,#D81B60)}
+
+/* ─── ROUTINE PLAY ─── */
+.routine-step{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;min-height:60vh;text-align:center;
+  animation:slideUp .5s ease;
+}
+.routine-step .big-icon{font-size:120px;margin-bottom:16px;line-height:1}
+.routine-step .step-label{font-size:32px;font-weight:900;margin-bottom:8px}
+.routine-step .step-num{font-size:14px;color:var(--text-light);margin-bottom:32px}
+.btn-done{
+  width:180px;height:64px;border:none;border-radius:40px;
+  background:linear-gradient(135deg,#66BB6A,#43A047);
+  color:#FFF;font-family:inherit;font-size:22px;font-weight:800;
+  cursor:pointer;box-shadow:0 6px 24px rgba(76,175,80,0.4);
+  transition:.15s;display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-done:active{transform:scale(0.94)}
+.btn-done-small{
+  height:48px;padding:0 24px;border:none;border-radius:30px;
+  background:linear-gradient(135deg,#66BB6A,#43A047);
+  color:#FFF;font-family:inherit;font-size:16px;font-weight:700;
+  cursor:pointer;box-shadow:0 4px 16px rgba(76,175,80,0.3);
+  transition:.15s;
+}
+.btn-done-small:active{transform:scale(0.94)}
+
+/* ─── CELEBRATION ─── */
+.confetti-container{position:fixed;inset:0;pointer-events:none;z-index:200;overflow:hidden}
+.confetti-piece{
+  position:absolute;top:-20px;width:12px;height:12px;border-radius:2px;
+  animation:confettiFall linear forwards;
+}
+.celebration{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:70vh;text-align:center;animation:slideUp .6s ease;
+}
+.celebration .trophy{font-size:100px;margin-bottom:16px}
+.celebration h2{font-size:28px;font-weight:900;margin-bottom:4px}
+.celebration p{font-size:16px;color:var(--text-light);margin-bottom:32px}
+
+/* ─── SENTENCE BUILDER ─── */
+.sentence-strip{
+  background:#FFF;border-radius:var(--radius);padding:14px 16px;
+  min-height:56px;display:flex;align-items:center;flex-wrap:wrap;gap:6px;
+  box-shadow:var(--shadow);margin-bottom:16px;
+}
+.sentence-chip{
+  padding:6px 14px;border-radius:12px;background:#E3F2FD;
+  font-size:18px;font-weight:700;display:inline-flex;align-items:center;gap:6px;
+}
+.sentence-chip .remove{
+  width:20px;height:20px;border:none;border-radius:50%;
+  background:rgba(0,0,0,0.1);font-size:12px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.sentence-strip .placeholder{color:var(--text-light);font-size:15px;font-weight:400}
+
+.ai-suggestions{
+  margin-bottom:16px;
+}
+.ai-suggestions .section-label{
+  font-size:12px;font-weight:700;color:var(--text-light);
+  text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;
+  display:flex;align-items:center;gap:6px;
+}
+.ai-suggestions .section-label .sparkle{font-size:14px}
+.suggest-chips{
+  display:flex;gap:8px;flex-wrap:wrap;
+}
+.suggest-chip{
+  padding:10px 18px;border-radius:20px;border:2px dashed #BBDEFB;
+  background:#F5F9FF;font-family:inherit;font-size:15px;font-weight:700;
+  cursor:pointer;transition:.15s;color:#1565C0;
+}
+.suggest-chip:active{background:#BBDEFB;transform:scale(0.96)}
+.suggest-chip.skeleton{
+  width:100px;height:40px;border:none;background:#E0E0E0;
+  border-radius:20px;animation:pulse 1.5s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+.recent-strip{
+  display:flex;gap:8px;overflow-x:auto;padding:8px 0;
+  scrollbar-width:none;
+}
+.recent-strip::-webkit-scrollbar{display:none}
+.recent-item{
+  padding:8px 14px;border-radius:16px;background:#FFF;
+  box-shadow:0 2px 8px rgba(0,0,0,0.06);white-space:nowrap;
+  display:flex;align-items:center;gap:6px;cursor:pointer;
+  font-size:14px;font-weight:700;flex-shrink:0;
+  border:2px solid transparent;transition:.15s;
+}
+.recent-item:active{border-color:#4A90D9}
+.recent-item .play-icon{font-size:16px}
+
+/* ─── CAREGIVER ROUTINE BUILDER ─── */
+.routine-list-item{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;background:#FFF;border-radius:16px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.06);margin-bottom:8px;
+}
+.routine-list-item .handle{font-size:18px;cursor:grab;color:var(--text-light)}
+.routine-list-item .info{flex:1}
+.routine-list-item .info .name{font-size:16px;font-weight:700}
+.routine-list-item .info .count{font-size:12px;color:var(--text-light)}
+.routine-list-item .action-btn{
+  width:36px;height:36px;border:none;border-radius:10px;
+  background:#F5F5F5;font-size:16px;cursor:pointer;
+}
+
+.add-step-bar{
+  display:flex;gap:8px;padding:12px 0;border-top:2px dashed #E0E0E0;margin-top:8px;
+}
+.add-step-bar select{
+  flex:1;padding:12px 16px;border-radius:14px;border:2px solid #E0E0E0;
+  font-family:inherit;font-size:14px;font-weight:700;background:#FFF;
+}
+.add-step-bar .add-btn{
+  width:48px;height:48px;border:none;border-radius:14px;
+  background:#4A90D9;color:#FFF;font-size:20px;cursor:pointer;
+}
+
+/* ─── LOGIN ─── */
+.login-container{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:90vh;padding:40px 20px;text-align:center;
+}
+.login-container .logo{font-size:80px;margin-bottom:12px}
+.login-container h1{font-size:28px;font-weight:900;margin-bottom:4px}
+.login-container .tagline{font-size:14px;color:var(--text-light);margin-bottom:32px}
+.login-input{
+  width:100%;padding:16px 20px;border-radius:16px;
+  border:2px solid #E0E0E0;font-family:inherit;font-size:16px;
+  margin-bottom:12px;background:#FFF;transition:.2s;
+}
+.login-input:focus{border-color:#4A90D9;outline:none}
+.login-btn{
+  width:100%;padding:16px;border:none;border-radius:16px;
+  background:linear-gradient(135deg,#4A90D9,#357ABD);
+  color:#FFF;font-family:inherit;font-size:18px;font-weight:800;
+  cursor:pointer;box-shadow:0 4px 16px rgba(74,144,217,0.4);
+  transition:.15s;margin-top:8px;
+}
+.login-btn:active{transform:scale(0.97)}
+.role-toggle{
+  display:flex;gap:8px;margin-bottom:20px;width:100%;
+}
+.role-btn{
+  flex:1;padding:12px;border-radius:14px;border:2px solid #E0E0E0;
+  background:#FFF;font-family:inherit;font-size:14px;font-weight:700;
+  cursor:pointer;transition:.15s;
+}
+.role-btn.active{border-color:#4A90D9;background:rgba(74,144,217,0.1);color:#4A90D9}
+
+/* ─── MISC ─── */
+.mt-8{margin-top:8px}
+.mb-12{margin-bottom:12px}
+.gap-8{display:flex;gap:8px}
+.flex-1{flex:1}
+.text-center{text-align:center}
+.hidden{display:none!important}
+
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:40px 20px;text-align:center;
+  animation:slideUp .4s ease;
+}
+.empty-state .empty-icon{font-size:64px;margin-bottom:12px}
+.empty-state h3{font-size:18px;font-weight:800;margin-bottom:4px}
+.empty-state p{font-size:13px;color:var(--text-light)}
+
+/* ─── SCROLL CONTAINER ─── */
+.scroll-area{overflow-y:auto;max-height:calc(100vh - 160px);-webkit-overflow-scrolling:touch}
+
+/* caregiver nav variation */
+.nav-item.caregiver{color:#FF8F00}
+.nav-item.caregiver.active{color:#FF6F00;background:rgba(255,143,0,0.1)}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ SCREEN: LOGIN ═══════════ -->
+<div id="screen-login" class="screen active">
+  <div class="login-container">
+    <div class="logo">🗣️</div>
+    <h1>AAC စကားပြော</h1>
+    <p class="tagline">AAC Speech — ကလေးတို့အတွက် ပြောဆိုရေးအတွက်</p>
+    <div class="role-toggle">
+      <button class="role-btn active" onclick="setRole(this,'user')">👶 ကလေး</button>
+      <button class="role-btn" onclick="setRole(this,'caregiver')">👩‍⚕️ ပြုစုသူ</button>
+    </div>
+    <input class="login-input" type="text" placeholder="အသုံးပြုသူအမည် (Username)" value="child1">
+    <input class="login-input" type="password" placeholder="လျှို့ဝှက်ကုတ် (Password)" value="123">
+    <button class="login-btn" onclick="showScreen('screen-home')">ဝင်ရောက်မည် ▶</button>
+    <p style="margin-top:16px;font-size:12px;color:var(--text-light)">
+      Demo — demo credentials<br>👶 child1 / 123 &nbsp;|&nbsp; 👩‍⚕️ admin1 / admin
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN: HOME (user) ═══════════ -->
+<div id="screen-home" class="screen">
+  <div class="top-bar">
+    <h1>မင်္ဂလာပါ 👋</h1>
+    <span class="badge">နေ့လည် ၂း၀၀</span>
+  </div>
+
+  <div class="card" style="background:linear-gradient(135deg,#E3F2FD,#BBDEFB);cursor:pointer" onclick="showScreen('screen-board')">
+    <div style="display:flex;align-items:center;gap:16px">
+      <span style="font-size:48px">🖼️</span>
+      <div>
+        <div style="font-size:20px;font-weight:900">ဆက်သွယ်ရေးဘုတ်</div>
+        <div style="font-size:13px;color:#555">Communication Board</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="background:linear-gradient(135deg,#FFF3E0,#FFE0B2);cursor:pointer" onclick="showScreen('screen-feelings')">
+    <div style="display:flex;align-items:center;gap:16px">
+      <span style="font-size:48px">😊</span>
+      <div>
+        <div style="font-size:20px;font-weight:900">ခံစားချက်များ</div>
+        <div style="font-size:13px;color:#555">Feelings</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9);cursor:pointer" onclick="showScreen('screen-sentence')">
+    <div style="display:flex;align-items:center;gap:16px">
+      <span style="font-size:48px">✏️</span>
+      <div>
+        <div style="font-size:20px;font-weight:900">ဝါကျတည်ဆောက်ရန်</div>
+        <div style="font-size:13px;color:#555">Sentence Builder</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="background:linear-gradient(135deg,#FCE4EC,#F8BBD0);cursor:pointer" onclick="showScreen('screen-routine')">
+    <div style="display:flex;align-items:center;gap:16px">
+      <span style="font-size:48px">📋</span>
+      <div>
+        <div style="font-size:20px;font-weight:900">လုပ်ရိုးလုပ်စဉ်</div>
+        <div style="font-size:13px;color:#555">My Routines</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="background:linear-gradient(135deg,#F3E5F5,#E1BEE7);cursor:pointer" onclick="showScreen('screen-caregiver-routines')">
+    <div style="display:flex;align-items:center;gap:16px">
+      <span style="font-size:48px">⚙️</span>
+      <div>
+        <div style="font-size:20px;font-weight:900">ပြုစုသူ ထိန်းချုပ်ခန်း</div>
+        <div style="font-size:13px;color:#555">Caregiver (demo)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN: COMMUNICATION BOARD ═══════════ -->
+<div id="screen-board" class="screen">
+  <div class="header-with-back">
+    <button onclick="showScreen('screen-home')">←</button>
+    <h1>ဆက်သွယ်ရေးဘုတ်</h1>
+    <span style="font-size:11px;color:var(--text-light)">Board</span>
+  </div>
+
+  <!-- Favorites Bar -->
+  <div class="fav-bar" id="favBar">
+    <span class="fav-label">⭐ အနှစ်သက်ဆုံး</span>
+    <div class="fav-chip">☕</div>
+    <div class="fav-chip">🍚</div>
+    <div class="fav-chip">🚽</div>
+    <div class="fav-chip">🛏️</div>
+    <div class="fav-chip">🧸</div>
+  </div>
+
+  <!-- Category Tabs -->
+  <div class="cat-tabs">
+    <button class="cat-tab active">အားလုံး</button>
+    <button class="cat-tab">🚗 ယာဉ်များ</button>
+    <button class="cat-tab">🐾 တိရစ္ဆာန်များ</button>
+    <button class="cat-tab">🍎 အစားအစာ</button>
+    <button class="cat-tab">🫀 ခန္ဓာကိုယ်</button>
+    <button class="cat-tab">🎨 အရောင်များ</button>
+    <button class="cat-tab">😊 ခံစားချက်</button>
+  </div>
+
+  <!-- Grid -->
+  <div class="icon-grid cat-vehicles">
+    <button class="icon-card" onclick="addToSentence('🚗')"><span class="star-btn">☆</span><span class="emoji">🚗</span><span class="label">ကား</span></button>
+    <button class="icon-card" onclick="addToSentence('🚌')"><span class="star-btn">☆</span><span class="emoji">🚌</span><span class="label">ဘတ်စ်</span></button>
+    <button class="icon-card" onclick="addToSentence('🚲')"><span class="star-btn">☆</span><span class="emoji">🚲</span><span class="label">စက်ဘီး</span></button>
+    <button class="icon-card" onclick="addToSentence('✈️')"><span class="star-btn">☆</span><span class="emoji">✈️</span><span class="label">လေယာဉ်</span></button>
+    <button class="icon-card" onclick="addToSentence('🚢')"><span class="star-btn">☆</span><span class="emoji">🚢</span><span class="label">သင်္ဘော</span></button>
+    <button class="icon-card" onclick="addToSentence('🚑')"><span class="star-btn active">⭐</span><span class="emoji">🚑</span><span class="label">လူနာတင်</span></button>
+    <button class="icon-card" onclick="addToSentence('🚜')"><span class="star-btn">☆</span><span class="emoji">🚜</span><span class="label">ထွန်စက်</span></button>
+    <button class="icon-card" onclick="addToSentence('🚀')"><span class="star-btn">☆</span><span class="emoji">🚀</span><span class="label">ဒုံးပျံ</span></button>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN: FEELINGS BOARD ═══════════ -->
+<div id="screen-feelings" class="screen">
+  <div class="header-with-back">
+    <button onclick="showScreen('screen-home')">←</button>
+    <h1>ခံစားချက်များ</h1>
+    <span style="font-size:11px;color:var(--text-light)">Feelings</span>
+  </div>
+  <p style="font-size:14px;color:var(--text-light);margin-bottom:16px">
+    သင်ဘယ်လိုခံစားရလဲ — How do you feel?
+  </p>
+  <div class="feelings-grid">
+    <button class="feel-card feel-happy" onclick="addFeeling('happy')">
+      <span class="emoji">😊</span>
+      <span class="label">ပျော်သည်</span>
+      <span class="sub">Happy</span>
+    </button>
+    <button class="feel-card feel-sad" onclick="addFeeling('sad')">
+      <span class="emoji">😢</span>
+      <span class="label">ဝမ်းနည်း</span>
+      <span class="sub">Sad</span>
+    </button>
+    <button class="feel-card feel-angry" onclick="addFeeling('angry')">
+      <span class="emoji">😡</span>
+      <span class="label">စိတ်ဆိုး</span>
+      <span class="sub">Angry</span>
+    </button>
+    <button class="feel-card feel-scared" onclick="addFeeling('scared')">
+      <span class="emoji">😨</span>
+      <span class="label">ကြောက်သည်</span>
+      <span class="sub">Scared</span>
+    </button>
+    <button class="feel-card feel-tired" onclick="addFeeling('tired')">
+      <span class="emoji">😴</span>
+      <span class="label">မောသည်</span>
+      <span class="sub">Tired</span>
+    </button>
+    <button class="feel-card feel-hungry" onclick="addFeeling('hungry')">
+      <span class="emoji">🤤</span>
+      <span class="label">ဗိုက်ဆာ</span>
+      <span class="sub">Hungry</span>
+    </button>
+    <button class="feel-card feel-sick" onclick="addFeeling('sick')">
+      <span class="emoji">🤒</span>
+      <span class="label">နေမကောင်း</span>
+      <span class="sub">Sick</span>
+    </button>
+    <button class="feel-card feel-loved" onclick="addFeeling('loved')">
+      <span class="emoji">🥰</span>
+      <span class="label">ချစ်သည်</span>
+      <span class="sub">Loved</span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN: SENTENCE BUILDER ═══════════ -->
+<div id="screen-sentence" class="screen">
+  <div class="header-with-back">
+    <button onclick="showScreen('screen-home')">←</button>
+    <h1>ဝါကျတည်ဆောက်ရန်</h1>
+    <button style="width:44px;height:44px;border:none;border-radius:14px;background:var(--card-bg);box-shadow:var(--shadow);font-size:20px;cursor:pointer" onclick="speakSentence()">🔊</button>
+  </div>
+
+  <!-- Sentence Strip -->
+  <div class="sentence-strip" id="sentenceStrip">
+    <span class="placeholder">🖱️ အိုင်ကွန်များကိုနှိပ်၍ ဝါကျတည်ဆောက်ပါ</span>
+  </div>
+
+  <!-- AI Suggestions -->
+  <div class="card ai-suggestions">
+    <div class="section-label"><span class="sparkle">✨</span> ပြောကြည့်ပါ — Try Saying</div>
+    <div class="suggest-chips" id="suggestChips">
+      <button class="suggest-chip" onclick="addToSentence('ငါဗိုက်ဆာတယ်')">ငါဗိုက်ဆာတယ်</button>
+      <button class="suggest-chip" onclick="addToSentence('ငါရေလိုချင်တယ်')">ငါရေလိုချင်တယ်</button>
+      <button class="suggest-chip" onclick="addToSentence('ငါမောနေတယ်')">ငါမောနေတယ်</button>
+      <button class="suggest-chip skeleton hidden" id="skeletonChip"></button>
+    </div>
+  </div>
+
+  <!-- Recent Sentences -->
+  <div>
+    <div class="section-label" style="font-size:12px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">
+      🕐 မကြာသေးမီက — Recent
+    </div>
+    <div class="recent-strip" id="recentStrip">
+      <button class="recent-item" onclick="replaySentence(this)"><span class="play-icon">🔊</span> ရေလိုချင်တယ်</button>
+      <button class="recent-item" onclick="replaySentence(this)"><span class="play-icon">🔊</span> အိပ်ချင်တယ်</button>
+      <button class="recent-item" onclick="replaySentence(this)"><span class="play-icon">🔊</span> ပျော်တယ်</button>
+      <button class="recent-item" onclick="replaySentence(this)"><span class="play-icon">🔊</span> အပြင်သွားမယ်</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN: ROUTINE PLAY ═══════════ -->
+<div id="screen-routine" class="screen">
+  <div class="header-with-back">
+    <button onclick="showScreen('screen-home')">←</button>
+    <h1>မနက်ခင်း လုပ်ရိုးလုပ်စဉ်</h1>
+  </div>
+  <div id="routineContent">
+    <div class="routine-step" id="step1">
+      <div class="big-icon">🧼</div>
+      <div class="step-label">မျက်နှာသစ်ပါ</div>
+      <div class="step-num">အဆင့် ၁ / ၄</div>
+      <button class="btn-done" onclick="nextStep(2)">✅ ပြီးပြီ</button>
+    </div>
+    <div class="routine-step hidden" id="step2">
+      <div class="big-icon">🪥</div>
+      <div class="step-label">သွားတိုက်ပါ</div>
+      <div class="step-num">အဆင့် ၂ / ၄</div>
+      <button class="btn-done" onclick="nextStep(3)">✅ ပြီးပြီ</button>
+    </div>
+    <div class="routine-step hidden" id="step3">
+      <div class="big-icon">🥣</div>
+      <div class="step-label">မနက်စာစားပါ</div>
+      <div class="step-num">အဆင့် ၃ / ၄</div>
+      <button class="btn-done" onclick="nextStep(4)">✅ ပြီးပြီ</button>
+    </div>
+    <div class="routine-step hidden" id="step4">
+      <div class="big-icon">👕</div>
+      <div class="step-label">အဝတ်အစားလဲပါ</div>
+      <div class="step-num">အဆင့် ၄ / ၄</div>
+      <button class="btn-done" onclick="completeRoutine()">✅ ပြီးပြီ</button>
+    </div>
+    <!-- Celebration -->
+    <div class="celebration hidden" id="celebration">
+      <div class="trophy">🏆</div>
+      <h2>အားလုံးပြီးပြီ။</h2>
+      <p>မင်းက သိပ်တော်တဲ့ကလေးပဲ။</p>
+      <button class="btn-done" onclick="resetRoutine()">🔄 ပြန်လုပ်မည်</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SCREEN: CAREGIVER ROUTINE BUILDER ═══════════ -->
+<div id="screen-caregiver-routines" class="screen">
+  <div class="header-with-back">
+    <button onclick="showScreen('screen-home')">←</button>
+    <h1>လုပ်ရိုးလုပ်စဉ် စီမံခန့်ခွဲရန်</h1>
+    <span style="font-size:11px;color:var(--text-light)">Caregiver</span>
+  </div>
+
+  <div class="routine-list-item">
+    <span class="handle">☰</span>
+    <div class="info">
+      <div class="name">မနက်ခင်းလုပ်ရိုးလုပ်စဉ်</div>
+      <div class="count">အဆင့် ၄ ခု</div>
+    </div>
+    <button class="action-btn">✏️</button>
+    <button class="action-btn">🗑️</button>
+  </div>
+
+  <div class="routine-list-item">
+    <span class="handle">☰</span>
+    <div class="info">
+      <div class="name">အိပ်ရာဝင်ချိန်</div>
+      <div class="count">အဆင့် ၃ ခု</div>
+    </div>
+    <button class="action-btn">✏️</button>
+    <button class="action-btn">🗑️</button>
+  </div>
+
+  <button style="width:100%;padding:16px;border:2px dashed #BBDEFB;border-radius:16px;background:#F5F9FF;font-family:inherit;font-size:16px;font-weight:700;color:#4A90D9;cursor:pointer;margin-top:8px" onclick="addRoutine()">
+    + လုပ်ရိုးလုပ်စဉ်အသစ်
+  </button>
+
+  <!-- Edit Panel -->
+  <div class="card" style="margin-top:16px" id="editPanel">
+    <h3 style="font-size:16px;font-weight:800;margin-bottom:12px">✏️ မနက်ခင်းလုပ်ရိုးလုပ်စဉ်ကိုပြင်ရန်</h3>
+
+    <div class="routine-list-item" style="padding:10px 12px">
+      <span class="handle">☰</span>
+      <span style="font-size:28px">🧼</span>
+      <div class="info"><div class="name" style="font-size:14px">မျက်နှာသစ်ပါ</div></div>
+      <button class="action-btn" style="width:30px;height:30px;font-size:14px">✕</button>
+    </div>
+    <div class="routine-list-item" style="padding:10px 12px">
+      <span class="handle">☰</span>
+      <span style="font-size:28px">🪥</span>
+      <div class="info"><div class="name" style="font-size:14px">သွားတိုက်ပါ</div></div>
+      <button class="action-btn" style="width:30px;height:30px;font-size:14px">✕</button>
+    </div>
+    <div class="routine-list-item" style="padding:10px 12px">
+      <span class="handle">☰</span>
+      <span style="font-size:28px">🥣</span>
+      <div class="info"><div class="name" style="font-size:14px">မနက်စာစားပါ</div></div>
+      <button class="action-btn" style="width:30px;height:30px;font-size:14px">✕</button>
+    </div>
+    <div class="routine-list-item" style="padding:10px 12px">
+      <span class="handle">☰</span>
+      <span style="font-size:28px">👕</span>
+      <div class="info"><div class="name" style="font-size:14px">အဝတ်အစားလဲပါ</div></div>
+      <button class="action-btn" style="width:30px;height:30px;font-size:14px">✕</button>
+    </div>
+
+    <div class="add-step-bar">
+      <select>
+        <option>အိုင်ကွန်ရွေးပါ...</option>
+        <option>🧼 မျက်နှာသစ်</option>
+        <option>🪥 သွားတိုက်</option>
+        <option>🥣 မနက်စာ</option>
+        <option>👕 အဝတ်လဲ</option>
+        <option>🚗 ကျောင်းသွား</option>
+        <option>🧸 ကစား</option>
+        <option>🛏️ အိပ်</option>
+      </select>
+      <button class="add-btn">+</button>
+    </div>
+
+    <button class="btn-done-small" style="margin-top:12px;width:100%">💾 သိမ်းမည်</button>
+  </div>
+</div>
+
+<script>
+// ─── Screen Navigation ───
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  // confetti cleanup
+  document.querySelectorAll('.confetti-container').forEach(c=>c.remove());
+}
+
+// ─── Role Toggle ───
+function setRole(btn, role){
+  document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ─── Sentence Builder ───
+let sentenceWords = [];
+
+function addToSentence(word){
+  sentenceWords.push(word);
+  renderSentence();
+}
+
+function addFeeling(feeling){
+  const emojis = {happy:'😊',sad:'😢',angry:'😡',scared:'😨',tired:'😴',hungry:'🤤',sick:'🤒',loved:'🥰'};
+  addToSentence(emojis[feeling]||feeling);
+  // Navigate to sentence builder
+  showScreen('screen-sentence');
+}
+
+function renderSentence(){
+  const strip = document.getElementById('sentenceStrip');
+  if(sentenceWords.length === 0){
+    strip.innerHTML = '<span class="placeholder">🖱️ အိုင်ကွန်များကိုနှိပ်၍ ဝါကျတည်ဆောက်ပါ</span>';
+    return;
+  }
+  strip.innerHTML = sentenceWords.map((w,i) =>
+    `<span class="sentence-chip">${w} <button class="remove" onclick="removeWord(${i})">✕</button></span>`
+  ).join('');
+}
+
+function removeWord(i){
+  sentenceWords.splice(i,1);
+  renderSentence();
+}
+
+function speakSentence(){
+  const text = sentenceWords.join(' ');
+  if(!text) return;
+  // demo: use browser speech
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'my';
+  speechSynthesis.speak(u);
+}
+
+function replaySentence(el){
+  const text = el.textContent.trim();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'my';
+  speechSynthesis.speak(u);
+}
+
+// ─── Routine ───
+let currentStep = 1;
+
+function nextStep(step){
+  // confetti burst
+  spawnConfetti(8);
+  document.querySelectorAll('.routine-step').forEach(s=>s.classList.add('hidden'));
+  const next = document.getElementById('step'+step);
+  if(next) {next.classList.remove('hidden'); next.style.animation='none'; setTimeout(()=>next.style.animation='slideUp .5s ease',10);}
+  currentStep = step;
+}
+
+function completeRoutine(){
+  document.querySelectorAll('.routine-step').forEach(s=>s.classList.add('hidden'));
+  document.getElementById('celebration').classList.remove('hidden');
+  spawnConfetti(30);
+}
+
+function resetRoutine(){
+  document.getElementById('celebration').classList.add('hidden');
+  document.getElementById('step1').classList.remove('hidden');
+  document.getElementById('step1').style.animation='none'; setTimeout(()=>document.getElementById('step1').style.animation='slideUp .5s ease',10);
+  currentStep = 1;
+  document.querySelectorAll('.confetti-container').forEach(c=>c.remove());
+}
+
+// ─── Confetti ───
+function spawnConfetti(count){
+  const c = document.createElement('div');
+  c.className = 'confetti-container';
+  const colors = ['#FF6B6B','#4ECDC4','#FFE66D','#A8E6CF','#FF8A80','#B388FF','#82B1FF'];
+  for(let i=0;i<count;i++){
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.left = Math.random()*100+'%';
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.width = (6+Math.random()*10)+'px';
+    p.style.height = (6+Math.random()*10)+'px';
+    p.style.borderRadius = Math.random()>0.5?'50%':'2px';
+    p.style.animationDuration = (2+Math.random()*2)+'s';
+    p.style.animationDelay = Math.random()*0.5+'s';
+    c.appendChild(p);
+  }
+  document.body.appendChild(c);
+  setTimeout(()=>c.remove(),5000);
+}
+
+// ─── Caregiver ───
+function addRoutine(){
+  alert('Demo: လုပ်ရိုးလုပ်စဉ်အသစ်ဖန်တီးခြင်း (Create new routine)');
+}
+
+// ─── Star toggle (demo) ───
+document.addEventListener('click', function(e){
+  const star = e.target.closest('.star-btn');
+  if(star){
+    e.stopPropagation();
+    star.classList.toggle('active');
+    star.textContent = star.classList.contains('active') ? '⭐' : '☆';
+    if(star.classList.contains('active')){
+      star.style.animation = 'none';
+      setTimeout(()=>star.style.animation = 'pop .3s', 10);
+    }
+  }
+});
+
+// ─── Category tab toggle ───
+document.querySelectorAll('.cat-tab').forEach(tab=>{
+  tab.addEventListener('click', function(){
+    document.querySelectorAll('.cat-tab').forEach(t=>t.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
