@@ -115,20 +115,14 @@ def rephrase_sentence(raw_text: str) -> str | None:
 
 
 def text_to_speech(text: str) -> bytes | None:
-    """Generate Burmese speech via ElevenLabs API. Returns MP3 bytes or None."""
-    import requests
-    url = "https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM"
-    headers = {
-        "Accept": "audio/mpeg",
-        "Content-Type": "application/json",
-        "xi-api-key": ELEVENLABS_API_KEY,
-    }
-    data = {
-        "text": text,
-        "model_id": "eleven_multilingual_v2",
-        "voice_settings": {"stability": 0.5, "similarity_boost": 0.5},
-    }
-    resp = requests.post(url, json=data, headers=headers, timeout=10)
-    if resp.status_code == 200:
-        return resp.content
-    return None
+    """Generate Burmese speech via Google TTS (gTTS). Returns MP3 bytes or None."""
+    from gtts import gTTS
+    import io
+    try:
+        tts = gTTS(text=text, lang="my", slow=False)
+        buf = io.BytesIO()
+        tts.write_to_fp(buf)
+        buf.seek(0)
+        return buf.read()
+    except Exception:
+        return None
