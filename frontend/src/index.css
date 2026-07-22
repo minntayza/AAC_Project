@@ -1,0 +1,257 @@
+@import url('https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&display=swap');
+
+:root {
+  /* Colors - Soft Minimalist / Calm Utility */
+  --bg-primary: #F8F9FA;
+  --text-primary: #2C3E50;
+  --text-secondary: #596A7A;
+  
+  /* Category Colors */
+  --color-subject: #FFF3CD;
+  --color-subject-hover: #FFE69C;
+  --color-verb: #D1E7DD;
+  --color-verb-hover: #A3CFBB;
+  --color-object: #CFE2FF;
+  --color-object-hover: #9EC5FE;
+  --color-shortcut: #E0CFF2;
+  --color-shortcut-hover: #C29FFA;
+  --color-emergency: #F8D7DA;
+  --color-emergency-hover: #F1A8AE;
+
+  /* UI Elements */
+  --color-builder-bg: #FFFFFF;
+  --color-builder-border: #E9ECEF;
+  --color-btn-primary: #0D6EFD;
+  --color-btn-primary-hover: #0B5ED7;
+  --color-btn-secondary: #6C757D;
+  --color-btn-secondary-hover: #5C636A;
+  
+  --radius-card: 24px;
+  --radius-btn: 12px;
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Padauk', sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* App Container */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* Top Builder Bar */
+.builder-bar {
+  background-color: var(--color-builder-bg);
+  border: 2px solid var(--color-builder-border);
+  border-radius: var(--radius-card);
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 16px;
+  z-index: 10;
+}
+
+.builder-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.sentence-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex-grow: 1;
+  min-height: 60px;
+  align-items: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.selected-card-chip {
+  padding: 8px 16px;
+  border-radius: var(--radius-btn);
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: popIn 0.2s ease-out;
+}
+
+.builder-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* Buttons */
+.btn {
+  border: none;
+  border-radius: var(--radius-btn);
+  padding: 12px 24px;
+  font-size: 1.25rem;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.btn:active {
+  transform: scale(0.95);
+}
+
+.btn-primary {
+  background-color: var(--color-btn-primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-btn-primary-hover);
+}
+
+.btn-secondary {
+  background-color: var(--color-builder-border);
+  color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+  background-color: #DEE2E6;
+}
+
+/* Main Grid Area */
+.main-content {
+  flex-grow: 1;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  margin-bottom: 16px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+/* AAC Card */
+.aac-card {
+  border: none;
+  border-radius: var(--radius-card);
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: var(--shadow-sm);
+  aspect-ratio: 1;
+}
+
+.aac-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.aac-card:active {
+  transform: scale(0.95);
+}
+
+.card-emoji {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.card-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-family: 'Padauk', sans-serif;
+  text-align: center;
+  color: var(--text-primary);
+  word-break: keep-all;
+}
+
+/* Category Colors Applied */
+.aac-card.category-subject, .selected-card-chip.category-subject { background-color: var(--color-subject); }
+.aac-card.category-subject:hover { background-color: var(--color-subject-hover); }
+
+.aac-card.category-verb, .selected-card-chip.category-verb { background-color: var(--color-verb); }
+.aac-card.category-verb:hover { background-color: var(--color-verb-hover); }
+
+.aac-card.category-object, .selected-card-chip.category-object { background-color: var(--color-object); }
+.aac-card.category-object:hover { background-color: var(--color-object-hover); }
+
+.aac-card.category-shortcut, .selected-card-chip.category-shortcut { background-color: var(--color-shortcut); }
+.aac-card.category-shortcut:hover { background-color: var(--color-shortcut-hover); }
+
+.aac-card.category-emergency, .selected-card-chip.category-emergency { background-color: var(--color-emergency); }
+.aac-card.category-emergency:hover { background-color: var(--color-emergency-hover); }
+
+/* Animations */
+@keyframes popIn {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Responsive Adjustments */
+@media (min-width: 768px) {
+  .card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 24px;
+  }
+  
+  .card-emoji {
+    font-size: 4rem;
+  }
+  
+  .card-text {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .builder-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .builder-actions {
+    justify-content: stretch;
+  }
+  
+  .btn {
+    flex-grow: 1;
+  }
+}
