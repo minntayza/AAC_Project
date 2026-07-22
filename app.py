@@ -10,11 +10,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from db import (
-    authenticate_user, create_user,
+    authenticate_user, create_user, change_password,
     get_categories, get_icons,
     get_favorites, toggle_favorite,
     save_sentence, get_recent_sentences,
     create_routine, get_routines, get_routine_steps, delete_routine,
+    save_custom_card, get_custom_cards, delete_custom_card, update_custom_card,
 )
 from ai_module import process_image_for_aac, suggest_sentences, text_to_speech
 
@@ -37,7 +38,7 @@ _REQUIRED_ENV_VARS = [
 _missing = [v for v in _REQUIRED_ENV_VARS if not os.environ.get(v)]
 if _missing:
     import logging
-    logging.warning("Missing required env vars: %s — some features may fail", ", ".join(_missing))
+    logging.warning("Missing required env vars: %s — using local fallback database", ", ".join(_missing))
 
 
 # ──────────────────────────────────────────────
@@ -84,18 +85,64 @@ def register():
         role = data.get("role", "user")
         if not username or not password:
             return jsonify({"error": "Username and password required"}), 400
-        if len(password) < 3:
-            return jsonify({"error": "Password must be at least 3 characters"}), 400
+        if len(password) < 8:
+            return jsonify({"error": "Password must be at least 8 characters"}), 400
         user = create_user(username, generate_password_hash(password), role)
         session["user_id"] = user["id"]
         session["role"] = user["role"]
         return jsonify({"id": user["id"], "username": user["username"], "role": user["role"]}), 201
     except Exception as e:
         err_msg = str(e)
-        # Handle duplicate username from Supabase unique constraint
-        if "duplicate key" in err_msg.lower() or "unique" in err_msg.lower():
+        if "duplicate key" in err_msg.lower() or "unique" in err_msg.lower() or "already taken" in err_msg.lower():
             return jsonify({"error": "Username already taken"}), 409
         return jsonify({"error": "Registration failed", "detail": err_msg}), 500
+
+
+@app.route("/api/auth/change_password", methods=["POST"])
+def change_pwd():
+    try:
+        data = request.get_json() or {}
+        user_id = session.get("user_id") or data.get("user_id")
+        new_password = data.get("new_password", "")
+        if not user_id:
+            return jsonify({"error": "User not authenticated"}), 401
+        if not new_password or len(new_password) < 8:
+            return jsonify({"error": "Password must be at least 8 characters"}), 400
+        
+        success = change_password(user_id, generate_password_hash(new_password))
+        if success:
+            return jsonify({"ok": True, "message": "Password changed successfully"})
+        return jsonify({"error": "Failed to update password"}), 400
+    except Exception as e:
+        return jsonify({"error": "Change password failed", "detail": str(e)}), 500
+
+
+@app.route("/api/cards/custom", methods=["GET", "POST"])
+def custom_cards():
+    try:
+        if request.method == "POST":
+            data = request.get_json() or {}
+            card = save_custom_card(data)
+            return jsonify(card), 201
+        return jsonify(get_custom_cards())
+    except Exception as e:
+        return jsonify({"error": "Failed to process custom cards", "detail": str(e)}), 500
+
+
+@app.route("/api/cards/custom/<card_id>", methods=["DELETE", "PUT"])
+def custom_card_detail(card_id):
+    try:
+        if request.method == "DELETE":
+            delete_custom_card(card_id)
+            return jsonify({"ok": True, "id": card_id})
+        elif request.method == "PUT":
+            data = request.get_json() or {}
+            updated = update_custom_card(card_id, data)
+            if updated:
+                return jsonify(updated)
+            return jsonify({"error": "Card not found"}), 404
+    except Exception as e:
+        return jsonify({"error": "Failed to manage custom card", "detail": str(e)}), 500
 
 
 # ──────────────────────────────────────────────
@@ -280,8 +327,27 @@ def delete_routine_api(routine_id):
         return jsonify({"error": "Failed to delete routine", "detail": str(e)}), 500
 
 
+
+# ──────────────────────────────────────────────
+# Serve Built Frontend (SPA Fallback)
+# ──────────────────────────────────────────────
+FRONTEND_DIST = os.path.join(os.path.dirname(__file__), "frontend", "dist")
+
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def serve_frontend(path):
+    if path.startswith("api/"):
+        return jsonify({"error": "API route not found"}), 404
+    if os.path.exists(os.path.join(FRONTEND_DIST, path)) and path != "":
+        return send_from_directory(FRONTEND_DIST, path)
+    if os.path.exists(os.path.join(FRONTEND_DIST, "index.html")):
+        return send_from_directory(FRONTEND_DIST, "index.html")
+    return jsonify({"status": "AAC API Backend is running", "port": 5001})
+
+
 # ──────────────────────────────────────────────
 # Run
 # ──────────────────────────────────────────────
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
+
