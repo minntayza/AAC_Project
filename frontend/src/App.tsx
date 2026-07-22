@@ -602,17 +602,17 @@ export function App() {
         <div className="modal-overlay" style={{ zIndex: 1200 }}>
           <div className="portal-modal" style={{ maxWidth: '540px', width: '92%', borderRadius: '24px', padding: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#e0f2fe', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <BookOpen size={24} color="#facc15" /> မေမေ့ ၁ မိနစ် ပုံပြင်များ (Mom's Stories)
+              <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#1F2937', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <BookOpen size={24} color="#667eea" /> မေမေ့ ၁ မိနစ် ပုံပြင်များ (Mom's Stories)
               </h2>
-              <button onClick={() => setShowStoriesModal(false)} style={{ border: 'none', background: 'rgba(30, 41, 80, 0.8)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#94a3c8' }}><X size={18} /></button>
+              <button onClick={() => setShowStoriesModal(false)} style={{ border: 'none', background: '#F3F4F6', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#6B7280' }}><X size={18} /></button>
             </div>
 
             {storyCards.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '30px', color: '#7dd3fc' }}>
+              <div style={{ textAlign: 'center', padding: '30px', color: '#667eea' }}>
                 <div style={{ fontSize: '3rem', marginBottom: '8px' }}>📖</div>
-                <p style={{ fontWeight: '700' }}>မေမေ့ပုံပြင်များ မရှိသေးပါ</p>
-                <p style={{ fontSize: '0.82rem', color: '#94a3c8' }}>မိဘထိန်းချုပ်ခန်းမှ ၁ မိနစ် ပုံပြင်များ အသံသွင်း၍ ထည့်သွင်းနိုင်ပါသည်</p>
+                <p style={{ fontWeight: '700', color: '#1F2937' }}>မေမေ့ပုံပြင်များ မရှိသေးပါ</p>
+                <p style={{ fontSize: '0.82rem', color: '#9CA3AF' }}>မိဘထိန်းချုပ်ခန်းမှ ၁ မိနစ် ပုံပြင်များ အသံသွင်း၍ ထည့်သွင်းနိုင်ပါသည်</p>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '380px', overflowY: 'auto' }}>
@@ -625,21 +625,21 @@ export function App() {
                     }}
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px',
-                      borderRadius: '16px', border: playingStoryId === story.id ? '2px solid #facc15' : '1.5px solid rgba(56, 189, 248, 0.15)',
-                      background: playingStoryId === story.id ? 'rgba(250, 204, 21, 0.12)' : 'rgba(15, 20, 50, 0.6)', cursor: 'pointer', textAlign: 'left',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.2)', transition: 'all 0.2s'
+                      borderRadius: '16px', border: playingStoryId === story.id ? '2px solid #667eea' : '2px solid rgba(102, 126, 234, 0.12)',
+                      background: playingStoryId === story.id ? '#F5F3FF' : '#FFFFFF', cursor: 'pointer', textAlign: 'left',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.06)', transition: 'all 0.2s'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                       <div style={{ fontSize: '2rem' }}>{story.emoji || '📖'}</div>
                       <div>
-                        <div style={{ fontSize: '1rem', fontWeight: 800, color: '#e0f2fe' }}>{story.burmese}</div>
-                        <div style={{ fontSize: '0.78rem', color: '#7dd3fc' }}>{story.englishMeaning}</div>
+                        <div style={{ fontSize: '1rem', fontWeight: 800, color: '#1F2937' }}>{story.burmese}</div>
+                        <div style={{ fontSize: '0.78rem', color: '#667eea' }}>{story.englishMeaning}</div>
                       </div>
                     </div>
 
-                    <div style={{ width: '40px', height: '40px', background: 'rgba(250, 204, 21, 0.15)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#facc15' }}>
-                      <Play size={20} fill="#facc15" />
+                    <div style={{ width: '40px', height: '40px', background: 'rgba(102, 126, 234, 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#667eea' }}>
+                      <Play size={20} fill="#667eea" />
                     </div>
                   </button>
                 ))}
@@ -648,7 +648,7 @@ export function App() {
 
             <button
               onClick={() => setShowStoriesModal(false)}
-              style={{ marginTop: '20px', width: '100%', padding: '12px', borderRadius: '14px', background: 'rgba(15, 20, 50, 0.8)', color: '#7dd3fc', border: '1.5px solid rgba(56, 189, 248, 0.2)', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.95rem' }}
+              style={{ marginTop: '20px', width: '100%', padding: '12px', borderRadius: '14px', background: '#F5F3FF', color: '#667eea', border: '2px solid rgba(102, 126, 234, 0.15)', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.95rem' }}
             >
               ပိတ်မည် (Close)
             </button>
@@ -671,14 +671,14 @@ export function App() {
 
         {/* Step Navigation Pills */}
         {!isSentenceFinished && (
-          <div className="step-indicator" style={{ marginLeft: '36px' }}>
+          <div className="step-indicator" style={{ marginLeft: 'auto' }}>
             <button 
               className={`step-pill ${currentStep === 1 ? 'active' : ''}`}
               onClick={() => setCurrentStep(1)}
             >
               ၁။ ဘယ်သူလဲဟင်
             </button>
-            <span style={{ color: 'rgba(56, 189, 248, 0.4)', fontSize: '0.8rem' }}>➔</span>
+              <span style={{ color: '#9CA3AF', fontSize: '0.8rem' }}>➔</span>
             <button 
               className={`step-pill ${currentStep === 2 ? 'active' : ''}`}
               onClick={() => { if (selectedCards.length >= 1) setCurrentStep(2); }}
@@ -686,7 +686,7 @@ export function App() {
             >
               ၂။ ဘာလုပ်ချင်လဲ
             </button>
-            <span style={{ color: 'rgba(56, 189, 248, 0.4)', fontSize: '0.8rem' }}>➔</span>
+              <span style={{ color: '#9CA3AF', fontSize: '0.8rem' }}>➔</span>
             <button 
               className={`step-pill ${currentStep === 3 ? 'active' : ''}`}
               onClick={() => { if (selectedCards.length >= 2) setCurrentStep(3); }}
@@ -792,7 +792,6 @@ export function App() {
                 <div>
                   <div className="section-header">
                     <h2 className="section-title">
-                      <span>👤</span>
                       <span>၁။ ဘယ်သူလဲဟင်? (Who is it?)</span>
                     </h2>
                   </div>
@@ -805,7 +804,6 @@ export function App() {
                 <div style={{ marginTop: '16px' }}>
                   <div className="section-header">
                     <h2 className="section-title">
-                      <span>⭐</span>
                       <span>ခဏခဏ ပြောတာတွေ (Daily Shortcuts & Mom's Voice)</span>
                     </h2>
                   </div>
