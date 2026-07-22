@@ -10,8 +10,7 @@ export function LoadingScreen({ isLoading }: LoadingScreenProps) {
 
   useEffect(() => {
     if (!isLoading) {
-      // Fade out after app loads
-      const timer = setTimeout(() => setShowContent(false), 300);
+      const timer = setTimeout(() => setShowContent(false), 3500);
       return () => clearTimeout(timer);
     }
     setShowContent(true);
@@ -20,64 +19,74 @@ export function LoadingScreen({ isLoading }: LoadingScreenProps) {
   if (!showContent) return null;
 
   return (
-    <div className={`loading-screen ${isLoading ? 'active' : 'fade-out'}`}>
-      {/* Animated Background Gradient */}
-      <div className="loading-background">
-        <div className="gradient-blob blob-1"></div>
-        <div className="gradient-blob blob-2"></div>
-        <div className="gradient-blob blob-3"></div>
+    <div className={`space-loading-screen ${isLoading ? 'active' : 'fade-out'}`}>
+      {/* Deep Space Starfield */}
+      <div className="starfield">
+        {[...Array(120)].map((_, i) => (
+          <div key={i} className={`sf-star sf-star-${i % 4}`} style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            animationDelay: `${Math.random() * 5}s`,
+            animationDuration: `${2 + Math.random() * 4}s`,
+            width: `${1 + Math.random() * 3}px`,
+            height: `${1 + Math.random() * 3}px`,
+          }}></div>
+        ))}
       </div>
 
-      {/* Main Loading Container */}
-      <div className="loading-container">
-        {/* Bouncing Characters */}
-        <div className="bouncing-chars">
-          <div className="bounce-char char-1">🌟</div>
-          <div className="bounce-char char-2">🎨</div>
-          <div className="bounce-char char-3">🎭</div>
-          <div className="bounce-char char-4">🎪</div>
-          <div className="bounce-char char-5">🎯</div>
+      {/* Shooting Stars */}
+      <div className="shooting-star shooting-star-1"></div>
+      <div className="shooting-star shooting-star-2"></div>
+      <div className="shooting-star shooting-star-3"></div>
+
+      {/* Deep Nebula Clouds */}
+      <div className="deep-nebula deep-nebula-1"></div>
+      <div className="deep-nebula deep-nebula-2"></div>
+      <div className="deep-nebula deep-nebula-3"></div>
+
+      {/* Main Content */}
+      <div className="space-main-content">
+        {/* Space Marine Helmet */}
+        <div className="marine-helmet">
+          <div className="helmet-visor"></div>
+          <div className="helmet-glow"></div>
         </div>
 
-        {/* Main Animation Circle */}
-        <div className="loading-circle-container">
-          <div className="loading-circle spinning">
-            <div className="circle-dot dot-1"></div>
-            <div className="circle-dot dot-2"></div>
-            <div className="circle-dot dot-3"></div>
+        {/* Orbiting Planets */}
+        <div className="orbit-ring">
+          <div className="orbit-planet orbit-planet-1">🌍</div>
+          <div className="orbit-planet orbit-planet-2">🌙</div>
+          <div className="orbit-planet orbit-planet-3">⭐</div>
+        </div>
+
+        {/* Floating Space Emojis */}
+        <div className="space-floaters">
+          <span className="floater floater-1">🚀</span>
+          <span className="floater floater-2">🛸</span>
+          <span className="floater floater-3">🌌</span>
+          <span className="floater floater-4">☄️</span>
+          <span className="floater floater-5">🔭</span>
+        </div>
+
+        {/* Title */}
+        <div className="space-title-area">
+          <h1 className="space-main-title">🚀 အာကာသ စူးစမ်းရှာဖွေရေး 🚀</h1>
+          <p className="space-main-subtitle">Space Adventure Loading...</p>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="space-progress-wrap">
+          <div className="space-progress-track">
+            <div className="space-progress-fill"></div>
+            <div className="space-progress-glow"></div>
           </div>
-          
-          {/* Center Icon */}
-          <div className="center-icon pulsing">
-            <span className="icon-emoji">💬</span>
-          </div>
-        </div>
-
-        {/* Loading Text with Animation */}
-        <div className="loading-text">
-          <h1 className="loading-title">🎉 အားလုံးအဆင်ပြေပြီ! 🎉</h1>
-          <p className="loading-subtitle">Getting Ready for Fun...</p>
-        </div>
-
-        {/* Animated Progress Bar */}
-        <div className="progress-bar-container">
-          <div className="progress-bar">
-            <div className="progress-fill"></div>
-          </div>
-          <p className="progress-text">Loading...</p>
-        </div>
-
-        {/* Floating Particles */}
-        <div className="particles">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className={`particle particle-${i + 1}`}></div>
-          ))}
+          <p className="space-progress-label">Preparing your journey...</p>
         </div>
       </div>
 
-      {/* Bottom Encouraging Text */}
-      <div className="loading-footer">
-        <p className="footer-text">✨ ကလေးချစ်သော ကမ္ဘာမှ ကောင်းကင်သို့ ၎င်း... ✨</p>
+      {/* Bottom Tagline */}
+      <div className="space-bottom-tag">
+        <p>✨ ကလေးများ ၏ အာကာသ စူးစူးမြတ်မြတ် ခြင်း ✨</p>
       </div>
     </div>
   );

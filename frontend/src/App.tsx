@@ -37,6 +37,7 @@ export function App() {
   // Side drawer & game state
   const [showDrawer, setShowDrawer] = useState(false);
   const [showGame, setShowGame] = useState(false);
+  const [caregiverLoading, setCaregiverLoading] = useState(false);
 
   // Requirement 5 & 6: Unified Card Renderer for Admin DB Cards vs Parent Upload Cards
   const renderCardButton = (
@@ -524,7 +525,14 @@ export function App() {
               </button>
               <button
                 className="drawer-item"
-                onClick={() => { setShowDrawer(false); handleOpenParentModal(); }}
+                onClick={() => {
+                  setShowDrawer(false);
+                  setCaregiverLoading(true);
+                  setTimeout(() => {
+                    setCaregiverLoading(false);
+                    handleOpenParentModal();
+                  }, 1200);
+                }}
               >
                 <span className="drawer-item-icon">⚙️</span>
                 <div className="drawer-item-text">
@@ -534,6 +542,17 @@ export function App() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Caregiver Loading Overlay */}
+      {caregiverLoading && (
+        <div className="caregiver-loading-overlay">
+          <div className="caregiver-loading-spinner">
+            <div className="spinner-ring"></div>
+            <span className="spinner-icon">⚙️</span>
+          </div>
+          <p className="caregiver-loading-text">ဝင်ရောက်နေပါသည်...</p>
         </div>
       )}
 

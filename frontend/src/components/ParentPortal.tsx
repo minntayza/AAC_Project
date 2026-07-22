@@ -303,14 +303,27 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
   };
 
   return (
-    <div style={{ display: 'flex', width: '100vw', height: '100vh', overflow: 'hidden', background: '#F8FAFC', color: '#0F172A', fontFamily: 'system-ui, sans-serif' }}>
+    <div className="portal-space-container">
+
+      {/* ── STARFIELD BACKGROUND ── */}
+      <div className="portal-starfield">
+        {[...Array(80)].map((_, i) => (
+          <div key={i} className={`portal-star portal-star-${i % 3}`} style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            animationDelay: `${Math.random() * 5}s`,
+            animationDuration: `${2 + Math.random() * 4}s`,
+          }}></div>
+        ))}
+      </div>
 
       {/* ── RESPONSIVE SIDEBAR ── */}
       <aside
+        className="portal-sidebar"
         style={{
           width: '260px',
-          background: '#0F172A',
-          color: '#F8FAFC',
+          background: 'linear-gradient(180deg, #0a0e27 0%, #0d1137 50%, #0a0e27 100%)',
+          color: '#e0f2fe',
           display: 'flex',
           flexDirection: 'column',
           position: 'fixed',
@@ -320,37 +333,38 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
           zIndex: 1000,
           transition: 'transform 0.3s ease',
           transform: window.innerWidth < 1024 ? (sidebarOpen ? 'translateX(0)' : 'translateX(-100%)') : 'none',
-          boxShadow: '4px 0 24px rgba(0,0,0,0.12)'
+          boxShadow: '4px 0 30px rgba(0,0,0,0.4), 1px 0 0 rgba(56, 189, 248, 0.1)',
+          borderRight: '1px solid rgba(56, 189, 248, 0.1)',
         }}
       >
         {/* Sidebar Header */}
-        <div style={{ padding: '24px 20px', borderBottom: '1px solid #1E293B', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ padding: '24px 20px', borderBottom: '1px solid rgba(56, 189, 248, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '40px', height: '40px', background: 'linear-gradient(135deg, #3B82F6, #1D4ED8)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF' }}>
+            <div style={{ width: '40px', height: '40px', background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', boxShadow: '0 0 15px rgba(14, 165, 233, 0.4)' }}>
               <ShieldCheck size={24} />
             </div>
             <div>
-              <div style={{ fontWeight: 800, fontSize: '1rem', color: '#FFF' }}>Caregiver Portal</div>
-              <div style={{ fontSize: '0.75rem', color: '#94A3B8' }}>မိဘ ထိန်းချုပ်ခန်း</div>
+              <div style={{ fontWeight: 800, fontSize: '1rem', color: '#e0f2fe' }}>Caregiver Portal</div>
+              <div style={{ fontSize: '0.75rem', color: '#7dd3fc' }}>မိဘ ထိန်းချုပ်ခန်း</div>
             </div>
           </div>
           {window.innerWidth < 1024 && (
-            <button onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}>
+            <button onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', color: '#7dd3fc', cursor: 'pointer' }}>
               <X size={20} />
             </button>
           )}
         </div>
 
         {/* User Badge */}
-        <div style={{ margin: '16px 16px 8px', padding: '12px 14px', background: '#1E293B', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ width: '36px', height: '36px', background: '#3B82F6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', fontWeight: 800 }}>
+        <div style={{ margin: '16px 16px 8px', padding: '12px 14px', background: 'rgba(15, 20, 50, 0.6)', borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '10px', border: '1px solid rgba(56, 189, 248, 0.1)' }}>
+          <div style={{ width: '36px', height: '36px', background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', fontWeight: 800, boxShadow: '0 0 10px rgba(14, 165, 233, 0.3)' }}>
             {user.username.charAt(0).toUpperCase()}
           </div>
           <div style={{ flex: 1, overflow: 'hidden' }}>
-            <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#F8FAFC', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#e0f2fe', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {user.username}
             </div>
-            <div style={{ fontSize: '0.72rem', color: '#38BDF8', fontWeight: 600 }}>
+            <div style={{ fontSize: '0.72rem', color: '#38bdf8', fontWeight: 600 }}>
               ✓ Logged In ({user.role})
             </div>
           </div>
@@ -361,9 +375,10 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
           <button
             onClick={() => { setActiveTab('library'); setSidebarOpen(false); }}
             style={{
-              display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '14px', border: 'none',
-              background: activeTab === 'library' ? 'linear-gradient(135deg, #2563EB, #1D4ED8)' : 'transparent',
-              color: activeTab === 'library' ? '#FFF' : '#94A3B8', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s'
+              display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '14px', border: '1px solid transparent',
+              background: activeTab === 'library' ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.3), rgba(56, 189, 248, 0.2))' : 'transparent',
+              borderColor: activeTab === 'library' ? 'rgba(56, 189, 248, 0.3)' : 'transparent',
+              color: activeTab === 'library' ? '#e0f2fe' : '#7dd3fc', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s'
             }}
           >
             <LayoutDashboard size={20} />
@@ -373,9 +388,10 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
           <button
             onClick={() => { setActiveTab('add_card'); setSidebarOpen(false); }}
             style={{
-              display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '14px', border: 'none',
-              background: activeTab === 'add_card' ? 'linear-gradient(135deg, #2563EB, #1D4ED8)' : 'transparent',
-              color: activeTab === 'add_card' ? '#FFF' : '#94A3B8', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s'
+              display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '14px', border: '1px solid transparent',
+              background: activeTab === 'add_card' ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.3), rgba(56, 189, 248, 0.2))' : 'transparent',
+              borderColor: activeTab === 'add_card' ? 'rgba(56, 189, 248, 0.3)' : 'transparent',
+              color: activeTab === 'add_card' ? '#e0f2fe' : '#7dd3fc', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s'
             }}
           >
             <PlusCircle size={20} />
@@ -385,9 +401,10 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
           <button
             onClick={() => { setActiveTab('story_studio'); setSidebarOpen(false); }}
             style={{
-              display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '14px', border: 'none',
-              background: activeTab === 'story_studio' ? 'linear-gradient(135deg, #2563EB, #1D4ED8)' : 'transparent',
-              color: activeTab === 'story_studio' ? '#FFF' : '#94A3B8', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s'
+              display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '14px', border: '1px solid transparent',
+              background: activeTab === 'story_studio' ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.3), rgba(56, 189, 248, 0.2))' : 'transparent',
+              borderColor: activeTab === 'story_studio' ? 'rgba(56, 189, 248, 0.3)' : 'transparent',
+              color: activeTab === 'story_studio' ? '#e0f2fe' : '#7dd3fc', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s'
             }}
           >
             <BookOpen size={20} />
@@ -397,9 +414,10 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
           <button
             onClick={() => { setActiveTab('analytics'); setSidebarOpen(false); }}
             style={{
-              display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '14px', border: 'none',
-              background: activeTab === 'analytics' ? 'linear-gradient(135deg, #2563EB, #1D4ED8)' : 'transparent',
-              color: activeTab === 'analytics' ? '#FFF' : '#94A3B8', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s'
+              display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '14px', border: '1px solid transparent',
+              background: activeTab === 'analytics' ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.3), rgba(56, 189, 248, 0.2))' : 'transparent',
+              borderColor: activeTab === 'analytics' ? 'rgba(56, 189, 248, 0.3)' : 'transparent',
+              color: activeTab === 'analytics' ? '#e0f2fe' : '#7dd3fc', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s'
             }}
           >
             <BarChart3 size={20} />
@@ -409,9 +427,10 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
           <button
             onClick={() => { setActiveTab('settings'); setSidebarOpen(false); }}
             style={{
-              display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '14px', border: 'none',
-              background: activeTab === 'settings' ? 'linear-gradient(135deg, #2563EB, #1D4ED8)' : 'transparent',
-              color: activeTab === 'settings' ? '#FFF' : '#94A3B8', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s'
+              display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '14px', border: '1px solid transparent',
+              background: activeTab === 'settings' ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.3), rgba(56, 189, 248, 0.2))' : 'transparent',
+              borderColor: activeTab === 'settings' ? 'rgba(56, 189, 248, 0.3)' : 'transparent',
+              color: activeTab === 'settings' ? '#e0f2fe' : '#7dd3fc', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s'
             }}
           >
             <Settings size={20} />
@@ -420,17 +439,17 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
         </nav>
 
         {/* Footer Actions */}
-        <div style={{ padding: '16px', borderTop: '1px solid #1E293B', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={{ padding: '16px', borderTop: '1px solid rgba(56, 189, 248, 0.1)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <button
             onClick={onExit}
-            style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', background: '#1E293B', color: '#E2E8F0', border: 'none', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+            style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', background: 'rgba(15, 20, 50, 0.6)', color: '#e0f2fe', border: '1px solid rgba(56, 189, 248, 0.15)', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }}
           >
             ကလေးမုဒ် သို့ ပြန်သွားမည် (Child Mode)
           </button>
 
           <button
             onClick={onLogout}
-            style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', background: 'rgba(239,68,68,0.15)', color: '#F87171', border: 'none', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+            style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }}
           >
             <LogOut size={16} />
             ထွက်မည် (Sign Out)
@@ -447,7 +466,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
       )}
 
       {/* ── MAIN CONTENT AREA (SCROLLABLE FIX) ── */}
-      <main style={{ flex: 1, marginLeft: window.innerWidth >= 1024 ? '260px' : '0', padding: '24px 28px 80px', height: '100vh', overflowY: 'auto', boxSizing: 'border-box' }}>
+      <main className="portal-main-content" style={{ flex: 1, marginLeft: window.innerWidth >= 1024 ? '260px' : '0', padding: '24px 28px 80px', height: '100vh', overflowY: 'auto', boxSizing: 'border-box' }}>
 
         {/* Top Bar for Mobile Menu Toggle */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
@@ -455,12 +474,12 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
             {window.innerWidth < 1024 && (
               <button
                 onClick={() => setSidebarOpen(true)}
-                style={{ padding: '8px', borderRadius: '10px', border: '1px solid #CBD5E1', background: '#FFF', cursor: 'pointer' }}
+                style={{ padding: '8px', borderRadius: '10px', border: '1px solid rgba(56, 189, 248, 0.2)', background: 'rgba(15, 20, 50, 0.6)', color: '#7dd3fc', cursor: 'pointer' }}
               >
                 <Menu size={20} />
               </button>
             )}
-            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0F172A' }}>
+            <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#e0f2fe', textShadow: '0 1px 4px rgba(0,0,0,0.3)' }}>
               {activeTab === 'library' && '📁 ကတ် စာကြည့်တိုက် (Card Library)'}
               {activeTab === 'add_card' && '➕ ကတ်အသစ် ဖန်တီးရန် (Custom Card Studio)'}
               {activeTab === 'story_studio' && '📖 မေမေ့ ၁ မိနစ် ပုံပြင် အသံလွှင့်ခန်း (Story Studio)'}
@@ -469,13 +488,13 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
             </h1>
           </div>
 
-          <button onClick={onExit} style={{ padding: '8px 16px', borderRadius: '12px', background: '#E2E8F0', border: 'none', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }}>
+          <button onClick={onExit} style={{ padding: '8px 16px', borderRadius: '12px', background: 'rgba(14, 165, 233, 0.2)', border: '1px solid rgba(56, 189, 248, 0.3)', color: '#7dd3fc', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.2s' }}>
             Child Mode ▶
           </button>
         </div>
 
         {cardSuccessMsg && (
-          <div style={{ background: '#DCFCE7', border: '1px solid #86EFAC', color: '#166534', padding: '12px 18px', borderRadius: '14px', fontWeight: 700, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(52, 211, 153, 0.3)', color: '#6ee7b7', padding: '12px 18px', borderRadius: '14px', fontWeight: 700, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Check size={18} /> {cardSuccessMsg}
           </div>
         )}
@@ -484,10 +503,10 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
         {activeTab === 'library' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <p style={{ fontSize: '0.9rem', color: '#64748B' }}>
+              <p style={{ fontSize: '0.9rem', color: '#7dd3fc' }}>
                 စုစုပေါင်း ကတ်များ: <b>{apiIcons.length + customCards.length}</b> (Default: {apiIcons.length}, Custom/Mom's: {customCards.length})
               </p>
-              <button onClick={() => setActiveTab('add_card')} style={{ padding: '8px 16px', borderRadius: '12px', background: '#2563EB', color: '#FFF', border: 'none', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <button onClick={() => setActiveTab('add_card')} style={{ padding: '8px 16px', borderRadius: '12px', background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', color: '#FFF', border: 'none', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 12px rgba(14, 165, 233, 0.3)' }}>
                 <PlusCircle size={16} /> ကတ်အသစ် ထည့်မည်
               </button>
             </div>
@@ -495,19 +514,19 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
             {/* Custom Created Cards with Edit & Delete */}
             {customCards.length > 0 && (
               <div style={{ marginBottom: '28px' }}>
-                <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#1E293B', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Sparkles size={18} color="#2563EB" /> မိဘများ ဖန်တီးထားသော ကတ်များ (Custom Cards)
+                <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#e0f2fe', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Sparkles size={18} color="#38bdf8" /> မိဘများ ဖန်တီးထားသော ကတ်များ (Custom Cards)
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '14px' }}>
                   {customCards.map((c) => (
-                    <div key={c.id} style={{ background: '#FFF', borderRadius: '16px', padding: '14px', border: '2px solid #93C5FD', boxShadow: '0 4px 12px rgba(37,99,235,0.08)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', position: 'relative' }}>
+                    <div key={c.id} style={{ background: 'rgba(15, 20, 50, 0.7)', borderRadius: '16px', padding: '14px', border: '2px solid rgba(56, 189, 248, 0.2)', boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', position: 'relative', backdropFilter: 'blur(4px)' }}>
 
                       {/* Action buttons (Edit & Delete) */}
                       <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', gap: '4px' }}>
                         <button
                           onClick={() => setEditingCard(c)}
                           title="Edit Card"
-                          style={{ padding: '4px', borderRadius: '6px', border: 'none', background: '#EFF6FF', color: '#2563EB', cursor: 'pointer' }}
+                          style={{ padding: '4px', borderRadius: '6px', border: 'none', background: 'rgba(14, 165, 233, 0.15)', color: '#38bdf8', cursor: 'pointer' }}
                         >
                           <Edit3 size={14} />
                         </button>
@@ -526,15 +545,15 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                         <div style={{ fontSize: '2.5rem', marginTop: '6px' }}>{c.emoji || '⭐'}</div>
                       )}
 
-                      <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#1E293B', marginTop: '6px' }}>{c.burmese}</div>
-                      <div style={{ fontSize: '0.75rem', color: '#64748B' }}>{c.englishMeaning}</div>
+                      <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#e0f2fe', marginTop: '6px' }}>{c.burmese}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#7dd3fc' }}>{c.englishMeaning}</div>
 
-                      <div style={{ marginTop: '8px', fontSize: '0.68rem', padding: '2px 8px', borderRadius: '10px', background: '#F1F5F9', color: '#475569', fontWeight: 700 }}>
+                      <div style={{ marginTop: '8px', fontSize: '0.68rem', padding: '2px 8px', borderRadius: '10px', background: 'rgba(56, 189, 248, 0.1)', color: '#7dd3fc', fontWeight: 700 }}>
                         Category: {c.category}
                       </div>
 
                       {c.audio_url && (
-                        <span style={{ marginTop: '4px', fontSize: '0.68rem', background: '#DCFCE7', color: '#166534', padding: '2px 6px', borderRadius: '8px', fontWeight: 700 }}>
+                        <span style={{ marginTop: '4px', fontSize: '0.68rem', background: 'rgba(16, 185, 129, 0.15)', color: '#6ee7b7', padding: '2px 6px', borderRadius: '8px', fontWeight: 700 }}>
                           🎙️ Mom's Voice
                         </span>
                       )}
@@ -545,20 +564,20 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
             )}
 
             {/* Admin DB Photo Cards */}
-            <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#1E293B', marginBottom: '12px' }}>
+            <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#e0f2fe', marginBottom: '12px' }}>
               မူလ ဓာတ်ပုံ ကတ်များ (Default Photo Cards)
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '12px' }}>
               {apiIcons.map(icon => (
-                <div key={icon.id} style={{ background: '#FFF', borderRadius: '16px', padding: '14px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                <div key={icon.id} style={{ background: 'rgba(15, 20, 50, 0.7)', borderRadius: '16px', padding: '14px', border: '1px solid rgba(56, 189, 248, 0.15)', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', backdropFilter: 'blur(4px)' }}>
                   {icon.image_url?.startsWith('http') ? (
                     <img src={icon.image_url} alt={icon.label_my} style={{ width: '56px', height: '56px', objectFit: 'contain', borderRadius: '12px' }} />
                   ) : (
                     <div style={{ fontSize: '2.4rem' }}>{icon.image_url || '⭐'}</div>
                   )}
-                  <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#1E293B', marginTop: '6px' }}>{icon.label_my}</div>
-                  <div style={{ fontSize: '0.75rem', color: '#64748B' }}>{icon.label_en}</div>
-                  <div style={{ marginTop: '6px', fontSize: '0.68rem', padding: '2px 8px', borderRadius: '10px', background: '#EFF6FF', color: '#1D4ED8', fontWeight: 700 }}>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#e0f2fe', marginTop: '6px' }}>{icon.label_my}</div>
+                  <div style={{ fontSize: '0.75rem', color: '#7dd3fc' }}>{icon.label_en}</div>
+                  <div style={{ marginTop: '6px', fontSize: '0.68rem', padding: '2px 8px', borderRadius: '10px', background: 'rgba(14, 165, 233, 0.1)', color: '#38bdf8', fontWeight: 700 }}>
                     Category: {icon.category_id}
                   </div>
                 </div>
@@ -572,46 +591,46 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
           <div className="modal-overlay" style={{ zIndex: 1200 }}>
             <div className="portal-modal" style={{ maxWidth: '480px', width: '92%', borderRadius: '20px', padding: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1E293B', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Edit3 size={20} color="#2563EB" /> ကတ် ပြင်ဆင်ရန် (Edit Card)
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#e0f2fe', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Edit3 size={20} color="#38bdf8" /> ကတ် ပြင်ဆင်ရန် (Edit Card)
                 </h3>
                 <button onClick={() => setEditingCard(null)} style={{ border: 'none', background: 'none', cursor: 'pointer' }}><X size={18} /></button>
               </div>
 
               <form onSubmit={handleUpdateCardSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '4px' }}>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#94a3c8', display: 'block', marginBottom: '4px' }}>
                     မြန်မာ စာသား (Burmese Text)
                   </label>
                   <input
                     type="text"
                     value={editingCard.burmese}
                     onChange={e => setEditingCard({ ...editingCard, burmese: e.target.value })}
-                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid #CBD5E1' }}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid rgba(56, 189, 248, 0.2)', background: 'rgba(15, 20, 50, 0.6)', color: '#e0f2fe' }}
                     required
                   />
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '4px' }}>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#94a3c8', display: 'block', marginBottom: '4px' }}>
                     English Meaning
                   </label>
                   <input
                     type="text"
                     value={editingCard.englishMeaning}
                     onChange={e => setEditingCard({ ...editingCard, englishMeaning: e.target.value })}
-                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid #CBD5E1' }}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid rgba(56, 189, 248, 0.2)', background: 'rgba(15, 20, 50, 0.6)', color: '#e0f2fe' }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '4px' }}>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#94a3c8', display: 'block', marginBottom: '4px' }}>
                     အမျိုးအစား (Category)
                   </label>
                   <select
                     value={editingCard.category}
                     onChange={e => setEditingCard({ ...editingCard, category: e.target.value })}
-                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid #CBD5E1', background: '#FFF' }}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid rgba(56, 189, 248, 0.2)', background: 'rgba(15, 20, 50, 0.6)', color: '#e0f2fe' }}
                   >
                     <option value="subject">Subject (လူများ / အကောင်များ)</option>
                     <option value="verb">Verb (လုပ်ဆောင်ချက် / ကြိယာ)</option>
@@ -623,22 +642,22 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '4px' }}>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#94a3c8', display: 'block', marginBottom: '4px' }}>
                     Emoji
                   </label>
                   <input
                     type="text"
                     value={editingCard.emoji || ''}
                     onChange={e => setEditingCard({ ...editingCard, emoji: e.target.value })}
-                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '1.2rem', textAlign: 'center' }}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid rgba(56, 189, 248, 0.2)', fontSize: '1.2rem', textAlign: 'center', background: 'rgba(15, 20, 50, 0.6)', color: '#e0f2fe' }}
                   />
                 </div>
 
                 <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                  <button type="button" onClick={() => setEditingCard(null)} style={{ flex: 1, padding: '10px', borderRadius: '10px', background: '#E2E8F0', border: 'none', fontWeight: 700, cursor: 'pointer' }}>
+                  <button type="button" onClick={() => setEditingCard(null)} style={{ flex: 1, padding: '10px', borderRadius: '10px', background: 'rgba(100, 116, 139, 0.2)', border: '1px solid rgba(100, 116, 139, 0.3)', color: '#94a3c8', fontWeight: 700, cursor: 'pointer' }}>
                     မလုပ်တော့ပါ (Cancel)
                   </button>
-                  <button type="submit" style={{ flex: 1, padding: '10px', borderRadius: '10px', background: '#2563EB', color: '#FFF', border: 'none', fontWeight: 700, cursor: 'pointer' }}>
+                  <button type="submit" style={{ flex: 1, padding: '10px', borderRadius: '10px', background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', color: '#FFF', border: 'none', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(14, 165, 233, 0.3)' }}>
                     ပြင်ဆင်မှု သိမ်းမည် (Save)
                   </button>
                 </div>
@@ -649,21 +668,21 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
 
         {/* ── TAB 2: ADD NEW CARD (Options 1 & 2) ── */}
         {activeTab === 'add_card' && (
-          <div style={{ background: '#FFF', borderRadius: '20px', padding: '24px', border: '1px solid #E2E8F0', maxWidth: '640px' }}>
-            <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1E293B', marginBottom: '16px' }}>
+          <div style={{ background: 'rgba(15, 20, 50, 0.7)', borderRadius: '20px', padding: '24px', border: '1px solid rgba(56, 189, 248, 0.15)', maxWidth: '640px', backdropFilter: 'blur(4px)' }}>
+            <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#e0f2fe', marginBottom: '16px' }}>
               ကတ်အသစ် ဖန်တီးရန် စတူဒီယို (Custom Card Studio)
             </h2>
 
             <form onSubmit={handleSaveCard} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {/* Category */}
               <div>
-                <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '6px' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#94a3c8', display: 'block', marginBottom: '6px' }}>
                   ၁။ ကတ်အမျိုးအစား ရွေးချယ်ပါ (Select Category)
                 </label>
                 <select
                   value={cardCategory}
                   onChange={e => setCardCategory(e.target.value)}
-                  style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1px solid #CBD5E1', fontSize: '0.9rem', background: '#FFF', fontWeight: 700 }}
+                  style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.2)', fontSize: '0.9rem', background: 'rgba(15, 20, 50, 0.6)', color: '#e0f2fe', fontWeight: 700 }}
                 >
                   <option value="subject">လူများ / အကောင်များ (Subject / People)</option>
                   <option value="verb">လုပ်ဆောင်ချက် / ကြိယာ (Action / Verb)</option>
@@ -677,7 +696,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
               {/* Burmese Text & English */}
               <div style={{ display: 'flex', gap: '12px' }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '6px' }}>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#94a3c8', display: 'block', marginBottom: '6px' }}>
                     ၂။ မြန်မာစာသား (Burmese Label)
                   </label>
                   <input
@@ -685,12 +704,12 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                     placeholder="ဥပမာ - ရေခဲမုန့်"
                     value={cardBurmese}
                     onChange={e => setCardBurmese(e.target.value)}
-                    style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1px solid #CBD5E1', fontSize: '0.9rem' }}
+                    style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.2)', fontSize: '0.9rem', background: 'rgba(15, 20, 50, 0.6)', color: '#e0f2fe' }}
                     required
                   />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '6px' }}>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#94a3c8', display: 'block', marginBottom: '6px' }}>
                     English Meaning
                   </label>
                   <input
@@ -698,28 +717,28 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                     placeholder="e.g. Ice Cream"
                     value={cardEnglish}
                     onChange={e => setCardEnglish(e.target.value)}
-                    style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1px solid #CBD5E1', fontSize: '0.9rem' }}
+                    style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.2)', fontSize: '0.9rem', background: 'rgba(15, 20, 50, 0.6)', color: '#e0f2fe' }}
                   />
                 </div>
               </div>
 
               {/* Media Option: Emoji or Photo Upload */}
               <div>
-                <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '6px' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#94a3c8', display: 'block', marginBottom: '6px' }}>
                   ၃။ ရုပ်ပုံ သို့မဟုတ် အီမိုဂျီ ရွေးပါ (Media Option)
                 </label>
                 <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
                   <button
                     type="button"
                     onClick={() => setCardMediaMode('emoji')}
-                    style={{ flex: 1, padding: '10px', borderRadius: '12px', border: '1px solid #CBD5E1', background: cardMediaMode === 'emoji' ? '#E0F2FE' : '#FFF', color: cardMediaMode === 'emoji' ? '#0369A1' : '#475569', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                    style={{ flex: 1, padding: '10px', borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.2)', background: cardMediaMode === 'emoji' ? 'rgba(14, 165, 233, 0.2)' : 'rgba(15, 20, 50, 0.6)', color: cardMediaMode === 'emoji' ? '#38bdf8' : '#7dd3fc', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                   >
                     <Smile size={18} /> Emoji (အီမိုဂျီ)
                   </button>
                   <button
                     type="button"
                     onClick={() => setCardMediaMode('photo')}
-                    style={{ flex: 1, padding: '10px', borderRadius: '12px', border: '1px solid #CBD5E1', background: cardMediaMode === 'photo' ? '#E0F2FE' : '#FFF', color: cardMediaMode === 'photo' ? '#0369A1' : '#475569', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                    style={{ flex: 1, padding: '10px', borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.2)', background: cardMediaMode === 'photo' ? 'rgba(14, 165, 233, 0.2)' : 'rgba(15, 20, 50, 0.6)', color: cardMediaMode === 'photo' ? '#38bdf8' : '#7dd3fc', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                   >
                     <ImageIcon size={18} /> Photo Upload (ဓာတ်ပုံ)
                   </button>
@@ -731,23 +750,23 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                     placeholder="Enter emoji (e.g. 🍦, 🚗, 🧸)"
                     value={cardEmoji}
                     onChange={e => setCardEmoji(e.target.value)}
-                    style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1px solid #CBD5E1', fontSize: '1.2rem', textAlign: 'center' }}
+                    style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.2)', fontSize: '1.2rem', textAlign: 'center', background: 'rgba(15, 20, 50, 0.6)', color: '#e0f2fe' }}
                   />
                 ) : (
                   <div>
                     <input type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: 'none' }} id="photo-upload-input" />
                     <label
                       htmlFor="photo-upload-input"
-                      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px', border: '2px dashed #CBD5E1', borderRadius: '14px', cursor: 'pointer', background: '#F8FAFC' }}
+                      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px', border: '2px dashed rgba(56, 189, 248, 0.3)', borderRadius: '14px', cursor: 'pointer', background: 'rgba(10, 14, 39, 0.4)' }}
                     >
-                      <Upload size={24} color="#64748B" />
-                      <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#475569', marginTop: '6px' }}>
+                      <Upload size={24} color="#38bdf8" />
+                      <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#7dd3fc', marginTop: '6px' }}>
                         {cardPhotoUrl ? 'ဓာတ်ပုံ အဆင်သင့်ဖြစ်ပါပြီ (Change Photo)' : 'မိမိဖုန်း/ကွန်ပျူတာမှ ဓာတ်ပုံ တင်ရန် (Upload Photo)'}
                       </span>
                     </label>
                     {cardPhotoUrl && (
                       <div style={{ marginTop: '10px', textAlign: 'center' }}>
-                        <img src={cardPhotoUrl} alt="Preview" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '12px', border: '2px solid #2563EB' }} />
+                        <img src={cardPhotoUrl} alt="Preview" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '12px', border: '2px solid #0ea5e9' }} />
                       </div>
                     )}
                   </div>
@@ -756,28 +775,28 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
 
               {/* Audio Option: AI Speech vs Custom Voice Recorder */}
               <div>
-                <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '6px' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#94a3c8', display: 'block', marginBottom: '6px' }}>
                   ၄။ အသံစနစ် ရွေးချယ်ပါ (Speech Option)
                 </label>
                 <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
                   <button
                     type="button"
                     onClick={() => setCardAudioMode('ai_speech')}
-                    style={{ flex: 1, padding: '10px', borderRadius: '12px', border: '1px solid #CBD5E1', background: cardAudioMode === 'ai_speech' ? '#DCFCE7' : '#FFF', color: cardAudioMode === 'ai_speech' ? '#166534' : '#475569', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                    style={{ flex: 1, padding: '10px', borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.2)', background: cardAudioMode === 'ai_speech' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(15, 20, 50, 0.6)', color: cardAudioMode === 'ai_speech' ? '#6ee7b7' : '#7dd3fc', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                   >
                     <Volume2 size={18} /> AI Speech (ElevenLabs TTS)
                   </button>
                   <button
                     type="button"
                     onClick={() => setCardAudioMode('custom_voice')}
-                    style={{ flex: 1, padding: '10px', borderRadius: '12px', border: '1px solid #CBD5E1', background: cardAudioMode === 'custom_voice' ? '#DCFCE7' : '#FFF', color: cardAudioMode === 'custom_voice' ? '#166534' : '#475569', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                    style={{ flex: 1, padding: '10px', borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.2)', background: cardAudioMode === 'custom_voice' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(15, 20, 50, 0.6)', color: cardAudioMode === 'custom_voice' ? '#6ee7b7' : '#7dd3fc', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                   >
                     <Mic size={18} /> Mom's Voice (မိခင်အသံသွင်းမည်)
                   </button>
                 </div>
 
                 {cardAudioMode === 'custom_voice' && (
-                  <div style={{ background: '#F8FAFC', padding: '16px', borderRadius: '14px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+                  <div style={{ background: 'rgba(10, 14, 39, 0.4)', padding: '16px', borderRadius: '14px', border: '1px solid rgba(56, 189, 248, 0.15)', textAlign: 'center' }}>
                     {!isRecording ? (
                       <button
                         type="button"
@@ -790,7 +809,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                       <button
                         type="button"
                         onClick={stopRecordingVoice}
-                        style={{ padding: '10px 20px', borderRadius: '30px', background: '#1E293B', color: '#FFF', border: 'none', fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                        style={{ padding: '10px 20px', borderRadius: '30px', background: 'linear-gradient(135deg, #1e293b, #0f172a)', color: '#FFF', border: '1px solid rgba(56, 189, 248, 0.2)', fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)' }}
                       >
                         <Square size={18} color="#EF4444" /> ရပ်မည် ({recordingSeconds}s)
                       </button>
@@ -799,7 +818,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                     {recordedAudioBlob && (
                       <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
                         <audio src={URL.createObjectURL(recordedAudioBlob)} controls style={{ height: '36px' }} />
-                        <span style={{ fontSize: '0.8rem', color: '#166534', fontWeight: 700 }}>✓ Voice Recorded</span>
+                        <span style={{ fontSize: '0.8rem', color: '#6ee7b7', fontWeight: 700 }}>✓ Voice Recorded</span>
                       </div>
                     )}
                   </div>
@@ -809,7 +828,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
               {/* Submit Button */}
               <button
                 type="submit"
-                style={{ marginTop: '10px', width: '100%', padding: '14px', borderRadius: '14px', background: 'linear-gradient(135deg, #2563EB, #1D4ED8)', color: '#FFF', border: 'none', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 6px 16px rgba(37,99,235,0.3)' }}
+                style={{ marginTop: '10px', width: '100%', padding: '14px', borderRadius: '14px', background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', color: '#FFF', border: 'none', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 6px 16px rgba(14, 165, 233, 0.3)' }}
               >
                 ကတ်အသစ် သိမ်းဆည်းမည် (Save Custom Card)
               </button>
@@ -819,17 +838,17 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
 
         {/* ── TAB 3: MOM'S 1-MINUTE STORY STUDIO (Option 3) ── */}
         {activeTab === 'story_studio' && (
-          <div style={{ background: '#FFF', borderRadius: '20px', padding: '24px', border: '1px solid #E2E8F0', maxWidth: '640px' }}>
-            <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1E293B', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <BookOpen size={22} color="#2563EB" /> မေမေ့ ၁ မိနစ် ပုံပြင် အသံလွှင့်ခန်း (Mom's 1-Min Story Studio)
+          <div style={{ background: 'rgba(15, 20, 50, 0.7)', borderRadius: '20px', padding: '24px', border: '1px solid rgba(56, 189, 248, 0.15)', maxWidth: '640px', backdropFilter: 'blur(4px)' }}>
+            <h2 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#e0f2fe', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <BookOpen size={22} color="#38bdf8" /> မေမေ့ ၁ မိနစ် ပုံပြင် အသံလွှင့်ခန်း (Mom's 1-Min Story Studio)
             </h2>
-            <p style={{ fontSize: '0.85rem', color: '#64748B', marginBottom: '20px' }}>
+            <p style={{ fontSize: '0.85rem', color: '#7dd3fc', marginBottom: '20px' }}>
               ကလေးငယ်များ ညအိပ်ရာဝင် သို့မဟုတ် စိတ်ငြိမ်စေရန် မေမေ့အသံဖြင့် ၁ မိနစ်စာ ပုံပြင်ပြောပြပေးသော အသံကတ် ဖန်တီးပါ
             </p>
 
             <form onSubmit={handleSaveStoryCard} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '6px' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#94a3c8', display: 'block', marginBottom: '6px' }}>
                   ပုံပြင် ခေါင်းစဉ် (Story Title)
                 </label>
                 <input
@@ -837,12 +856,12 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                   placeholder="ဥပမာ - ရွှေယုန်နဲ့ လိပ် ပုံပြင်"
                   value={storyTitle}
                   onChange={e => setStoryTitle(e.target.value)}
-                  style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid #CBD5E1', fontSize: '0.95rem' }}
+                  style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.2)', fontSize: '0.95rem', background: 'rgba(15, 20, 50, 0.6)', color: '#e0f2fe' }}
                   required
                 />
               </div>
 
-              <div style={{ background: '#F8FAFC', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+              <div style={{ background: 'rgba(10, 14, 39, 0.4)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(56, 189, 248, 0.15)', textAlign: 'center' }}>
                 {!storyRecording ? (
                   <button
                     type="button"
@@ -859,7 +878,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                     <button
                       type="button"
                       onClick={stopStoryRecording}
-                      style={{ padding: '12px 24px', borderRadius: '30px', background: '#1E293B', color: '#FFF', border: 'none', fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                      style={{ padding: '12px 24px', borderRadius: '30px', background: 'linear-gradient(135deg, #1e293b, #0f172a)', color: '#FFF', border: '1px solid rgba(56, 189, 248, 0.2)', fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)' }}
                     >
                       <Square size={18} color="#EF4444" /> အသံသွင်းယူမှု ရပ်မည် (Stop)
                     </button>
@@ -869,14 +888,14 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                 {storyAudioBlob && (
                   <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
                     <audio src={URL.createObjectURL(storyAudioBlob)} controls style={{ width: '100%', maxWidth: '360px' }} />
-                    <span style={{ fontSize: '0.85rem', color: '#166534', fontWeight: 700 }}>✓ ပုံပြင်အသံ သွင်းယူပြီးပါပြီ ({storySeconds} စက္ကန့်)</span>
+                    <span style={{ fontSize: '0.85rem', color: '#6ee7b7', fontWeight: 700 }}>✓ ပုံပြင်အသံ သွင်းယူပြီးပါပြီ ({storySeconds} စက္ကန့်)</span>
                   </div>
                 )}
               </div>
 
               <button
                 type="submit"
-                style={{ width: '100%', padding: '14px', borderRadius: '14px', background: 'linear-gradient(135deg, #2563EB, #1D4ED8)', color: '#FFF', border: 'none', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 6px 16px rgba(37,99,235,0.3)' }}
+                style={{ width: '100%', padding: '14px', borderRadius: '14px', background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', color: '#FFF', border: 'none', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 6px 16px rgba(14, 165, 233, 0.3)' }}
               >
                 မေမေ့ပုံပြင်ကတ် သိမ်းဆည်းမည် (Save Story Card)
               </button>
@@ -893,11 +912,11 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
         {activeTab === 'settings' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '640px' }}>
             {/* Profile Info */}
-            <div style={{ background: '#FFF', borderRadius: '20px', padding: '20px', border: '1px solid #E2E8F0' }}>
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#1E293B', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <User size={20} color="#2563EB" /> အသုံးပြုသူ ပရိုဖိုင် (Profile Details)
+            <div style={{ background: 'rgba(15, 20, 50, 0.7)', borderRadius: '20px', padding: '20px', border: '1px solid rgba(56, 189, 248, 0.15)', backdropFilter: 'blur(4px)' }}>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#e0f2fe', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <User size={20} color="#38bdf8" /> အသုံးပြုသူ ပရိုဖိုင် (Profile Details)
               </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.9rem', color: '#475569' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.9rem', color: '#94a3c8' }}>
                 <div><b>အသုံးပြုသူအမည် (Username):</b> {user.username}</div>
                 <div><b>User Role:</b> {user.role}</div>
                 {user.child_nickname && (
@@ -910,19 +929,19 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                   <div><b>မွေးသက္ကရာဇ် (Birth Year):</b> {user.child_birth_year}</div>
                 )}
                 <div><b>User ID:</b> <code>{user.id}</code></div>
-                <div><b>Login Session:</b> <span style={{ color: '#166534', fontWeight: 700 }}>✓ Remembered (Auto-Saved)</span></div>
+                <div><b>Login Session:</b> <span style={{ color: '#6ee7b7', fontWeight: 700 }}>✓ Remembered (Auto-Saved)</span></div>
               </div>
             </div>
 
             {/* Change Password Form */}
-            <div style={{ background: '#FFF', borderRadius: '20px', padding: '20px', border: '1px solid #E2E8F0' }}>
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#1E293B', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <KeyRound size={20} color="#2563EB" /> စကားဝှက် ပြောင်းလဲရန် (Change Password)
+            <div style={{ background: 'rgba(15, 20, 50, 0.7)', borderRadius: '20px', padding: '20px', border: '1px solid rgba(56, 189, 248, 0.15)', backdropFilter: 'blur(4px)' }}>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#e0f2fe', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <KeyRound size={20} color="#38bdf8" /> စကားဝှက် ပြောင်းလဲရန် (Change Password)
               </h3>
 
               <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div>
-                  <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '6px' }}>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#94a3c8', display: 'block', marginBottom: '6px' }}>
                     စကားဝှက်အသစ် (New Password - Min 8 Chars)
                   </label>
                   <input
@@ -930,13 +949,13 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                     placeholder="••••••••"
                     value={newPassword}
                     onChange={e => setNewPassword(e.target.value)}
-                    style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1px solid #CBD5E1', fontSize: '0.95rem' }}
+                    style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.2)', fontSize: '0.95rem', background: 'rgba(15, 20, 50, 0.6)', color: '#e0f2fe' }}
                     required
                   />
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '6px' }}>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#94a3c8', display: 'block', marginBottom: '6px' }}>
                     စကားဝှက်အသစ် အတည်ပြုပါ (Confirm New Password)
                   </label>
                   <input
@@ -944,13 +963,13 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                     placeholder="••••••••"
                     value={confirmPassword}
                     onChange={e => setConfirmPassword(e.target.value)}
-                    style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1px solid #CBD5E1', fontSize: '0.95rem' }}
+                    style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1px solid rgba(56, 189, 248, 0.2)', fontSize: '0.95rem', background: 'rgba(15, 20, 50, 0.6)', color: '#e0f2fe' }}
                     required
                   />
                 </div>
 
                 {passwordMsg && (
-                  <div style={{ padding: '10px 14px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 700, background: passwordMsg.type === 'success' ? '#DCFCE7' : '#FEF2F2', color: passwordMsg.type === 'success' ? '#166534' : '#DC2626', border: passwordMsg.type === 'success' ? '1px solid #86EFAC' : '1px solid #FCA5A5' }}>
+                  <div style={{ padding: '10px 14px', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 700, background: passwordMsg.type === 'success' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)', color: passwordMsg.type === 'success' ? '#6ee7b7' : '#fca5a5', border: passwordMsg.type === 'success' ? '1px solid rgba(52, 211, 153, 0.3)' : '1px solid rgba(252, 165, 165, 0.3)' }}>
                     {passwordMsg.text}
                   </div>
                 )}
@@ -958,7 +977,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                 <button
                   type="submit"
                   disabled={passwordLoading}
-                  style={{ padding: '12px', borderRadius: '12px', background: '#2563EB', color: '#FFF', border: 'none', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer' }}
+                  style={{ padding: '12px', borderRadius: '12px', background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', color: '#FFF', border: 'none', fontWeight: 800, fontSize: '0.9rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(14, 165, 233, 0.3)' }}
                 >
                   {passwordLoading ? 'လုပ်ဆောင်နေပါသည်...' : 'စကားဝှက် ပြောင်းလဲမည် (Update Password)'}
                 </button>
