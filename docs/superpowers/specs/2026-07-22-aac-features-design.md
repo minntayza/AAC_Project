@@ -4,7 +4,7 @@
 **Team Size:** 8 members
 **Timeline:** 12 hours (hackathon)
 **Base Repo:** [AAC-Web_Project](https://github.com/manavrenjith/AAC-Web_Project)
-**Target Audience:** Children with autism (Malayalam + English)
+**Target Audience:** Children with autism (Burmese + English)
 **Deployment Target:** Vercel (serverless)
 
 ---
@@ -41,7 +41,7 @@ Monolithic Flask app, debug-mode server, JSON file storage, heavy PyTorch models
 
 ### Key Architectural Decisions
 
-1. **Replace PyTorch/BLIP/mBART with Anthropic API** — a single Claude call (haiku-4.5 for speed, sonnet-4 for image processing) handles image captioning + Malayalam translation. Eliminates ~2.4GB of model dependencies.
+1. **Replace PyTorch/BLIP/mBART with Anthropic API** — a single Claude call (haiku-4.5 for speed, sonnet-4 for image processing) handles image captioning + Burmese translation. Eliminates ~2.4GB of model dependencies.
 
 2. **Vercel WSGI Adapter** — Flask runs inside a serverless function via `vercel/python` runtime with `vercel.json` configuration.
 
@@ -74,13 +74,13 @@ Monolithic Flask app, debug-mode server, JSON file storage, heavy PyTorch models
 
 - Install `anthropic` Python SDK (`pip install anthropic`)
 - New module `ai_module.py` with:
-  - `process_image_for_aac(image_bytes: bytes) -> dict` — sends image to Claude with prompt: *"Describe this image in one simple sentence suitable for an autistic child. Then translate that sentence to Malayalam. Return JSON with 'english_text' and 'malayalam_text' fields."*
+  - `process_image_for_aac(image_bytes: bytes) -> dict` — sends image to Claude with prompt: *"Describe this image in one simple sentence suitable for an autistic child. Then translate that sentence to Burmese. Return JSON with 'english_text' and 'burmese_text' fields."*
   - `suggest_sentences(context: dict) -> list[str]` — sends time of day, recent icons, and optional mood; returns 3-4 suggested sentences
 - Endpoint: `POST /api/ai/process_image` (replaces current `/image_to_speech/process`)
 - Endpoint: `POST /api/ai/suggest_sentences`
 - **Fallback:** If API call fails, show user-friendly error with retry button. For image processing, allow manual text input as fallback.
 
-**Model choice:** Use `claude-haiku-4-5` for sentence suggestions (fast, cheap, <$0.10/1000 suggestions). Use `claude-sonnet-4` for image processing (better vision accuracy).
+**Model choice:** Use `mimo-v2.5-pro` for image processing (vision + translation in one call). Use `claude-haiku-4-5` for sentence suggestions (fast, cheap, <$0.10/1000 suggestions).
 
 **Cost estimate at hackathon scale:** Negligible (<$2 for the entire event).
 
@@ -94,7 +94,7 @@ Monolithic Flask app, debug-mode server, JSON file storage, heavy PyTorch models
 - 8 emotion cards, each with:
   - Large emoji or custom SVG illustration (120px+)
   - Color-coded background: Happy 🟢, Sad 🔵, Angry 🔴, Scared 🟣, Tired 🟤, Hungry 🟡, Sick 🟢 (pale), Loved 🩷
-  - Word in Malayalam (primary) + English (smaller, below)
+  - Word in Burmese (primary) + English (smaller, below)
   - Tap → adds to sentence builder + plays TTS audio
 - Emotion cards are also available as a filterable category on the communication board
 - **Edge case:** For non-verbal children who can't read, the emoji + color alone should be enough to make a selection
@@ -160,7 +160,7 @@ Monolithic Flask app, debug-mode server, JSON file storage, heavy PyTorch models
   - Time of day (morning/afternoon/evening/night)
   - Recent icon clicks (last 5 from session)
   - Selected mood (if from feelings board)
-- Prompt: *"Based on the time ({time_of_day}), recent selections ({icons}), and mood ({mood}), suggest 3 short sentences (in Malayalam) a non-verbal autistic child might want to say. Keep them simple, 2-5 words each. Return as JSON array."*
+- Prompt: *"Based on the time ({time_of_day}), recent selections ({icons}), and mood ({mood}), suggest 3 short sentences (in Burmese) a non-verbal autistic child might want to say. Keep them simple, 2-5 words each. Return as JSON array."*
 - **Performance:** Pre-fetch on page load with debounce (only re-fetch when context meaningfully changes)
 - **Edge case:** Loading state shows 3 skeleton chips. API failure → section is hidden silently (no error shown to child).
 
@@ -196,12 +196,12 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 **Design system:**
 - **Color palette:** Softer background (#FFF8F0 warm cream), high-contrast foreground elements. Each category gets a distinct saturated color for easy scanning.
-- **Typography:** 24px+ body text, bold weights, sans-serif (Nunito or similar rounded font). Malayalam text rendered with Noto Sans Malayalam.
+- **Typography:** 24px+ body text, bold weights, sans-serif (Nunito or similar rounded font). Burmese text rendered with Noto Sans Burmese.
 - **Touch targets:** Minimum 80×80px for all interactive elements. 120px+ for communication cards.
 - **Cards:** Rounded corners (16px), soft drop shadows, subtle hover/tap scale animation.
 - **Navigation:** 4 large icon-based nav buttons at bottom (Home, Board, Feelings, Sentences) instead of text sidebar. Text labels present but secondary.
 - **Reduced noise:** No superfluous borders or decorative elements. Clean whitespace between sections.
-- **Malayalam-first:** All labels default to Malayalam. English shown as smaller secondary text.
+- **Burmese-first:** All labels default to Burmese. English shown as smaller secondary text.
 - **High contrast mode:** Optional toggle for children with visual sensitivities.
 
 ### 2.9 Vercel Deployment
@@ -228,10 +228,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 ```
 User uploads image
   → POST /api/ai/process_image
-    → Anthropic API (claude-sonnet-4)
-      → "A red car" + "ഒരു ചുവന്ന കാർ"
-    → gTTS generates Malayalam audio
-    → Returns JSON { english_text, malayalam_text, audio_url }
+    → Anthropic API (mimo-v2.5-pro)
+      → "A red car" + "ကားနီ"
+    → gTTS generates Burmese audio
+    → Returns JSON { english_text, burmese_text, audio_url }
   → Client renders text + plays audio
 ```
 
@@ -241,7 +241,7 @@ Page load (sentence builder)
   → JS gathers context (hour, recent icons from session, mood from URL param)
   → POST /api/ai/suggest_sentences
     → Anthropic API (claude-haiku-4-5)
-    → Returns ["എനിക്ക് വിശക്കുന്നു", "എനിക്ക് വെള്ളം വേണം", "എനിക്ക് ക്ഷീണമുണ്ട്"]
+    → Returns ["ငါဗိုက်ဆာတယ်", "ငါရေလိုချင်တယ်", "ငါမောနေတယ်"]
   → Rendered as tappable chips
 ```
 
@@ -273,7 +273,7 @@ Child taps "Start Routine"
 | Empty state (no favorites) | Hide section; show one-time hint |
 | Empty state (no routines) | Show placeholder illustration + instruction text |
 | Network offline | Cache recently used icons in localStorage; show "You're offline — some features may not work" banner |
-| Malayalam font not loading | `font-display: swap` with system fallback |
+| Burmese font not loading | `font-display: swap` with system fallback |
 | Multiple rapid API calls | Debounce sentence suggestions (300ms); rate-limit image processing to 1 concurrent |
 
 ---
@@ -319,7 +319,7 @@ The hackathon MVP is successful when:
 1. ✅ A child can open the app, find emotion icons, and express feelings in 2 taps
 2. ✅ A caregiver can create a visual morning routine in under 60 seconds
 3. ✅ AI suggests relevant sentences based on time of day
-4. ✅ Image upload → Malayalam text + audio works without PyTorch
+4. ✅ Image upload → Burmese text + audio works without PyTorch
 5. ✅ App deploys and runs on Vercel free tier
 6. ✅ All 5 user-facing features are demo-able end-to-end
 
