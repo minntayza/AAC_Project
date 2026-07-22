@@ -602,17 +602,17 @@ export function App() {
         <div className="modal-overlay" style={{ zIndex: 1200 }}>
           <div className="portal-modal" style={{ maxWidth: '540px', width: '92%', borderRadius: '24px', padding: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#1E293B', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <BookOpen size={24} color="#EAB308" /> မေမေ့ ၁ မိနစ် ပုံပြင်များ (Mom's Stories)
+              <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#e0f2fe', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <BookOpen size={24} color="#facc15" /> မေမေ့ ၁ မိနစ် ပုံပြင်များ (Mom's Stories)
               </h2>
-              <button onClick={() => setShowStoriesModal(false)} style={{ border: 'none', background: 'none', cursor: 'pointer' }}><X size={20} /></button>
+              <button onClick={() => setShowStoriesModal(false)} style={{ border: 'none', background: 'rgba(30, 41, 80, 0.8)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#94a3c8' }}><X size={18} /></button>
             </div>
 
             {storyCards.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '30px', color: '#64748B' }}>
+              <div style={{ textAlign: 'center', padding: '30px', color: '#7dd3fc' }}>
                 <div style={{ fontSize: '3rem', marginBottom: '8px' }}>📖</div>
                 <p style={{ fontWeight: '700' }}>မေမေ့ပုံပြင်များ မရှိသေးပါ</p>
-                <p style={{ fontSize: '0.82rem' }}>မိဘထိန်းချုပ်ခန်းမှ ၁ မိနစ် ပုံပြင်များ အသံသွင်း၍ ထည့်သွင်းနိုင်ပါသည်</p>
+                <p style={{ fontSize: '0.82rem', color: '#94a3c8' }}>မိဘထိန်းချုပ်ခန်းမှ ၁ မိနစ် ပုံပြင်များ အသံသွင်း၍ ထည့်သွင်းနိုင်ပါသည်</p>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '380px', overflowY: 'auto' }}>
@@ -625,21 +625,21 @@ export function App() {
                     }}
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px',
-                      borderRadius: '16px', border: playingStoryId === story.id ? '2px solid #EAB308' : '1px solid #E2E8F0',
-                      background: playingStoryId === story.id ? '#FEF9C3' : '#FFF', cursor: 'pointer', textAlign: 'left',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.04)', transition: 'all 0.2s'
+                      borderRadius: '16px', border: playingStoryId === story.id ? '2px solid #facc15' : '1.5px solid rgba(56, 189, 248, 0.15)',
+                      background: playingStoryId === story.id ? 'rgba(250, 204, 21, 0.12)' : 'rgba(15, 20, 50, 0.6)', cursor: 'pointer', textAlign: 'left',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.2)', transition: 'all 0.2s'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                       <div style={{ fontSize: '2rem' }}>{story.emoji || '📖'}</div>
                       <div>
-                        <div style={{ fontSize: '1rem', fontWeight: 800, color: '#1E293B' }}>{story.burmese}</div>
-                        <div style={{ fontSize: '0.78rem', color: '#64748B' }}>{story.englishMeaning}</div>
+                        <div style={{ fontSize: '1rem', fontWeight: 800, color: '#e0f2fe' }}>{story.burmese}</div>
+                        <div style={{ fontSize: '0.78rem', color: '#7dd3fc' }}>{story.englishMeaning}</div>
                       </div>
                     </div>
 
-                    <div style={{ width: '40px', height: '40px', background: '#FEF08A', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#854D0E' }}>
-                      <Play size={20} fill="#854D0E" />
+                    <div style={{ width: '40px', height: '40px', background: 'rgba(250, 204, 21, 0.15)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#facc15' }}>
+                      <Play size={20} fill="#facc15" />
                     </div>
                   </button>
                 ))}
@@ -648,7 +648,7 @@ export function App() {
 
             <button
               onClick={() => setShowStoriesModal(false)}
-              style={{ marginTop: '20px', width: '100%', padding: '12px', borderRadius: '12px', background: '#1E293B', color: '#FFF', border: 'none', fontWeight: 800, cursor: 'pointer' }}
+              style={{ marginTop: '20px', width: '100%', padding: '12px', borderRadius: '14px', background: 'rgba(15, 20, 50, 0.8)', color: '#7dd3fc', border: '1.5px solid rgba(56, 189, 248, 0.2)', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.95rem' }}
             >
               ပိတ်မည် (Close)
             </button>
@@ -678,7 +678,7 @@ export function App() {
             >
               ၁။ ဘယ်သူလဲဟင်
             </button>
-            <span style={{ color: '#94A3B8', fontSize: '0.8rem' }}>➔</span>
+            <span style={{ color: 'rgba(56, 189, 248, 0.4)', fontSize: '0.8rem' }}>➔</span>
             <button 
               className={`step-pill ${currentStep === 2 ? 'active' : ''}`}
               onClick={() => { if (selectedCards.length >= 1) setCurrentStep(2); }}
@@ -686,7 +686,7 @@ export function App() {
             >
               ၂။ ဘာလုပ်ချင်လဲ
             </button>
-            <span style={{ color: '#94A3B8', fontSize: '0.8rem' }}>➔</span>
+            <span style={{ color: 'rgba(56, 189, 248, 0.4)', fontSize: '0.8rem' }}>➔</span>
             <button 
               className={`step-pill ${currentStep === 3 ? 'active' : ''}`}
               onClick={() => { if (selectedCards.length >= 2) setCurrentStep(3); }}
@@ -813,11 +813,11 @@ export function App() {
                     {/* Mom's Bedtime Stories Folder Card */}
                     <button 
                       className="aac-card category-shortcut" 
-                      style={{ background: 'linear-gradient(135deg, #FEF08A, #FDE047)', border: '2px solid #EAB308' }}
+                      style={{ background: 'rgba(250, 204, 21, 0.12)', border: '1.5px solid rgba(250, 204, 21, 0.3)' }}
                       onClick={() => setShowStoriesModal(true)}
                     >
                       <div className="card-emoji">📖</div>
-                      <div className="card-text" style={{ color: '#854D0E', fontWeight: 800 }}>မေမေ့ပုံပြင်များ</div>
+                      <div className="card-text" style={{ color: '#facc15', fontWeight: 800 }}>မေမေ့ပုံပြင်များ</div>
                     </button>
 
                     {activeShortcuts.map(card => renderCardButton(card, () => handleCardClick(card)))}
@@ -852,27 +852,27 @@ export function App() {
                     </span>
                   </h2>
                   {screen3Category === 'activities' && (
-                    <span className="section-badge" style={{ backgroundColor: '#CCFBF1', color: '#0F766E' }}>
+                    <span className="section-badge">
                       ⚽ လှုပ်ရှားမှု ရွေးရအောင် (Pick Activity)
                     </span>
                   )}
                   {screen3Category === 'locations' && (
-                    <span className="section-badge" style={{ backgroundColor: '#F3E8FF', color: '#9333EA' }}>
+                    <span className="section-badge">
                       🧭 ဘယ်နေရာမှာလဲ ပြောရအောင် (Pick Location)
                     </span>
                   )}
                   {screen3Category === 'numbers' && (
-                    <span className="section-badge" style={{ backgroundColor: '#CCFBF1', color: '#0D9488' }}>
+                    <span className="section-badge">
                       🔢 ပမာဏနဲ့ ဂဏန်းလေး ရွေးရအောင် (Pick Amount/Number)
                     </span>
                   )}
                   {screen3Category === 'objects' && (selectedVerbCard?.id === 'v1' || selectedVerbCard?.id === 'v2') && (
-                    <span className="section-badge" style={{ backgroundColor: '#BFDBFE', color: '#1D4ED8' }}>
+                    <span className="section-badge">
                       🍎 မုန့်/ပစ္စည်း ပြီးရင် ပမာဏမေးပါမည် (Pick Object)
                     </span>
                   )}
                   {screen3Category === 'feelings' && (
-                    <span className="section-badge" style={{ backgroundColor: '#FFEDD5', color: '#C2410C' }}>
+                    <span className="section-badge">
                       ❤️ ခံစားချက်/အခြေအနေ ရွေးရအောင် (Pick Feeling)
                     </span>
                   )}
