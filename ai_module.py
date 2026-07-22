@@ -1,0 +1,98 @@
+"""AI module: Anthropic Claude vision/translation + ElevenLabs TTS."""
+import os
+import base64
+import json
+import mimetypes
+from anthropic import Anthropic
+
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
+ANTHROPIC_BASE_URL = os.environ.get("ANTHROPIC_BASE_URL")
+ELEVENLABS_API_KEY = os.environ.get("ELEVENLABS_API_KEY")
+
+_anthropic: Anthropic | None = None
+
+
+def get_anthropic() -> Anthropic:
+    global _anthropic
+    if _anthropic is None:
+        kwargs = {"api_key": ANTHROPIC_API_KEY}
+        if ANTHROPIC_BASE_URL:
+            kwargs["base_url"] = ANTHROPIC_BASE_URL
+        _anthropic = Anthropic(**kwargs)
+    return _anthropic
+
+
+def process_image_for_aac(image_bytes: bytes) -> dict:
+    """Send image to Claude → caption + Burmese translation (mimo-v2.5-pro)."""
+    mime = mimetypes.guess_type("image")[0] or "image/jpeg"
+    b64 = base64.b64encode(image_bytes).decode("utf-8")
+    client = get_anthropic()
+    response = client.messages.create(
+        model="mimo-v2.5-pro",
+        max_tokens=300,
+        messages=[{
+            "role": "user",
+            "content": [
+                {
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": mime,
+                        "data": b64
+                    }
+                },
+                {
+                    "type": "text",
+                    "text": (
+                        "Describe this image in one simple sentence suitable for an autistic child. "
+                        "Then translate that sentence to Burmese. "
+                        'Return JSON with "english_text" and "burmese_text" fields. '
+                        "Keep sentences 2-6 words."
+                    )
+                }
+            ]
+        }]
+    )
+    text = response.content[0].text
+    start = text.find("{")
+    end = text.rfind("}") + 1
+    return json.loads(text[start:end])
+
+
+def suggest_sentences(time_of_day: str, recent_icons: list[str], mood: str = "") -> list[str]:
+    """Get 3-4 context-aware sentence suggestions (claude-haiku-4-5)."""
+    client = get_anthropic()
+    prompt = (
+        f"Time: {time_of_day}. Recent icon taps: {recent_icons}. Mood: {mood or 'neutral'}.\n"
+        "Suggest 3 short sentences (in Burmese) a non-verbal autistic child might want to say. "
+        "Keep each 2-5 words. Return as JSON array of strings."
+    )
+    response = client.messages.create(
+        model="claude-haiku-4-5",
+        max_tokens=200,
+        messages=[{"role": "user", "content": prompt}]
+    )
+    text = response.content[0].text
+    start = text.find("[")
+    end = text.rfind("]") + 1
+    return json.loads(text[start:end])
+
+
+def text_to_speech(text: str) -> bytes | None:
+    """Generate Burmese speech via ElevenLabs API. Returns MP3 bytes or None."""
+    import requests
+    url = "https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM"
+    headers = {
+        "Accept": "audio/mpeg",
+        "Content-Type": "application/json",
+        "xi-api-key": ELEVENLABS_API_KEY,
+    }
+    data = {
+        "text": text,
+        "model_id": "eleven_multilingual_v2",
+        "voice_settings": {"stability": 0.5, "similarity_boost": 0.5},
+    }
+    resp = requests.post(url, json=data, headers=headers, timeout=10)
+    if resp.status_code == 200:
+        return resp.content
+    return None

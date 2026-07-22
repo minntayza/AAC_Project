@@ -1,0 +1,15 @@
+{
+  "buildCommand": null,
+  "outputDirectory": null,
+  "devCommand": null,
+  "framework": null,
+  "functions": {
+    "api/*.py": {
+      "maxDuration": 30,
+      "memory": 512
+    }
+  },
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api/app" }
+  ]
+}
