@@ -1818,7 +1818,7 @@ body::before {
 
 /* Portal sidebar overrides for light theme */
 .portal-space-container .portal-sidebar {
-  background: linear-gradient(180deg, #FFFDF5, #FFF9E6);
+  background: linear-gradient(180deg, #F5F3FF, #EDE9FE);
   border-right: 1px solid rgba(102, 126, 234, 0.1);
 }
 

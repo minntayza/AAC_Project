@@ -312,7 +312,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
         className="portal-sidebar"
         style={{
           width: '260px',
-          background: 'linear-gradient(180deg, #FFFDF5 0%, #FFF9E6 50%, #FFFDF5 100%)',
+          background: 'linear-gradient(180deg, #F5F3FF 0%, #EDE9FE 50%, #F5F3FF 100%)',
           color: '#000000',
           display: 'flex',
           flexDirection: 'column',
