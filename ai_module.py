@@ -89,7 +89,7 @@ def rephrase_sentence(raw_text: str) -> str | None:
             headers={"Authorization": f"Bearer {ANTHROPIC_API_KEY}", "Content-Type": "application/json"},
             json={
                 "model": "mimo-v2.5-pro",
-                "max_tokens": 200,
+                "max_tokens": 1024,
                 "temperature": 0.3,
                 "messages": [{
                     "role": "user",
