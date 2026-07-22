@@ -1,0 +1,849 @@
+/* Space & Rocket Adventure Theme Loading Screen */
+
+.space-loading-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0a0e27 0%, #1a1a4d 25%, #2d1b4e 50%, #1a0a3d 75%, #0a0e27 100%);
+  z-index: 9999;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 0.3s ease-out;
+}
+
+.space-loading-screen.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ========== STARFIELD BACKGROUND ========== */
+.starfield {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.8;
+  box-shadow: 0 0 3px rgba(255, 255, 255, 0.8);
+}
+
+.star-0 {
+  animation: twinkle 3s infinite;
+}
+
+.star-1 {
+  animation: twinkle 4s infinite 0.5s;
+}
+
+.star-2 {
+  animation: twinkle 5s infinite 1s;
+}
+
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Generate random positions for stars */
+.star {
+  left: var(--x, 50%);
+  top: var(--y, 50%);
+}
+
+/* ========== NEBULA EFFECTS ========== */
+.nebula {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.3;
+  z-index: 2;
+}
+
+.nebula-1 {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(138, 43, 226, 0.5), transparent);
+  top: -100px;
+  left: -100px;
+  animation: nebula-drift-1 20s ease-in-out infinite;
+}
+
+.nebula-2 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(30, 144, 255, 0.4), transparent);
+  top: 50%;
+  right: -100px;
+  animation: nebula-drift-2 25s ease-in-out infinite;
+}
+
+.nebula-3 {
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(circle, rgba(75, 0, 130, 0.3), transparent);
+  bottom: -100px;
+  left: 50%;
+  animation: nebula-drift-3 30s ease-in-out infinite;
+}
+
+@keyframes nebula-drift-1 {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(50px, -50px);
+  }
+}
+
+@keyframes nebula-drift-2 {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-50px, 50px);
+  }
+}
+
+@keyframes nebula-drift-3 {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(30px, -30px);
+  }
+}
+
+/* ========== MAIN LOADING CONTAINER ========== */
+.space-loading-container {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+}
+
+/* ========== ALIEN MASCOT ========== */
+.alien-mascot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  animation: alien-float 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px rgba(138, 43, 226, 0.6));
+}
+
+.alien-head {
+  width: 80px;
+  height: 100px;
+  background: radial-gradient(circle at 30% 30%, #00ff00, #00cc00);
+  border-radius: 50% 50% 45% 45%;
+  position: relative;
+  border: 3px solid #00ff00;
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.6);
+}
+
+.alien-eyes {
+  display: flex;
+  justify-content: space-around;
+  padding-top: 25px;
+  gap: 15px;
+}
+
+.alien-eye {
+  width: 20px;
+  height: 25px;
+  background: #000;
+  border-radius: 50%;
+  border: 2px solid #00ff00;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+.alien-eye::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #00ff00;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: eye-glow 2s ease-in-out infinite;
+}
+
+@keyframes eye-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(0, 255, 0, 0.8);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(0, 255, 0, 1);
+  }
+}
+
+.alien-mouth {
+  width: 30px;
+  height: 15px;
+  border: 2px solid #00ff00;
+  border-top: none;
+  border-radius: 0 0 20px 20px;
+  margin-top: 15px;
+  animation: mouth-smile 2s ease-in-out infinite;
+}
+
+@keyframes mouth-smile {
+  0%, 100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(1.3);
+  }
+}
+
+.alien-body {
+  width: 60px;
+  height: 70px;
+  background: radial-gradient(circle at 30% 30%, #00ff00, #00cc00);
+  border-radius: 30% 30% 40% 40%;
+  border: 2px solid #00ff00;
+  position: relative;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  padding-top: 15px;
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+}
+
+.alien-arm {
+  width: 15px;
+  height: 50px;
+  background: #00ff00;
+  border-radius: 10px;
+  animation: alien-wave 2s ease-in-out infinite;
+}
+
+.left-arm {
+  animation-delay: 0s;
+  transform-origin: top center;
+}
+
+.right-arm {
+  animation-delay: 0.3s;
+  transform-origin: top center;
+}
+
+@keyframes alien-wave {
+  0%, 100% {
+    transform: rotate(-20deg);
+  }
+  50% {
+    transform: rotate(20deg);
+  }
+}
+
+@keyframes alien-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+/* ========== PUZZLE PIECES ANIMATION ========== */
+.puzzle-container {
+  position: relative;
+  width: 300px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.puzzle-piece {
+  position: absolute;
+  font-size: 3rem;
+  animation: puzzle-fly-in 2s ease-out forwards;
+  filter: drop-shadow(0 0 10px rgba(0, 255, 0, 0.8));
+}
+
+.puzzle-1 {
+  animation: puzzle-fly-in 2s ease-out forwards, puzzle-rotate 1s infinite 2s;
+  --start-x: -150px;
+  --start-y: -100px;
+  --end-x: -40px;
+  --end-y: -20px;
+}
+
+.puzzle-2 {
+  animation: puzzle-fly-in 2.2s ease-out forwards, puzzle-rotate 1s infinite 2.2s;
+  --start-x: 150px;
+  --start-y: -100px;
+  --end-x: 40px;
+  --end-y: -20px;
+  animation-delay: 0.1s;
+}
+
+.puzzle-3 {
+  animation: puzzle-fly-in 2.4s ease-out forwards, puzzle-rotate 1s infinite 2.4s;
+  --start-x: -150px;
+  --start-y: 100px;
+  --end-x: -40px;
+  --end-y: 20px;
+  animation-delay: 0.2s;
+}
+
+.puzzle-4 {
+  animation: puzzle-fly-in 2.6s ease-out forwards, puzzle-rotate 1s infinite 2.6s;
+  --start-x: 150px;
+  --start-y: 100px;
+  --end-x: 40px;
+  --end-y: 20px;
+  animation-delay: 0.3s;
+}
+
+@keyframes puzzle-fly-in {
+  0% {
+    transform: translate(var(--start-x), var(--start-y)) scale(0.5) rotate(-180deg);
+    opacity: 0;
+  }
+  70% {
+    transform: translate(calc(var(--end-x) * 1.1), calc(var(--end-y) * 1.1)) scale(1.1) rotate(10deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--end-x), var(--end-y)) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes puzzle-rotate {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(360deg);
+  }
+}
+
+/* ========== FLOATING ROCKETS ========== */
+.rocket {
+  position: absolute;
+  font-size: 2.5rem;
+  filter: drop-shadow(0 0 15px rgba(255, 200, 0, 0.8));
+}
+
+.rocket-1 {
+  top: -50px;
+  left: 15%;
+  animation: rocket-fly 4s ease-in infinite;
+}
+
+.rocket-2 {
+  top: 50%;
+  right: -50px;
+  animation: rocket-zoom 3.5s ease-in-out infinite;
+  font-size: 2rem;
+}
+
+.rocket-3 {
+  bottom: -50px;
+  right: 15%;
+  animation: rocket-fly-reverse 4s ease-in infinite;
+}
+
+@keyframes rocket-fly {
+  0% {
+    transform: translateY(0) rotate(-45deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-400px) rotate(-45deg);
+    opacity: 0;
+  }
+}
+
+@keyframes rocket-zoom {
+  0% {
+    transform: translateX(0) scale(0.5);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-400px) scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes rocket-fly-reverse {
+  0% {
+    transform: translateY(0) rotate(45deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-400px) rotate(45deg);
+    opacity: 0;
+  }
+}
+
+/* ========== LOADING TEXT ========== */
+.space-loading-text {
+  text-align: center;
+  color: #00ff00;
+  z-index: 10;
+  text-shadow: 0 0 20px rgba(0, 255, 0, 0.8);
+}
+
+.space-title {
+  font-size: 2.5rem;
+  font-weight: 900;
+  margin: 0;
+  animation: text-glow-space 2s ease-in-out infinite;
+  letter-spacing: 2px;
+}
+
+.space-subtitle {
+  font-size: 1.1rem;
+  margin: 8px 0 0 0;
+  opacity: 0.9;
+  letter-spacing: 1px;
+  animation: text-float 2s ease-in-out infinite;
+  color: #00ddff;
+}
+
+@keyframes text-glow-space {
+  0%, 100% {
+    text-shadow: 0 0 10px rgba(0, 255, 0, 0.6);
+    transform: scale(1);
+  }
+  50% {
+    text-shadow: 0 0 30px rgba(0, 255, 0, 1);
+    transform: scale(1.05);
+  }
+}
+
+@keyframes text-float {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(-10px);
+    opacity: 1;
+  }
+}
+
+/* ========== PUZZLE PROGRESS BAR ========== */
+.puzzle-progress {
+  width: 280px;
+  text-align: center;
+  z-index: 10;
+}
+
+.puzzle-progress-bar {
+  width: 100%;
+  height: 15px;
+  background: rgba(0, 255, 0, 0.2);
+  border-radius: 15px;
+  overflow: hidden;
+  border: 2px solid #00ff00;
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.6);
+}
+
+.puzzle-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ff00, #00ddff, #00ff00);
+  border-radius: 13px;
+  animation: puzzle-progress 3.5s ease-in-out forwards;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
+}
+
+@keyframes puzzle-progress {
+  0% {
+    width: 0%;
+  }
+  60% {
+    width: 100%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+.progress-label {
+  font-size: 0.9rem;
+  color: #00ff00;
+  margin-top: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  animation: progress-pulse 1s ease-in-out infinite 2s;
+}
+
+@keyframes progress-pulse {
+  0%, 100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ========== FLOATING STARS ========== */
+.floating-stars {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  z-index: 3;
+}
+
+.float-star {
+  position: absolute;
+  font-size: 1.5rem;
+  animation: float-star-motion 4s ease-in-out infinite;
+  opacity: 0.8;
+}
+
+.star-item-0 { top: 10%; left: 10%; animation-delay: 0s; }
+.star-item-1 { top: 15%; right: 15%; animation-delay: 0.3s; }
+.star-item-2 { top: 30%; left: 20%; animation-delay: 0.6s; }
+.star-item-3 { top: 40%; right: 25%; animation-delay: 0.9s; }
+.star-item-4 { top: 50%; left: 15%; animation-delay: 1.2s; }
+.star-item-5 { top: 60%; right: 20%; animation-delay: 1.5s; }
+.star-item-6 { top: 70%; left: 25%; animation-delay: 1.8s; }
+.star-item-7 { top: 75%; right: 10%; animation-delay: 2.1s; }
+.star-item-8 { top: 20%; left: 40%; animation-delay: 0.4s; }
+.star-item-9 { top: 55%; right: 35%; animation-delay: 0.7s; }
+.star-item-10 { top: 65%; left: 45%; animation-delay: 1s; }
+.star-item-11 { top: 25%; right: 40%; animation-delay: 1.3s; }
+
+@keyframes float-star-motion {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-30px) rotate(180deg);
+    opacity: 1;
+  }
+}
+
+/* ========== PLANETS ORBITING ========== */
+.planet-orbit {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+}
+
+.planet {
+  position: absolute;
+  font-size: 2rem;
+  filter: drop-shadow(0 0 10px rgba(0, 255, 0, 0.5));
+}
+
+.planet-earth {
+  animation: orbit-earth 8s linear infinite;
+}
+
+.planet-moon {
+  animation: orbit-moon 6s linear infinite;
+}
+
+.planet-saturn {
+  animation: orbit-saturn 10s linear infinite;
+}
+
+@keyframes orbit-earth {
+  0% {
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  25% {
+    top: 50%;
+    left: 100%;
+    transform: translate(-50%, -50%);
+  }
+  50% {
+    top: 100%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  75% {
+    top: 50%;
+    left: 0;
+    transform: translate(-50%, -50%);
+  }
+  100% {
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes orbit-moon {
+  0% {
+    top: 0;
+    left: 60%;
+    transform: translate(-50%, -50%);
+  }
+  25% {
+    top: 60%;
+    left: 100%;
+    transform: translate(-50%, -50%);
+  }
+  50% {
+    top: 100%;
+    left: 40%;
+    transform: translate(-50%, -50%);
+  }
+  75% {
+    top: 40%;
+    left: 0;
+    transform: translate(-50%, -50%);
+  }
+  100% {
+    top: 0;
+    left: 60%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes orbit-saturn {
+  0% {
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  25% {
+    top: 50%;
+    left: 80%;
+    transform: translate(-50%, -50%);
+  }
+  50% {
+    top: 80%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  75% {
+    top: 50%;
+    left: 20%;
+    transform: translate(-50%, -50%);
+  }
+  100% {
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* ========== COSMIC DUST PARTICLES ========== */
+.cosmic-dust {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.dust-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(0, 255, 0, 0.8);
+  border-radius: 50%;
+  box-shadow: 0 0 5px rgba(0, 255, 0, 0.6);
+}
+
+.dust-0 { animation: dust-float 8s linear infinite; top: 20%; left: 10%; }
+.dust-1 { animation: dust-float 10s linear infinite 0.5s; top: 30%; right: 15%; }
+.dust-2 { animation: dust-float 12s linear infinite 1s; top: 50%; left: 20%; }
+.dust-3 { animation: dust-float 9s linear infinite 1.5s; top: 60%; right: 20%; }
+.dust-4 { animation: dust-float 11s linear infinite 2s; top: 70%; left: 30%; }
+.dust-5 { animation: dust-float 7s linear infinite 2.5s; top: 40%; right: 30%; }
+.dust-6 { animation: dust-float 13s linear infinite 0s; top: 15%; left: 50%; }
+.dust-7 { animation: dust-float 10s linear infinite 3s; top: 80%; right: 10%; }
+.dust-8 { animation: dust-float 9s linear infinite 1s; top: 25%; left: 70%; }
+.dust-9 { animation: dust-float 12s linear infinite 2s; top: 65%; left: 15%; }
+.dust-10 { animation: dust-float 8s linear infinite 0.5s; top: 35%; right: 50%; }
+.dust-11 { animation: dust-float 11s linear infinite 1.5s; top: 55%; left: 60%; }
+.dust-12 { animation: dust-float 10s linear infinite 2.5s; top: 75%; right: 40%; }
+.dust-13 { animation: dust-float 9s linear infinite 0.8s; top: 45%; left: 85%; }
+.dust-14 { animation: dust-float 13s linear infinite 1.3s; top: 20%; right: 70%; }
+.dust-15 { animation: dust-float 7s linear infinite 2.2s; top: 85%; left: 45%; }
+.dust-16 { animation: dust-float 11s linear infinite 0.3s; top: 10%; left: 40%; }
+.dust-17 { animation: dust-float 10s linear infinite 1.8s; top: 70%; right: 60%; }
+.dust-18 { animation: dust-float 12s linear infinite 0.6s; top: 50%; left: 75%; }
+.dust-19 { animation: dust-float 9s linear infinite 2.4s; top: 30%; right: 85%; }
+
+@keyframes dust-float {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-400px) translateX(50px);
+    opacity: 0;
+  }
+}
+
+/* ========== FOOTER TEXT ========== */
+.space-footer {
+  position: absolute;
+  bottom: 30px;
+  text-align: center;
+  z-index: 10;
+}
+
+.footer-text {
+  font-size: 1rem;
+  color: #00ddff;
+  margin: 0;
+  animation: footer-shimmer 2s ease-in-out infinite;
+  letter-spacing: 2px;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(0, 221, 255, 0.6);
+}
+
+@keyframes footer-shimmer {
+  0%, 100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ========== RESPONSIVE DESIGN ========== */
+@media (max-width: 768px) {
+  .space-title {
+    font-size: 1.8rem;
+  }
+
+  .space-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .alien-head {
+    width: 60px;
+    height: 75px;
+  }
+
+  .alien-body {
+    width: 50px;
+    height: 60px;
+  }
+
+  .puzzle-container {
+    width: 250px;
+    height: 150px;
+  }
+
+  .puzzle-piece {
+    font-size: 2.5rem;
+  }
+
+  .nebula-1 {
+    width: 400px;
+    height: 400px;
+  }
+
+  .nebula-2 {
+    width: 350px;
+    height: 350px;
+  }
+
+  .nebula-3 {
+    width: 380px;
+    height: 380px;
+  }
+}
+
+@media (max-width: 480px) {
+  .space-title {
+    font-size: 1.5rem;
+  }
+
+  .space-subtitle {
+    font-size: 0.85rem;
+  }
+
+  .alien-head {
+    width: 50px;
+    height: 60px;
+  }
+
+  .alien-body {
+    width: 40px;
+    height: 50px;
+  }
+
+  .puzzle-container {
+    width: 200px;
+    height: 120px;
+  }
+
+  .puzzle-piece {
+    font-size: 2rem;
+  }
+
+  .rocket {
+    font-size: 2rem;
+  }
+
+  .puzzle-progress {
+    width: 240px;
+  }
+
+  .space-loading-container {
+    gap: 30px;
+  }
+}
