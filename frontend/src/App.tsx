@@ -196,11 +196,7 @@ function App() {
       <CategoryTabs
         categories={categories}
         activeCategory={activeCategory}
-        onCategoryChange={(id) => {
-          setActiveCategory(id);
-          const cat = categories.find((c) => c.id === id);
-          if (cat) speakText(cat.name_my);
-        }}
+        onCategoryChange={setActiveCategory}
       />
 
       {/* Card Grid */}
