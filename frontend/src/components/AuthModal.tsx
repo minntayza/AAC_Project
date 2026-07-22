@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { User, KeyRound, ArrowRight, ShieldCheck, X, HelpCircle, CheckCircle2, AlertCircle } from 'lucide-react';
+import { User, KeyRound, ArrowRight, ShieldCheck, X, HelpCircle, CheckCircle2, AlertCircle, Baby } from 'lucide-react';
 import { loginUser, registerUser } from '../api';
 
 interface AuthModalProps {
   onClose: () => void;
-  onSuccess: (user: { id: string; username: string; role: string }) => void;
+  onSuccess: (user: { id: string; username: string; role: string; child_nickname?: string; child_gender?: string; child_birth_year?: string }) => void;
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
@@ -12,6 +12,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  
+  // Child Profile Information (Requirement 1)
+  const [childNickname, setChildNickname] = useState('');
+  const [childGender, setChildGender] = useState('boy');
+  const [childBirthYear, setChildBirthYear] = useState('2018');
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showOAuthGuide, setShowOAuthGuide] = useState(false);
@@ -40,7 +46,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
         const user = await loginUser(username, password);
         onSuccess(user);
       } else {
-        const user = await registerUser(username, password, 'caregiver');
+        const user = await registerUser(
+          username, 
+          password, 
+          'caregiver', 
+          childNickname, 
+          childGender, 
+          childBirthYear
+        );
         onSuccess(user);
       }
     } catch (err: any) {
@@ -50,9 +63,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
     }
   };
 
+  const birthYears = Array.from({ length: 15 }, (_, i) => (2012 + i).toString());
+
   return (
     <div className="modal-overlay" style={{ zIndex: 1100 }}>
-      <div className="portal-modal" style={{ maxWidth: '440px', width: '92%', borderRadius: '24px', padding: '28px' }}>
+      <div className="portal-modal" style={{ maxWidth: '460px', width: '92%', borderRadius: '24px', padding: '28px', maxHeight: '90vh', overflowY: 'auto' }}>
         <button className="portal-modal-close" onClick={onClose} aria-label="Close">
           <X size={20} />
         </button>
@@ -132,23 +147,79 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
           </div>
 
           {mode === 'register' && (
-            <div>
-              <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', marginBottom: '6px', display: 'block' }}>
-                စကားဝှက် အတည်ပြုပါ (Confirm Password)
-              </label>
-              <div style={{ position: 'relative' }}>
-                <KeyRound size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
-                <input
-                  type="password"
-                  className="input-field"
-                  placeholder="••••••••"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  style={{ width: '100%', padding: '12px 14px 12px 42px', borderRadius: '12px', border: confirmPassword ? (isPasswordMatching ? '1px solid #22C55E' : '1px solid #EF4444') : '1px solid #CBD5E1', fontSize: '0.95rem' }}
-                  required
-                />
+            <>
+              <div>
+                <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', marginBottom: '6px', display: 'block' }}>
+                  စကားဝှက် အတည်ပြုပါ (Confirm Password)
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <KeyRound size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+                  <input
+                    type="password"
+                    className="input-field"
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    style={{ width: '100%', padding: '12px 14px 12px 42px', borderRadius: '12px', border: confirmPassword ? (isPasswordMatching ? '1px solid #22C55E' : '1px solid #EF4444') : '1px solid #CBD5E1', fontSize: '0.95rem' }}
+                    required
+                  />
+                </div>
               </div>
-            </div>
+
+              {/* REQUIREMENT 1: CHILD PROFILE INFORMATION */}
+              <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '16px', border: '1px solid #E2E8F0', marginTop: '4px' }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 800, color: '#1E293B', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Baby size={18} color="#2563EB" /> ကလေးငယ်၏ အချက်အလက် (Child Information)
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div>
+                    <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569', marginBottom: '4px', display: 'block' }}>
+                      ကလေး၏ အမည်/အမည်ပြောင် (Child Nickname)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="ဥပမာ - ဖိုးလပြည့် / သားသား"
+                      value={childNickname}
+                      onChange={(e) => setChildNickname(e.target.value)}
+                      style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '0.88rem' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569', marginBottom: '4px', display: 'block' }}>
+                        ကျား/မ (Gender)
+                      </label>
+                      <select
+                        value={childGender}
+                        onChange={(e) => setChildGender(e.target.value)}
+                        style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '0.88rem', background: '#FFF' }}
+                      >
+                        <option value="boy">ကျား (Boy)</option>
+                        <option value="girl">မ (Girl)</option>
+                        <option value="other">အခြား (Other)</option>
+                      </select>
+                    </div>
+
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569', marginBottom: '4px', display: 'block' }}>
+                        မွေးသက္ကရာဇ် (Birth Year)
+                      </label>
+                      <select
+                        value={childBirthYear}
+                        onChange={(e) => setChildBirthYear(e.target.value)}
+                        style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '0.88rem', background: '#FFF' }}
+                      >
+                        {birthYears.map(y => (
+                          <option key={y} value={y}>{y}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
           )}
 
           {error && (

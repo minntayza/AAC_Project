@@ -1,39 +1,41 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  LayoutDashboard, 
-  PlusCircle, 
-  Mic, 
-  Settings, 
-  LogOut, 
-  Menu, 
-  X, 
-  Check, 
-  Upload, 
-  Square, 
-  User, 
-  KeyRound, 
-  Sparkles, 
-  BookOpen, 
-  Image as ImageIcon, 
+import {
+  LayoutDashboard,
+  PlusCircle,
+  Mic,
+  Settings,
+  LogOut,
+  Menu,
+  X,
+  Check,
+  Upload,
+  Square,
+  User,
+  KeyRound,
+  Sparkles,
+  BookOpen,
+  Image as ImageIcon,
   Smile,
   Volume2,
   ShieldCheck,
   Trash2,
-  Edit3
+  Edit3,
+  BarChart3
 } from 'lucide-react';
-import { allCards } from '../data';
-import { changePassword, saveCustomCard, getCustomCards, deleteCustomCard, updateCustomCard, type CustomCardData } from '../api';
+import { changePassword, saveCustomCard, getCustomCards, deleteCustomCard, updateCustomCard, getIcons, type CustomCardData, type IconData } from '../api';
+import { AnalyticsBoard } from './AnalyticsBoard';
 
 interface ParentPortalProps {
-  user: { id: string; username: string; role: string };
+  user: { id: string; username: string; role: string; child_nickname?: string; child_gender?: string; child_birth_year?: string };
   onExit: () => void;
   onLogout: () => void;
 }
 
 export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogout }) => {
-  const [activeTab, setActiveTab] = useState<'library' | 'add_card' | 'story_studio' | 'settings'>('library');
+  const [activeTab, setActiveTab] = useState<'library' | 'add_card' | 'story_studio' | 'analytics' | 'settings'>('library');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [customCards, setCustomCards] = useState<CustomCardData[]>([]);
+  const [apiIcons, setApiIcons] = useState<IconData[]>([]);
 
   // Editing Card State
   const [editingCard, setEditingCard] = useState<CustomCardData | null>(null);
@@ -53,7 +55,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
   const [cardPhotoUrl, setCardPhotoUrl] = useState('');
   const [cardAudioMode, setCardAudioMode] = useState<'ai_speech' | 'custom_voice'>('ai_speech');
   const [cardAudioUrl, setCardAudioUrl] = useState('');
-  
+
   // Voice Recording State
   const [isRecording, setIsRecording] = useState(false);
   const [recordedAudioBlob, setRecordedAudioBlob] = useState<Blob | null>(null);
@@ -73,9 +75,10 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
 
   const [cardSuccessMsg, setCardSuccessMsg] = useState('');
 
-  // Fetch custom cards on mount
+  // Fetch custom cards & Admin DB photo icons on mount
   useEffect(() => {
-    getCustomCards().then(cards => setCustomCards(cards)).catch(() => {});
+    getCustomCards().then(cards => setCustomCards(cards)).catch(() => { });
+    getIcons().then(icons => setApiIcons(icons)).catch(() => { });
   }, []);
 
   // Handle Photo Upload File
@@ -301,9 +304,9 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
 
   return (
     <div style={{ display: 'flex', width: '100vw', height: '100vh', overflow: 'hidden', background: '#F8FAFC', color: '#0F172A', fontFamily: 'system-ui, sans-serif' }}>
-      
+
       {/* ── RESPONSIVE SIDEBAR ── */}
-      <aside 
+      <aside
         style={{
           width: '260px',
           background: '#0F172A',
@@ -392,6 +395,18 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
           </button>
 
           <button
+            onClick={() => { setActiveTab('analytics'); setSidebarOpen(false); }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '14px', border: 'none',
+              background: activeTab === 'analytics' ? 'linear-gradient(135deg, #2563EB, #1D4ED8)' : 'transparent',
+              color: activeTab === 'analytics' ? '#FFF' : '#94A3B8', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s'
+            }}
+          >
+            <BarChart3 size={20} />
+            အချက်အလက် စာရင်း (Analytics Board)
+          </button>
+
+          <button
             onClick={() => { setActiveTab('settings'); setSidebarOpen(false); }}
             style={{
               display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '14px', border: 'none',
@@ -425,21 +440,21 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
 
       {/* Backdrop for Mobile Sidebar */}
       {sidebarOpen && window.innerWidth < 1024 && (
-        <div 
-          onClick={() => setSidebarOpen(false)} 
+        <div
+          onClick={() => setSidebarOpen(false)}
           style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 999 }}
         />
       )}
 
       {/* ── MAIN CONTENT AREA (SCROLLABLE FIX) ── */}
       <main style={{ flex: 1, marginLeft: window.innerWidth >= 1024 ? '260px' : '0', padding: '24px 28px 80px', height: '100vh', overflowY: 'auto', boxSizing: 'border-box' }}>
-        
+
         {/* Top Bar for Mobile Menu Toggle */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             {window.innerWidth < 1024 && (
-              <button 
-                onClick={() => setSidebarOpen(true)} 
+              <button
+                onClick={() => setSidebarOpen(true)}
                 style={{ padding: '8px', borderRadius: '10px', border: '1px solid #CBD5E1', background: '#FFF', cursor: 'pointer' }}
               >
                 <Menu size={20} />
@@ -449,6 +464,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
               {activeTab === 'library' && '📁 ကတ် စာကြည့်တိုက် (Card Library)'}
               {activeTab === 'add_card' && '➕ ကတ်အသစ် ဖန်တီးရန် (Custom Card Studio)'}
               {activeTab === 'story_studio' && '📖 မေမေ့ ၁ မိနစ် ပုံပြင် အသံလွှင့်ခန်း (Story Studio)'}
+              {activeTab === 'analytics' && '📊 ကလေး၏ စကားပြော အချက်အလက် (Analytics Board)'}
               {activeTab === 'settings' && '⚙️ ဆက်တင်များနှင့် ပရိုဖိုင် (Settings & Profile)'}
             </h1>
           </div>
@@ -469,7 +485,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <p style={{ fontSize: '0.9rem', color: '#64748B' }}>
-                စုစုပေါင်း ကတ်များ: <b>{allCards.length + customCards.length}</b> (Standard: {allCards.length}, Custom/Mom's: {customCards.length})
+                စုစုပေါင်း ကတ်များ: <b>{apiIcons.length + customCards.length}</b> (Default: {apiIcons.length}, Custom/Mom's: {customCards.length})
               </p>
               <button onClick={() => setActiveTab('add_card')} style={{ padding: '8px 16px', borderRadius: '12px', background: '#2563EB', color: '#FFF', border: 'none', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <PlusCircle size={16} /> ကတ်အသစ် ထည့်မည်
@@ -485,7 +501,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '14px' }}>
                   {customCards.map((c) => (
                     <div key={c.id} style={{ background: '#FFF', borderRadius: '16px', padding: '14px', border: '2px solid #93C5FD', boxShadow: '0 4px 12px rgba(37,99,235,0.08)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', position: 'relative' }}>
-                      
+
                       {/* Action buttons (Edit & Delete) */}
                       <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', gap: '4px' }}>
                         <button
@@ -512,7 +528,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
 
                       <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#1E293B', marginTop: '6px' }}>{c.burmese}</div>
                       <div style={{ fontSize: '0.75rem', color: '#64748B' }}>{c.englishMeaning}</div>
-                      
+
                       <div style={{ marginTop: '8px', fontSize: '0.68rem', padding: '2px 8px', borderRadius: '10px', background: '#F1F5F9', color: '#475569', fontWeight: 700 }}>
                         Category: {c.category}
                       </div>
@@ -528,16 +544,23 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
               </div>
             )}
 
-            {/* Standard AAC Cards */}
+            {/* Admin DB Photo Cards */}
             <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#1E293B', marginBottom: '12px' }}>
-              မူလ ကတ်များ (Standard Vocabulary)
+              မူလ ဓာတ်ပုံ ကတ်များ (Default Photo Cards)
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '12px' }}>
-              {allCards.map(c => (
-                <div key={c.id} style={{ background: '#FFF', borderRadius: '16px', padding: '14px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-                  <div style={{ fontSize: '2.4rem' }}>{c.emoji}</div>
-                  <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#1E293B', marginTop: '6px' }}>{c.burmese}</div>
-                  <div style={{ fontSize: '0.75rem', color: '#64748B' }}>{c.englishMeaning}</div>
+              {apiIcons.map(icon => (
+                <div key={icon.id} style={{ background: '#FFF', borderRadius: '16px', padding: '14px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                  {icon.image_url?.startsWith('http') ? (
+                    <img src={icon.image_url} alt={icon.label_my} style={{ width: '56px', height: '56px', objectFit: 'contain', borderRadius: '12px' }} />
+                  ) : (
+                    <div style={{ fontSize: '2.4rem' }}>{icon.image_url || '⭐'}</div>
+                  )}
+                  <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#1E293B', marginTop: '6px' }}>{icon.label_my}</div>
+                  <div style={{ fontSize: '0.75rem', color: '#64748B' }}>{icon.label_en}</div>
+                  <div style={{ marginTop: '6px', fontSize: '0.68rem', padding: '2px 8px', borderRadius: '10px', background: '#EFF6FF', color: '#1D4ED8', fontWeight: 700 }}>
+                    Category: {icon.category_id}
+                  </div>
                 </div>
               ))}
             </div>
@@ -637,8 +660,8 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                 <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '6px' }}>
                   ၁။ ကတ်အမျိုးအစား ရွေးချယ်ပါ (Select Category)
                 </label>
-                <select 
-                  value={cardCategory} 
+                <select
+                  value={cardCategory}
                   onChange={e => setCardCategory(e.target.value)}
                   style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1px solid #CBD5E1', fontSize: '0.9rem', background: '#FFF', fontWeight: 700 }}
                 >
@@ -713,7 +736,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                 ) : (
                   <div>
                     <input type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: 'none' }} id="photo-upload-input" />
-                    <label 
+                    <label
                       htmlFor="photo-upload-input"
                       style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px', border: '2px dashed #CBD5E1', borderRadius: '14px', cursor: 'pointer', background: '#F8FAFC' }}
                     >
@@ -861,7 +884,12 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
           </div>
         )}
 
-        {/* ── TAB 4: SETTINGS & PROFILE ── */}
+        {/* ── TAB 4: ANALYTICS BOARD ── */}
+        {activeTab === 'analytics' && (
+          <AnalyticsBoard userId={user.id} childNickname={user.child_nickname} />
+        )}
+
+        {/* ── TAB 5: SETTINGS & PROFILE ── */}
         {activeTab === 'settings' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '640px' }}>
             {/* Profile Info */}
@@ -872,6 +900,15 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.9rem', color: '#475569' }}>
                 <div><b>အသုံးပြုသူအမည် (Username):</b> {user.username}</div>
                 <div><b>User Role:</b> {user.role}</div>
+                {user.child_nickname && (
+                  <div><b>ကလေး၏ အမည် (Child Nickname):</b> {user.child_nickname}</div>
+                )}
+                {user.child_gender && (
+                  <div><b>ကျား/မ (Gender):</b> {user.child_gender}</div>
+                )}
+                {user.child_birth_year && (
+                  <div><b>မွေးသက္ကရာဇ် (Birth Year):</b> {user.child_birth_year}</div>
+                )}
                 <div><b>User ID:</b> <code>{user.id}</code></div>
                 <div><b>Login Session:</b> <span style={{ color: '#166534', fontWeight: 700 }}>✓ Remembered (Auto-Saved)</span></div>
               </div>

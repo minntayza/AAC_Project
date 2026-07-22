@@ -77,11 +77,43 @@ export function loginUser(username: string, password: string): Promise<{ id: str
   });
 }
 
-export function registerUser(username: string, password: string, role = "user"): Promise<{ id: string; username: string; role: string }> {
+export function registerUser(
+  username: string, 
+  password: string, 
+  role = "caregiver",
+  child_nickname = "",
+  child_gender = "",
+  child_birth_year = ""
+): Promise<{ id: string; username: string; role: string; child_nickname?: string; child_gender?: string; child_birth_year?: string }> {
   return fetchJson("/auth/register", {
     method: "POST",
-    body: JSON.stringify({ username, password, role }),
+    body: JSON.stringify({ username, password, role, child_nickname, child_gender, child_birth_year }),
   });
+}
+
+export interface SentenceAnalyticsData {
+  total_sentences: number;
+  daily: Record<string, number>;
+  weekly: Record<string, number>;
+  monthly: Record<string, number>;
+  categories: Record<string, number>;
+  top_words: Array<{ word: string; count: number }>;
+  top_sentences: Array<{ sentence: string; count: number }>;
+  daily_report: Array<{
+    date: string;
+    count: number;
+    sentences: Array<{ text_my: string; text_en: string; time: string }>;
+  }>;
+  weekly_report: Array<{
+    week: string;
+    count: number;
+    sentences: Array<{ text_my: string; text_en: string; time: string }>;
+  }>;
+}
+
+export function getSentenceAnalytics(userId?: string): Promise<SentenceAnalyticsData> {
+  const qs = userId ? `?user_id=${encodeURIComponent(userId)}` : "";
+  return fetchJson(`/analytics/sentences${qs}`);
 }
 
 export function changePassword(userId: string, newPassword: string): Promise<{ ok: boolean; message?: string }> {

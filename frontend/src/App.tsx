@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Volume2, Trash2, ArrowLeft, Settings, RotateCcw, Lock, X, Play, BookOpen } from 'lucide-react';
 import {
   subjectCards,
-  dailyShortcutCards,
   verbCards,
+  activityCards,
   objectCards,
   bodyPartCards,
   feelingCards,
@@ -18,7 +18,7 @@ import { AuthModal } from './components/AuthModal';
 import { ParentPortal } from './components/ParentPortal';
 import './index.css';
 
-type Screen3Category = 'objects' | 'numbers' | 'directions' | 'locations' | 'body_parts' | 'feelings';
+type Screen3Category = 'objects' | 'numbers' | 'directions' | 'locations' | 'body_parts' | 'feelings' | 'activities';
 
 // Burmese digit helper
 const toBurmeseDigits = (num: number): string => {
@@ -28,10 +28,66 @@ const toBurmeseDigits = (num: number): string => {
 
 export function App() {
   const [selectedCards, setSelectedCards] = useState<(AACCard & { audioUrl?: string })[]>([]);
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+  const [currentStep, setCurrentStep] = useState<number>(1);
   const [screen3Category, setScreen3Category] = useState<Screen3Category>('objects');
   const [isSentenceFinished, setIsSentenceFinished] = useState(false);
   const [rephrasedText, setRephrasedText] = useState<string | null>(null);
+
+  // Requirement 5 & 6: Unified Card Renderer for Admin DB Cards vs Parent Upload Cards
+  const renderCardButton = (
+    card: AACCard & { is_admin?: boolean; card_type?: string; imageUrl?: string; image_url?: string; audioUrl?: string }, 
+    onClick: () => void
+  ) => {
+    const isParentPhoto = (card as any).image_url || ((card as any).card_type === 'photo' && card.imageUrl);
+    const isAdminPhoto = (card as any).is_admin || (card.imageUrl && !isParentPhoto);
+
+    // Requirement 6: Parent Photo Upload Card (Full card photo with text label overlay)
+    if (isParentPhoto) {
+      const imgSrc = (card as any).image_url || card.imageUrl;
+      return (
+        <button 
+          key={card.id} 
+          className={`aac-card category-${card.category} parent-photo-card`}
+          onClick={onClick}
+        >
+          <img src={imgSrc} alt={card.burmese} className="parent-photo-img" />
+          <div className="parent-photo-overlay">{card.burmese}</div>
+        </button>
+      );
+    }
+
+    // Requirement 5: Admin / Standard DB Photo Card (No text description, photo fills card completely)
+    if (isAdminPhoto && card.imageUrl) {
+      return (
+        <button 
+          key={card.id} 
+          className={`aac-card category-${card.category} admin-card`}
+          onClick={onClick}
+          title={card.burmese}
+        >
+          <img src={card.imageUrl} alt={card.burmese} className="full-card-media" />
+        </button>
+      );
+    }
+
+    // Standard Emoji / Icon Card with Subcategory color styling
+    const subClass = card.subCategory ? `sub-${card.subCategory}` : '';
+    return (
+      <button 
+        key={card.id} 
+        className={`aac-card category-${card.category} ${subClass}`}
+        onClick={onClick}
+      >
+        {card.imageUrl ? (
+          <img src={card.imageUrl} alt="" className="card-image" />
+        ) : (
+          <div className="card-emoji">{card.emoji || '⭐'}</div>
+        )}
+        <div className="card-text">{card.burmese}</div>
+      </button>
+    );
+  };
+
   const [parentMode, setParentMode] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
@@ -65,17 +121,18 @@ export function App() {
       .catch(() => {});
   }, [parentMode]);
 
-  // Map DB Icon → AACCard (detect URL vs emoji)
-  const mapIconToAAC = (icon: IconData): AACCard & { imageUrl?: string; audioUrl?: string } => ({
+  // Map DB Icon → AACCard (detect URL vs emoji, flag as admin card)
+  const mapIconToAAC = (icon: IconData): AACCard & { imageUrl?: string; audioUrl?: string; is_admin?: boolean } => ({
     id: icon.id,
     burmese: icon.label_my,
     englishMeaning: icon.label_en,
     emoji: icon.image_url && !icon.image_url.startsWith('http') ? icon.image_url : '⭐',
     imageUrl: icon.image_url?.startsWith('http') ? icon.image_url : undefined,
     category: CATEGORY_ROLE[icon.category_id] || 'object',
+    is_admin: true,
   });
 
-  // API icons grouped by grammar role, skip IDs that overlap hardcoded cards
+  // API icons grouped by grammar role
   const hardcodedIds = new Set([
     ...subjectCards, ...verbCards, ...objectCards, ...bodyPartCards,
     ...feelingCards, ...numberCards, ...directionCards, ...locationCards,
@@ -85,12 +142,6 @@ export function App() {
     apiIcons
       .filter(icon => CATEGORY_ROLE[icon.category_id] === role && !hardcodedIds.has(icon.id))
       .map(mapIconToAAC);
-
-  // Render card icon: <img> for URLs, emoji otherwise
-  const renderIcon = (card: { emoji?: string; imageUrl?: string }) =>
-    card.imageUrl
-      ? <img src={card.imageUrl} alt="" className="card-image" />
-      : <div className="card-emoji">{card.emoji || '⭐'}</div>;
 
   // Math challenge state for Caregiver Portal
   const [showPortalModal, setShowPortalModal] = useState(false);
@@ -105,56 +156,68 @@ export function App() {
   const [mathError, setMathError] = useState('');
 
   // Helper to map custom DB card to AACCard
-  const mapCustomToAAC = (c: CustomCardData): AACCard & { audioUrl?: string } => ({
+  const mapCustomToAAC = (c: CustomCardData): AACCard & { audioUrl?: string; image_url?: string; card_type?: string; is_admin?: boolean } => ({
     id: c.id || `custom_${Math.random()}`,
     burmese: c.burmese,
     englishMeaning: c.englishMeaning || c.burmese,
     emoji: c.emoji || (c.image_url ? '📷' : '⭐'),
     category: (c.category as any) || 'object',
     audioUrl: c.audio_url,
+    image_url: c.image_url,
+    card_type: c.card_type,
+    is_admin: false,
   });
 
-  // Dynamic Card Collections (hardcoded + API-fetched + custom)
-  const activeSubjects = [
-    ...subjectCards,
+  // Helper to remove duplicate cards strictly by normalized Burmese label
+  const normalizeBurmese = (text: string) => text ? text.trim().toLowerCase().replace(/[\s\u200B-\u200D\uFEFF\u200C]/g, '') : '';
+
+  const dedupeCards = <T extends { id: string; burmese: string }>(cards: T[]): T[] => {
+    const seen = new Set<string>();
+    return cards.filter(card => {
+      const normLabel = normalizeBurmese(card.burmese) || card.id;
+      if (seen.has(normLabel)) {
+        return false;
+      }
+      seen.add(normLabel);
+      return true;
+    });
+  };
+
+  // Dynamic Card Collections (Deduplicated, pulls from DB Photo Cards + Parent Custom Cards)
+  const activeSubjects = dedupeCards([
     ...apiByRole('subject'),
     ...customCards.filter(c => c.category === 'subject' && c.card_type !== 'story_1min').map(mapCustomToAAC)
-  ];
+  ]);
 
-  const activeVerbs = [
-    ...verbCards,
+  const activeVerbs = dedupeCards([
     ...apiByRole('verb'),
     ...customCards.filter(c => c.category === 'verb' && c.card_type !== 'story_1min').map(mapCustomToAAC)
-  ];
+  ]);
 
-  const activeObjects = [
-    ...objectCards,
+  const activeObjects = dedupeCards([
     ...apiByRole('object'),
     ...customCards.filter(c => (c.category === 'object' || !c.category) && c.card_type !== 'story_1min').map(mapCustomToAAC)
-  ];
+  ]);
 
-  const activeLocations = [
-    ...locationCards,
+  const activeLocations = dedupeCards([
     ...apiByRole('location'),
     ...customCards.filter(c => c.category === 'location' && c.card_type !== 'story_1min').map(mapCustomToAAC)
-  ];
+  ]);
 
-  const activeFeelings = [
-    ...feelingCards,
+  const activeFeelings = dedupeCards([
     ...apiByRole('feeling'),
     ...customCards.filter(c => c.category === 'feeling' && c.card_type !== 'story_1min').map(mapCustomToAAC)
-  ];
+  ]);
 
-  const activeBodyParts = [
-    ...bodyPartCards,
+  const activeBodyParts = dedupeCards([
     ...apiByRole('body_part'),
     ...customCards.filter(c => c.category === 'body_part' && c.card_type !== 'story_1min').map(mapCustomToAAC)
-  ];
+  ]);
 
-  const activeShortcuts = [
-    ...dailyShortcutCards,
+  const activeShortcuts = dedupeCards([
+    ...apiByRole('shortcut'),
     ...customCards.filter(c => (c.category === 'shortcut' || c.card_type === 'custom_voice') && c.card_type !== 'story_1min').map(mapCustomToAAC)
-  ];
+  ]);
 
   const storyCards = customCards.filter(c => c.card_type === 'story_1min');
 
@@ -220,6 +283,7 @@ export function App() {
 
   // Trigger speech output via Custom Audio, Backend TTS, or SpeechSynthesis fallback
   const speakText = async (text: string, audioUrl?: string) => {
+    const cleanText = text.replace(/(\S+)\s*က\s*/g, '$1 ').trim();
     if (audioUrl) {
       try {
         const audio = new Audio(audioUrl);
@@ -230,9 +294,9 @@ export function App() {
       }
     }
 
-    if (!text) return;
+    if (!cleanText) return;
     try {
-      const res = await textToSpeech(text);
+      const res = await textToSpeech(cleanText);
       if (res.ok && res.headers.get('content-type')?.includes('audio/mpeg')) {
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
@@ -246,7 +310,7 @@ export function App() {
 
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
+      const utterance = new SpeechSynthesisUtterance(cleanText);
       utterance.lang = 'my-MM';
       utterance.rate = 0.9;
       window.speechSynthesis.speak(utterance);
@@ -256,7 +320,7 @@ export function App() {
   // Log completed sentence to backend
   const logSentenceToSupabase = (cards: AACCard[]) => {
     if (cards.length === 0) return;
-    const text_my = cards.map(c => c.burmese).join(' ');
+    const text_my = cards.map(c => c.burmese).join(' ').replace(/(\S+)\s*က\s*/g, '$1 ').trim();
     const text_en = cards.map(c => c.englishMeaning).join(' ');
     saveSentence(text_my, text_en).catch(err => {
       console.warn('Sentence save skipped:', err);
@@ -286,8 +350,6 @@ export function App() {
         setScreen3Category('body_parts');
       } else if (card.id === 'v3' || card.id === 'v4') {
         setScreen3Category('feelings');
-      } else if (card.id === 'v1' || card.id === 'v2') {
-        setScreen3Category('objects');
       } else {
         setScreen3Category('objects');
       }
@@ -340,15 +402,17 @@ export function App() {
     }
   };
 
+  const sanitizeNoKa = (text: string) => text.replace(/(\S+)\s*က\s*/g, '$1 ').trim();
+
   const handleSpeakSentence = async () => {
     if (selectedCards.length === 0) return;
-    const rawText = selectedCards.map(c => c.burmese).join(' ');
+    const rawText = sanitizeNoKa(selectedCards.map(c => c.burmese).join(' '));
     let speakText_ = rawText;
     try {
       const { rephrased } = await rephraseSentence(rawText);
       if (rephrased && rephrased !== rawText) {
-        speakText_ = rephrased;
-        setRephrasedText(rephrased);
+        speakText_ = sanitizeNoKa(rephrased);
+        setRephrasedText(speakText_);
       } else {
         setRephrasedText(null);
       }
@@ -361,22 +425,47 @@ export function App() {
     setIsSentenceFinished(true);
   };
 
+  const activeActivities = dedupeCards([
+    ...apiByRole('verb'),
+    ...customCards.filter(c => (c.category === 'verb' || (c as any).subCategory === 'activity') && c.card_type !== 'story_1min').map(mapCustomToAAC)
+  ]);
+
+  const activeNumbers = dedupeCards([
+    ...apiByRole('number'),
+    ...numberCards,
+    ...customCards.filter(c => c.category === 'number' && c.card_type !== 'story_1min').map(mapCustomToAAC)
+  ]);
+
+  const activeDirections = dedupeCards([
+    ...apiByRole('direction'),
+    ...directionCards,
+    ...customCards.filter(c => c.category === 'direction' && c.card_type !== 'story_1min').map(mapCustomToAAC)
+  ]);
+
   const handleStartOver = () => {
     handleClear();
   };
 
-  const getContextObjects = (): (AACCard & { audioUrl?: string })[] => {
+  const getContextObjects = (): (AACCard & { audioUrl?: string; imageUrl?: string; is_admin?: boolean })[] => {
     const selectedVerb = selectedCards.find(c => c.category === 'verb');
-    if (!selectedVerb) return activeObjects;
 
-    if (selectedVerb.id === 'v9') {
+    if (screen3Category === 'activities' || selectedVerb?.subCategory === 'modal' || selectedVerb?.id.startsWith('m')) {
+      return activeActivities;
+    } else if (screen3Category === 'locations' || selectedVerb?.id === 'v10') {
+      return activeLocations;
+    } else if (screen3Category === 'body_parts' || selectedVerb?.id === 'v9' || selectedVerb?.id === 'm9') {
       return activeBodyParts;
-    } else if (selectedVerb.id === 'v3' || selectedVerb.id === 'v4') {
+    } else if (screen3Category === 'feelings' || selectedVerb?.id === 'v3' || selectedVerb?.id === 'v4' || selectedVerb?.id === 'm3' || selectedVerb?.id === 'm4') {
       return activeFeelings;
+    } else if (screen3Category === 'numbers') {
+      return activeNumbers;
+    } else if (screen3Category === 'directions') {
+      return activeDirections;
     } else {
       return activeObjects;
     }
   };
+
 
   const selectedVerbCard = selectedCards.find(c => c.category === 'verb');
   const contextObjects = getContextObjects();
@@ -602,7 +691,11 @@ export function App() {
             <div className="complete-sentence-cards-horizontal">
               {selectedCards.map((card, index) => (
                 <div key={`complete-${index}`} className={`aac-card category-${card.category}`}>
-                  {renderIcon(card)}
+                  {card.imageUrl ? (
+                    <img src={card.imageUrl} alt="" className="card-image" />
+                  ) : (
+                    <div className="card-emoji">{card.emoji || '⭐'}</div>
+                  )}
                   <div className="card-text">{card.burmese}</div>
                 </div>
               ))}
@@ -641,16 +734,7 @@ export function App() {
                     </h2>
                   </div>
                   <div className="card-grid">
-                    {activeSubjects.map(card => (
-                      <button 
-                        key={card.id} 
-                        className="aac-card category-subject" 
-                        onClick={() => handleCardClick(card)}
-                      >
-                        {renderIcon(card)}
-                        <div className="card-text">{card.burmese}</div>
-                      </button>
-                    ))}
+                    {activeSubjects.map(card => renderCardButton(card, () => handleCardClick(card)))}
                   </div>
                 </div>
 
@@ -673,24 +757,15 @@ export function App() {
                       <div className="card-text" style={{ color: '#854D0E', fontWeight: 800 }}>မေမေ့ပုံပြင်များ</div>
                     </button>
 
-                    {activeShortcuts.map(card => (
-                      <button 
-                        key={card.id} 
-                        className={`aac-card category-${card.category}`}
-                        onClick={() => handleCardClick(card)}
-                      >
-                        {renderIcon(card)}
-                        <div className="card-text">{card.burmese}</div>
-                      </button>
-                    ))}
+                    {activeShortcuts.map(card => renderCardButton(card, () => handleCardClick(card)))}
                   </div>
                 </div>
               </>
             )}
 
-            {/* SCREEN 2: Verbs & Modals */}
+            {/* SCREEN 2: Actions & Modals (Requirement 2: Normal grid without subtopic dividers) */}
             {currentStep === 2 && (
-              <>
+              <div>
                 <div className="section-header">
                   <h2 className="section-title">
                     <span>⚡</span>
@@ -698,30 +773,26 @@ export function App() {
                   </h2>
                 </div>
                 <div className="card-grid">
-                  {activeVerbs.map(card => (
-                    <button 
-                      key={card.id} 
-                      className="aac-card category-verb" 
-                      onClick={() => handleCardClick(card)}
-                    >
-                      {renderIcon(card)}
-                      <div className="card-text">{card.burmese}</div>
-                    </button>
-                  ))}
+                  {activeVerbs.map(card => renderCardButton(card, () => handleCardClick(card)))}
                 </div>
-              </>
+              </div>
             )}
 
-            {/* SCREEN 3: Object / Quantity / Direction / Location Selection */}
+            {/* SCREEN 3: Object / Activity / Quantity / Direction / Location Selection */}
             {currentStep === 3 && (
               <>
                 <div className="section-header">
                   <h2 className="section-title">
                     <span>🎯</span>
                     <span>
-                      ၃။ {selectedVerbCard ? selectedVerbCard.burmese : ''} (Details & Objects)
+                      ၃။ {selectedVerbCard ? selectedVerbCard.burmese : ''} (Details & Activities)
                     </span>
                   </h2>
+                  {screen3Category === 'activities' && (
+                    <span className="section-badge" style={{ backgroundColor: '#CCFBF1', color: '#0F766E' }}>
+                      ⚽ လှုပ်ရှားမှု ရွေးရအောင် (Pick Activity)
+                    </span>
+                  )}
                   {screen3Category === 'locations' && (
                     <span className="section-badge" style={{ backgroundColor: '#F3E8FF', color: '#9333EA' }}>
                       🧭 ဘယ်နေရာမှာလဲ ပြောရအောင် (Pick Location)
@@ -744,141 +815,113 @@ export function App() {
                   )}
                 </div>
 
-                {/* Category Selector Grid Cards */}
-                <div className="category-choice-grid">
+                {/* Requirement 3: Compact Category Pill Bar for Step 3 */}
+                <div className="category-pill-bar">
                   <button 
-                    className={`category-choice-card ${screen3Category === 'objects' ? 'active' : ''}`}
+                    type="button"
+                    className={`category-pill ${screen3Category === 'activities' ? 'active' : ''}`}
+                    onClick={() => setScreen3Category('activities')}
+                  >
+                    <span>⚽</span>
+                    <span>လှုပ်ရှားမှုများ (Activities)</span>
+                  </button>
+
+                  <button 
+                    type="button"
+                    className={`category-pill ${screen3Category === 'objects' ? 'active' : ''}`}
                     onClick={() => setScreen3Category('objects')}
                   >
-                    <div className="choice-icon">🍎</div>
-                    <div>
-                      <div className="choice-title">အရာဝတ္ထုနဲ့ မုန့်လေးတွေ</div>
-                      <div className="choice-desc">Things & Snacks</div>
-                    </div>
+                    <span>🍎</span>
+                    <span>အရာဝတ္ထုနဲ့ မုန့် (Things & Snacks)</span>
                   </button>
 
                   <button 
-                    className={`category-choice-card ${screen3Category === 'numbers' ? 'active' : ''}`}
+                    type="button"
+                    className={`category-pill ${screen3Category === 'numbers' ? 'active' : ''}`}
                     onClick={() => setScreen3Category('numbers')}
                   >
-                    <div className="choice-icon">🔢</div>
-                    <div>
-                      <div className="choice-title">ပမာဏနဲ့ ဂဏန်းလေးတွေ</div>
-                      <div className="choice-desc">Amounts & Numbers</div>
-                    </div>
+                    <span>🔢</span>
+                    <span>ပမာဏနဲ့ ဂဏန်း (Amounts & Numbers)</span>
                   </button>
 
                   <button 
-                    className={`category-choice-card ${screen3Category === 'directions' ? 'active' : ''}`}
+                    type="button"
+                    className={`category-pill ${screen3Category === 'directions' ? 'active' : ''}`}
                     onClick={() => setScreen3Category('directions')}
                   >
-                    <div className="choice-icon">🧭</div>
-                    <div>
-                      <div className="choice-title">လမ်းကြောင်းလေးတွေ</div>
-                      <div className="choice-desc">Directions</div>
-                    </div>
+                    <span>🧭</span>
+                    <span>လမ်းကြောင်း (Directions)</span>
                   </button>
 
                   <button 
-                    className={`category-choice-card ${screen3Category === 'locations' ? 'active' : ''}`}
+                    type="button"
+                    className={`category-pill ${screen3Category === 'locations' ? 'active' : ''}`}
                     onClick={() => setScreen3Category('locations')}
                   >
-                    <div className="choice-icon">🏠</div>
-                    <div>
-                      <div className="choice-title">နေရာလေးတွေ</div>
-                      <div className="choice-desc">Places & Locations</div>
-                    </div>
+                    <span>🏠</span>
+                    <span>နေရာ (Places & Locations)</span>
                   </button>
                 </div>
 
                 {/* Render Selected Grid Category */}
+                {screen3Category === 'activities' && (
+                  <div className="card-grid">
+                    {activityCards.map(card => renderCardButton(card, () => handleCardClick(card)))}
+                  </div>
+                )}
+
                 {screen3Category === 'objects' && (
                   <div className="card-grid">
-                    {contextObjects.map(card => (
-                      <button 
-                        key={card.id} 
-                        className={`aac-card category-${card.category}`}
-                        onClick={() => handleCardClick(card)}
-                      >
-                        {renderIcon(card)}
-                        <div className="card-text">{card.burmese}</div>
-                      </button>
-                    ))}
+                    {contextObjects.map(card => renderCardButton(card, () => handleCardClick(card)))}
                   </div>
                 )}
 
                 {screen3Category === 'body_parts' && (
                   <div className="card-grid">
-                    {activeBodyParts.map(card => (
-                      <button 
-                        key={card.id} 
-                        className={`aac-card category-${card.category}`}
-                        onClick={() => handleCardClick(card)}
-                      >
-                        {renderIcon(card)}
-                        <div className="card-text">{card.burmese}</div>
-                      </button>
-                    ))}
+                    {activeBodyParts.map(card => renderCardButton(card, () => handleCardClick(card)))}
+                  </div>
+                )}
+
+                {/* Render Selected Grid Category */}
+                {screen3Category === 'activities' && (
+                  <div className="card-grid">
+                    {activeActivities.map(card => renderCardButton(card, () => handleCardClick(card)))}
+                  </div>
+                )}
+
+                {screen3Category === 'objects' && (
+                  <div className="card-grid">
+                    {contextObjects.map(card => renderCardButton(card, () => handleCardClick(card)))}
+                  </div>
+                )}
+
+                {screen3Category === 'body_parts' && (
+                  <div className="card-grid">
+                    {activeBodyParts.map(card => renderCardButton(card, () => handleCardClick(card)))}
                   </div>
                 )}
 
                 {screen3Category === 'feelings' && (
                   <div className="card-grid">
-                    {activeFeelings.map(card => (
-                      <button 
-                        key={card.id} 
-                        className={`aac-card category-${card.category}`}
-                        onClick={() => handleCardClick(card)}
-                      >
-                        {renderIcon(card)}
-                        <div className="card-text">{card.burmese}</div>
-                      </button>
-                    ))}
+                    {activeFeelings.map(card => renderCardButton(card, () => handleCardClick(card)))}
                   </div>
                 )}
 
                 {screen3Category === 'numbers' && (
                   <div className="card-grid">
-                    {numberCards.map(card => (
-                      <button 
-                        key={card.id} 
-                        className="aac-card category-number" 
-                        onClick={() => handleCardClick(card)}
-                      >
-                        {renderIcon(card)}
-                        <div className="card-text">{card.burmese}</div>
-                      </button>
-                    ))}
+                    {activeNumbers.map(card => renderCardButton(card, () => handleCardClick(card)))}
                   </div>
                 )}
 
                 {screen3Category === 'directions' && (
                   <div className="card-grid">
-                    {directionCards.map(card => (
-                      <button 
-                        key={card.id} 
-                        className="aac-card category-direction" 
-                        onClick={() => handleCardClick(card)}
-                      >
-                        {renderIcon(card)}
-                        <div className="card-text">{card.burmese}</div>
-                      </button>
-                    ))}
+                    {activeDirections.map(card => renderCardButton(card, () => handleCardClick(card)))}
                   </div>
                 )}
 
                 {screen3Category === 'locations' && (
                   <div className="card-grid">
-                    {activeLocations.map(card => (
-                      <button 
-                        key={card.id} 
-                        className="aac-card category-location" 
-                        onClick={() => handleCardClick(card)}
-                      >
-                        {renderIcon(card)}
-                        <div className="card-text">{card.burmese}</div>
-                      </button>
-                    ))}
+                    {activeLocations.map(card => renderCardButton(card, () => handleCardClick(card)))}
                   </div>
                 )}
               </>
