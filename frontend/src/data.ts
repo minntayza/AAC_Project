@@ -16,8 +16,20 @@ export interface AACCard {
   englishMeaning: string;
   category: Category;
   emoji: string;
-  contextForVerbs?: string[]; // Specified verbs where this card is relevant
+  imageUrl?: string;           // Supabase storage URL
+  audioUrl?: string;           // Custom voice recording
+  contextForVerbs?: string[];  // Specified verbs where this card is relevant
 }
+
+// Maps DB category_ids to AAC grammar roles
+export const CATEGORY_ROLE: Record<string, Category> = {
+  food: 'object',
+  feelings: 'feeling',
+  actions: 'verb',
+  places: 'location',
+  people: 'subject',
+  body: 'body_part',
+};
 
 // Kid-Friendly Burmese Subjects
 export const subjectCards: AACCard[] = [

@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Volume2, Trash2, ArrowLeft, Settings, RotateCcw, Lock, X, Play, BookOpen } from 'lucide-react';
-import { 
-  subjectCards, 
-  dailyShortcutCards, 
-  verbCards, 
-  objectCards, 
+import {
+  subjectCards,
+  dailyShortcutCards,
+  verbCards,
+  objectCards,
   bodyPartCards,
   feelingCards,
-  numberCards, 
-  directionCards, 
-  locationCards
+  numberCards,
+  directionCards,
+  locationCards,
+  CATEGORY_ROLE,
 } from './data';
 import type { AACCard } from './data';
-import { textToSpeech, saveSentence, getCustomCards, type CustomCardData } from './api';
+import { textToSpeech, saveSentence, getCustomCards, getCategories, getIcons, rephraseSentence, type CustomCardData, type IconData } from './api';
 import { AuthModal } from './components/AuthModal';
 import { ParentPortal } from './components/ParentPortal';
 import './index.css';
@@ -38,6 +39,9 @@ export function App() {
   const [showStoriesModal, setShowStoriesModal] = useState(false);
   const [playingStoryId, setPlayingStoryId] = useState<string | null>(null);
 
+  // API-fetched icons from Supabase
+  const [apiIcons, setApiIcons] = useState<IconData[]>([]);
+
   // Caregiver user state (persisted in localStorage)
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string; role: string } | null>(() => {
     try {
@@ -52,6 +56,40 @@ export function App() {
   useEffect(() => {
     getCustomCards().then(cards => setCustomCards(cards)).catch(() => {});
   }, [parentMode]);
+
+  // Fetch icons + categories from Supabase API on mount and parentMode change
+  useEffect(() => {
+    Promise.all([getCategories(), getIcons()])
+      .then(([, icons]) => setApiIcons(icons))
+      .catch(() => {});
+  }, [parentMode]);
+
+  // Map DB Icon → AACCard (detect URL vs emoji)
+  const mapIconToAAC = (icon: IconData): AACCard & { imageUrl?: string; audioUrl?: string } => ({
+    id: icon.id,
+    burmese: icon.label_my,
+    englishMeaning: icon.label_en,
+    emoji: icon.image_url && !icon.image_url.startsWith('http') ? icon.image_url : '⭐',
+    imageUrl: icon.image_url?.startsWith('http') ? icon.image_url : undefined,
+    category: CATEGORY_ROLE[icon.category_id] || 'object',
+  });
+
+  // API icons grouped by grammar role, skip IDs that overlap hardcoded cards
+  const hardcodedIds = new Set([
+    ...subjectCards, ...verbCards, ...objectCards, ...bodyPartCards,
+    ...feelingCards, ...numberCards, ...directionCards, ...locationCards,
+  ].map(c => c.id));
+
+  const apiByRole = (role: string) =>
+    apiIcons
+      .filter(icon => CATEGORY_ROLE[icon.category_id] === role && !hardcodedIds.has(icon.id))
+      .map(mapIconToAAC);
+
+  // Render card icon: <img> for URLs, emoji otherwise
+  const renderIcon = (card: { emoji?: string; imageUrl?: string }) =>
+    card.imageUrl
+      ? <img src={card.imageUrl} alt="" className="card-image" />
+      : <div className="card-emoji">{card.emoji || '⭐'}</div>;
 
   // Math challenge state for Caregiver Portal
   const [showPortalModal, setShowPortalModal] = useState(false);
@@ -75,34 +113,40 @@ export function App() {
     audioUrl: c.audio_url,
   });
 
-  // Dynamic Card Collections
+  // Dynamic Card Collections (hardcoded + API-fetched + custom)
   const activeSubjects = [
     ...subjectCards,
+    ...apiByRole('subject'),
     ...customCards.filter(c => c.category === 'subject' && c.card_type !== 'story_1min').map(mapCustomToAAC)
   ];
 
   const activeVerbs = [
     ...verbCards,
+    ...apiByRole('verb'),
     ...customCards.filter(c => c.category === 'verb' && c.card_type !== 'story_1min').map(mapCustomToAAC)
   ];
 
   const activeObjects = [
     ...objectCards,
+    ...apiByRole('object'),
     ...customCards.filter(c => (c.category === 'object' || !c.category) && c.card_type !== 'story_1min').map(mapCustomToAAC)
   ];
 
   const activeLocations = [
     ...locationCards,
+    ...apiByRole('location'),
     ...customCards.filter(c => c.category === 'location' && c.card_type !== 'story_1min').map(mapCustomToAAC)
   ];
 
   const activeFeelings = [
     ...feelingCards,
+    ...apiByRole('feeling'),
     ...customCards.filter(c => c.category === 'feeling' && c.card_type !== 'story_1min').map(mapCustomToAAC)
   ];
 
   const activeBodyParts = [
     ...bodyPartCards,
+    ...apiByRole('body_part'),
     ...customCards.filter(c => c.category === 'body_part' && c.card_type !== 'story_1min').map(mapCustomToAAC)
   ];
 
@@ -294,10 +338,17 @@ export function App() {
     }
   };
 
-  const handleSpeakSentence = () => {
+  const handleSpeakSentence = async () => {
     if (selectedCards.length === 0) return;
-    const fullText = selectedCards.map(c => c.burmese).join(' ');
-    speakText(fullText);
+    const rawText = selectedCards.map(c => c.burmese).join(' ');
+    let speakText_ = rawText;
+    try {
+      const { rephrased } = await rephraseSentence(rawText);
+      if (rephrased && rephrased !== rawText) speakText_ = rephrased;
+    } catch (e) {
+      console.warn('Rephrase failed, using original:', e);
+    }
+    speakText(speakText_);
     logSentenceToSupabase(selectedCards);
     setIsSentenceFinished(true);
   };
@@ -497,9 +548,13 @@ export function App() {
                 <span>ပုံလေးတွေ နှိပ်ပြီး ပြောကြည့်ရအောင် (Tap pictures to build sentence)</span>
               </div>
             ) : (
-              selectedCards.map((card, index) => (
+              selectedCards.map((card: any, index) => (
                 <div key={`${card.id}-${index}`} className={`selected-card-chip category-${card.category}`}>
-                  <span className="chip-emoji">{card.emoji}</span>
+                  {(card as any).imageUrl ? (
+                    <img src={(card as any).imageUrl} alt="" className="chip-image" />
+                  ) : (
+                    <span className="chip-emoji">{card.emoji}</span>
+                  )}
                   <span>{card.burmese}</span>
                 </div>
               ))
@@ -539,7 +594,7 @@ export function App() {
             <div className="complete-sentence-cards-horizontal">
               {selectedCards.map((card, index) => (
                 <div key={`complete-${index}`} className={`aac-card category-${card.category}`}>
-                  <div className="card-emoji">{card.emoji}</div>
+                  {renderIcon(card)}
                   <div className="card-text">{card.burmese}</div>
                 </div>
               ))}
@@ -577,7 +632,7 @@ export function App() {
                         className="aac-card category-subject" 
                         onClick={() => handleCardClick(card)}
                       >
-                        <div className="card-emoji">{card.emoji}</div>
+                        {renderIcon(card)}
                         <div className="card-text">{card.burmese}</div>
                       </button>
                     ))}
@@ -609,7 +664,7 @@ export function App() {
                         className={`aac-card category-${card.category}`}
                         onClick={() => handleCardClick(card)}
                       >
-                        <div className="card-emoji">{card.emoji}</div>
+                        {renderIcon(card)}
                         <div className="card-text">{card.burmese}</div>
                       </button>
                     ))}
@@ -634,7 +689,7 @@ export function App() {
                       className="aac-card category-verb" 
                       onClick={() => handleCardClick(card)}
                     >
-                      <div className="card-emoji">{card.emoji}</div>
+                      {renderIcon(card)}
                       <div className="card-text">{card.burmese}</div>
                     </button>
                   ))}
@@ -730,7 +785,7 @@ export function App() {
                         className={`aac-card category-${card.category}`}
                         onClick={() => handleCardClick(card)}
                       >
-                        <div className="card-emoji">{card.emoji}</div>
+                        {renderIcon(card)}
                         <div className="card-text">{card.burmese}</div>
                       </button>
                     ))}
@@ -745,7 +800,7 @@ export function App() {
                         className={`aac-card category-${card.category}`}
                         onClick={() => handleCardClick(card)}
                       >
-                        <div className="card-emoji">{card.emoji}</div>
+                        {renderIcon(card)}
                         <div className="card-text">{card.burmese}</div>
                       </button>
                     ))}
@@ -760,7 +815,7 @@ export function App() {
                         className={`aac-card category-${card.category}`}
                         onClick={() => handleCardClick(card)}
                       >
-                        <div className="card-emoji">{card.emoji}</div>
+                        {renderIcon(card)}
                         <div className="card-text">{card.burmese}</div>
                       </button>
                     ))}
@@ -775,7 +830,7 @@ export function App() {
                         className="aac-card category-number" 
                         onClick={() => handleCardClick(card)}
                       >
-                        <div className="card-emoji">{card.emoji}</div>
+                        {renderIcon(card)}
                         <div className="card-text">{card.burmese}</div>
                       </button>
                     ))}
@@ -790,7 +845,7 @@ export function App() {
                         className="aac-card category-direction" 
                         onClick={() => handleCardClick(card)}
                       >
-                        <div className="card-emoji">{card.emoji}</div>
+                        {renderIcon(card)}
                         <div className="card-text">{card.burmese}</div>
                       </button>
                     ))}
@@ -805,7 +860,7 @@ export function App() {
                         className="aac-card category-location" 
                         onClick={() => handleCardClick(card)}
                       >
-                        <div className="card-emoji">{card.emoji}</div>
+                        {renderIcon(card)}
                         <div className="card-text">{card.burmese}</div>
                       </button>
                     ))}

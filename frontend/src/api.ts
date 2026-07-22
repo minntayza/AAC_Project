@@ -46,6 +46,13 @@ export function getIcons(categoryId?: string): Promise<IconData[]> {
   return fetchJson(`/icons${qs}`);
 }
 
+export function rephraseSentence(text: string): Promise<{ original: string; rephrased: string }> {
+  return fetchJson("/ai/rephrase_sentence", {
+    method: "POST",
+    body: JSON.stringify({ text }),
+  });
+}
+
 export function textToSpeech(text: string): Promise<Response> {
   return fetch(`${API_BASE}/tts?text=${encodeURIComponent(text)}`, {
     credentials: "include",

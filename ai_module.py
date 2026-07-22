@@ -78,6 +78,42 @@ def suggest_sentences(time_of_day: str, recent_icons: list[str], mood: str = "")
     return json.loads(text[start:end])
 
 
+def rephrase_sentence(raw_text: str) -> str | None:
+    """Rephrase card-concatenated Burmese into natural Burmese via Claude on proxy."""
+    import requests
+    import logging
+    base = ANTHROPIC_BASE_URL or "https://proxy.vibecode.tours"
+    try:
+        resp = requests.post(
+            f"{base}/v1/chat/completions",
+            headers={"Authorization": f"Bearer {ANTHROPIC_API_KEY}", "Content-Type": "application/json"},
+            json={
+                "model": "mimo-v2.5-pro",
+                "max_tokens": 200,
+                "temperature": 0.3,
+                "messages": [{
+                    "role": "user",
+                    "content": (
+                        "Rewrite this AAC card-built Burmese into natural spoken Burmese. "
+                        "Add proper particles. Output ONLY the result.\n\n"
+                        f"Input: {raw_text}\nNatural:"
+                    )
+                }]
+            },
+            timeout=15
+        )
+        if resp.status_code != 200:
+            return None
+        choices = resp.json().get("choices", [])
+        if not choices:
+            return None
+        result = choices[0]["message"]["content"].strip().strip('"').strip("'")
+        logging.warning("Rephrase: '%s' -> '%s'", raw_text, result)
+        return result if result and result != raw_text else None
+    except Exception:
+        return None
+
+
 def text_to_speech(text: str) -> bytes | None:
     """Generate Burmese speech via ElevenLabs API. Returns MP3 bytes or None."""
     import requests
