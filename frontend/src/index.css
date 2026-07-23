@@ -217,7 +217,8 @@ body::before {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   border: 2px solid rgba(102, 126, 234, 0.15);
   line-height: 1;
-  background: #FFF9E6;
+  background: #0f172a;
+  color: #FFFFFF;
 }
 
 .chip-emoji {
@@ -324,7 +325,8 @@ body::before {
   text-align: center;
   animation: popIn 0.3s ease-out;
   padding: 24px 16px;
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: #0f172a;
+  color: #FFFFFF;
   border-radius: 24px;
   border: 2px solid rgba(102, 126, 234, 0.15);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
@@ -632,8 +634,8 @@ body::before {
   padding: 16px 14px;
   border-radius: 18px;
   border: 2px solid rgba(102, 126, 234, 0.15);
-  background-color: rgba(255, 255, 255, 0.85);
-  color: #6B7280;
+  background-color: #0f172a;
+  color: #FFF9E6;
   font-size: 0.9rem;
   font-weight: 800;
   font-family: inherit;
@@ -666,7 +668,7 @@ body::before {
 
 .category-pill:hover {
   border-color: rgba(102, 126, 234, 0.3);
-  background-color: rgba(255, 255, 255, 0.95);
+  background-color: #1a2744;
   transform: translateY(-2px);
 }
 
@@ -705,7 +707,8 @@ body::before {
   position: relative;
   overflow: hidden;
   width: 100%;
-  background-color: #FFF9E6;
+  background-color: #0f172a;
+  color: #FFFFFF;
 }
 
 .aac-card:hover {
@@ -721,6 +724,7 @@ body::before {
   font-size: 2.4rem;
   line-height: 1;
   filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.1));
+  display: none;
 }
 
 .card-image {
@@ -742,140 +746,140 @@ body::before {
   font-weight: 800;
   font-family: 'Padauk', sans-serif;
   text-align: center;
-  color: #1e293b;
+  color: #FFFFFF;
   line-height: 1.25;
 }
 
 /* Category & Subcategory Colors Applied - Creamy White */
 .aac-card.category-subject,
 .selected-card-chip.category-subject {
-  background-color: #FFF9E6;
+  background-color: #0f172a;
   border-color: #F59E0B;
 }
 
 .aac-card.category-subject:hover {
-  background-color: #FFF9E6;
+  background-color: #1a2744;
 }
 
 /* Requirement 3: Subcategory color styling for Step 2 Cards */
 .aac-card.sub-verb,
 .selected-card-chip.sub-verb {
-  background-color: #DBEAFE;
+  background-color: #0f172a;
   border-color: #3B82F6;
-  color: #1E40AF;
+  color: #FFFFFF;
 }
 .aac-card.sub-verb:hover {
-  background-color: #BFDBFE;
+  background-color: #1a2744;
 }
 
 .aac-card.sub-activity,
 .selected-card-chip.sub-activity {
-  background-color: #CCFBF1;
+  background-color: #0f172a;
   border-color: #14B8A6;
-  color: #0F766E;
+  color: #FFFFFF;
 }
 .aac-card.sub-activity:hover {
-  background-color: #99F6E4;
+  background-color: #1a2744;
 }
 
 .aac-card.sub-modal,
 .selected-card-chip.sub-modal {
-  background-color: #FFEDD5;
+  background-color: #0f172a;
   border-color: #F97316;
-  color: #C2410C;
+  color: #FFFFFF;
 }
 .aac-card.sub-modal:hover {
-  background-color: #FED7AA;
+  background-color: #1a2744;
 }
 
 .aac-card.category-verb,
 .selected-card-chip.category-verb {
-  background-color: #FFF9E6;
+  background-color: #0f172a;
   border-color: #4ADE80;
 }
 
 .aac-card.category-verb:hover {
-  background-color: #FFF9E6;
+  background-color: #1a2744;
 }
 
 .aac-card.category-object,
 .selected-card-chip.category-object {
-  background-color: #FFF9E6;
+  background-color: #0f172a;
   border-color: #60A5FA;
 }
 
 .aac-card.category-object:hover {
-  background-color: #FFF9E6;
+  background-color: #1a2744;
 }
 
 .aac-card.category-body_part,
 .selected-card-chip.category-body_part {
-  background-color: #FFF9E6;
+  background-color: #0f172a;
   border-color: #F472B6;
 }
 
 .aac-card.category-body_part:hover {
-  background-color: #FFF9E6;
+  background-color: #1a2744;
 }
 
 .aac-card.category-feeling,
 .selected-card-chip.category-feeling {
-  background-color: #FFF9E6;
+  background-color: #0f172a;
   border-color: #FB923C;
 }
 
 .aac-card.category-feeling:hover {
-  background-color: #FFF9E6;
+  background-color: #1a2744;
 }
 
 .aac-card.category-shortcut,
 .selected-card-chip.category-shortcut {
-  background-color: #FFF9E6;
+  background-color: #0f172a;
   border-color: #818CF8;
 }
 
 .aac-card.category-shortcut:hover {
-  background-color: #FFF9E6;
+  background-color: #1a2744;
 }
 
 .aac-card.category-emergency,
 .selected-card-chip.category-emergency {
-  background-color: #FFF9E6;
+  background-color: #0f172a;
   border-color: #FB7185;
 }
 
 .aac-card.category-emergency:hover {
-  background-color: #FFF9E6;
+  background-color: #1a2744;
 }
 
 .aac-card.category-number,
 .selected-card-chip.category-number {
-  background-color: #FFF9E6;
+  background-color: #0f172a;
   border-color: #2DD4BF;
 }
 
 .aac-card.category-number:hover {
-  background-color: #FFF9E6;
+  background-color: #1a2744;
 }
 
 .aac-card.category-direction,
 .selected-card-chip.category-direction {
-  background-color: #FFF9E6;
+  background-color: #0f172a;
   border-color: #C084FC;
 }
 
 .aac-card.category-direction:hover {
-  background-color: #FFF9E6;
+  background-color: #1a2744;
 }
 
 .aac-card.category-location,
 .selected-card-chip.category-location {
-  background-color: #FFF9E6;
+  background-color: #0f172a;
   border-color: #FB923C;
 }
 
 .aac-card.category-location:hover {
-  background-color: #FFF9E6;
+  background-color: #1a2744;
 }
 
 /* Requirement 1: Admin DB Cards (No text description, original aspect ratio image with matching category background fill) */
@@ -1888,7 +1892,8 @@ body::before {
 }
 
 .portal-grid-card {
-  background: #FFF9E6;
+  background: #0f172a;
+  color: #FFFFFF;
   border-radius: 24px;
   padding: 14px 8px;
   border: 2px solid rgba(102, 126, 234, 0.12);
@@ -1908,6 +1913,7 @@ body::before {
 .portal-grid-card:hover {
   transform: translateY(-4px) scale(1.02);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.1);
+  background: #1a2744;
 }
 
 .portal-grid-card:active {
