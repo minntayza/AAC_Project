@@ -1,0 +1,77 @@
+id,category_id,image_url,label_en,label_my,icon_order
+angry,feelings,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/Emotions/Angry.png,Angry,စိတ်ဆိုးတယ်,3
+aunt,people,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/People/aunt.png,Aunt,အန်တီ,8
+badminton,actions,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/actions/Badminton.jpg,play badminton,ကြက်တောင်ရိုက်မယ်,6
+banana,food,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/food/banana.png,Banana,ငှက်ပျောသီး,4
+bath,actions,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/actions/shower.jpg,Take a bath,ရေချိုးမယ်,5
+bicycle,actions,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/actions/ride.jpg,Ride bicycle,စက်ဘီးစီးမယ်,9
+bread,food,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/food/bread.png,Bread,ပေါင်မုန့်,5
+cake,food,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/food/cake.png,Cake,ကိတ်မုန့်,8
+candy,food,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/food/candy.png,Candy,သကြားလုံး,9
+chips,food,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/food/chips.png,Chips,အာလူးကြော်,6
+chocolate,food,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/food/chocolate.png,Chocolate,ချောကလတ်,11
+cinema,places,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/Places/cinema.png,Cinema,ရုပ်ရှင်ရုံ,10
+cold,feelings,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/actions/cold.png,Cold,အေးတယ်,4
+dad,people,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/People/phayphay.png,Dad,အဖေ,2
+don'tWantTo,choices,"https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/Choices/don'tWantTo.jpg
+",Don't want to,မလုပ်ချင်ဘူး,2
+drink,verbs,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/actions/drink.jpg,Drink,သောက်မယ်,3
+drinkWater,shortcuts,"https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/Shortcuts/drinkWater.jpg
+",I want to drink water,ရေသောက်မယ်,5
+eat,verbs,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/actions/eat.jpg,Eat,စားမယ်,1
+emergency,shortcuts,"https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/Shortcuts/emergency.jpg
+
+","Help, It is an emergency",အရေးပေါ်ကူညီပါ,3
+football,actions,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/actions/football.jpg,Play football,ဘောလုံးကန်မယ်,8
+friedChicken,food,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/food/friedChicken.png,Fried chicken,ကြက်ကြော်,7
+friend,people,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/People/boy.png,Friend,သူငယ်ချင်း,4
+go,verbs,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/actions/go.png,Go,သွားမယ်,2
+grandma,people,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/People/grandma.png,Grandma,အဖွား,6
+grandpa,people,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/People/grandpa.png,Grandpa,အဖိုး,5
+happy,feelings,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/Emotions/Happy.png,Happy,ပျော်တယ်,1
+he,people,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/People/he.png,He,သူ,9
+head,body,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/Body/head.png,Head hurts,ခေါင်းကိုက်တယ်,1
+home,places,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/Places/home.png,Home,အိမ်,1
+hospital,places,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/Places/hospital.png,Hospital,ဆေးရုံ,4
+hot,body,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/actions/hot.png,Hot,ပူတယ်,3
+hungry,feelings,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/Emotions/hungry.jpg,Hungry,ဗိုက်ဆာတယ်,6
+iAmHungry,shortcuts,"https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/Emotions/hungry.jpg
+",I am hungry,ဗိုက်ဆာတယ်,6
+iAmScare,shortcuts,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/Emotions/Scared.png,I am scare,"ကြောက်တယ်
+",8
+icecream,food,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/food/icecream.png,Ice cream,ရေခဲမုန့်,10
+love,feelings,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/Emotions/Love.png,Love,ချစ်တယ်,8
+market,places,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/Places/market.png,Market,ဈေး,6
+milk,food,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/food/milk.png,Milk,နွားနို့,3
+mom,people,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/People/maymay.png,Mom,အမေ,1
+no,shortcuts,"https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/Shortcuts/no.png
+",No,မဟုတ်ဘူး,2
+noodles,food,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/food/noodle.png,Noodles,ခေါက်ဆွဲ,2
+pagoda,places,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/Places/pagoda.png,Pagoda,ဘုရား,9
+park,places,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/Places/park.png,Park,ပန်းခြံ,5
+play,actions,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/actions/play.jpg,Play,ကစားမယ်,3
+"playground ",places,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/Places/playground.png,Playground,ကစားကွင်း,7
+read,actions,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/actions/read.jpg,Read,စာဖတ်မယ်,2
+run,actions,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/actions/run.jpg,Run,ပြေးမယ်,1
+sad,feelings,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/Emotions/Sad.png,Sad,ဝမ်းနည်းတယ်,2
+scared,feelings,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/Emotions/Scared.png,Scared,ကြောက်တယ်,4
+school,places,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/Places/school.png,School,ကျောင်း,2
+she,people,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/People/she.png,She,"သူမ
+",10
+sick,feelings,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/actions/sick.png,Sick,မကျန်းမာဘူး,7
+sleep,actions,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/actions/sleep.jpg,Sleep,အိပ်မယ်,4
+stomach,body,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/Body/belly.png,Stomach hurts,ဗိုက်နာတယ်,2
+swim,actions,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/actions/swim.jpg,Swim,ရေကူးမယ်,7
+teacher,people,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/People/maymay.png,Teacher,တီချယ်,3
+tired,feelings,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/actions/tired.png,Tired,ပင်ပန်းတယ်,5
+toilet,shortcuts,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/actions/Toilet.jpg,Toilet,"အိမ်သာသွားမယ်
+",4
+uncle,people,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/People/uncle.png,Uncle,ဦးလေး,7
+wantTo,choices,"https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/Choices/wantTo.jpg
+",Want to,လုပ်ချင်တယ်,1
+wantToSleep,shortcuts,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/actions/sleep.jpg,want to sleep,"အိပ်ချင်တယ်
+
+",7
+water,food,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/actions/drink.jpg,Water,ရေ,1
+yes,shortcuts,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/Shortcuts/yes.png,Yes,ဟုတ်ကဲ့,1
+zoo,places,https://uhehzdvgddwcrddisaxu.supabase.co/storage/v1/object/public/Icons/Places/zoo.png,Zoo,တိရစ္ဆာန်ရုံ,8

@@ -30,6 +30,18 @@ export const CATEGORY_ROLE: Record<string, Category> = {
   places: 'location',
   people: 'subject',
   body: 'body_part',
+
+  // Direct role mappings if categories are named by role in DB
+  subject: 'subject',
+  verb: 'verb',
+  object: 'object',
+  location: 'location',
+  feeling: 'feeling',
+  body_part: 'body_part',
+  number: 'number',
+  direction: 'direction',
+  shortcut: 'shortcut',
+  emergency: 'emergency',
 };
 
 // Kid-Friendly Burmese Subjects

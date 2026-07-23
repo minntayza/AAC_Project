@@ -140,25 +140,23 @@ export function App() {
   }, [parentMode]);
 
   // Map DB Icon → AACCard (detect URL vs emoji, flag as admin card)
-  const mapIconToAAC = (icon: IconData): AACCard & { imageUrl?: string; audioUrl?: string; is_admin?: boolean } => ({
+  const mapIconToAAC = (icon: IconData): AACCard & { imageUrl?: string; audioUrl?: string; is_admin?: boolean; category_id?: string } => ({
     id: icon.id,
     burmese: icon.label_my,
     englishMeaning: icon.label_en,
     emoji: icon.image_url && !icon.image_url.startsWith('http') ? icon.image_url : '⭐',
     imageUrl: icon.image_url?.startsWith('http') ? icon.image_url : undefined,
-    category: CATEGORY_ROLE[icon.category_id] || 'object',
+    category: CATEGORY_ROLE[icon.category_id] || (icon.category_id as any) || 'object',
+    category_id: icon.category_id,
     is_admin: true,
   });
 
   // API icons grouped by grammar role
-  const hardcodedIds = new Set([
-    ...subjectCards, ...verbCards, ...objectCards, ...bodyPartCards,
-    ...feelingCards, ...numberCards, ...directionCards, ...locationCards,
-  ].map(c => c.id));
+  const getCategoryRole = (catId: string) => CATEGORY_ROLE[catId] || catId;
 
   const apiByRole = (role: string) =>
     apiIcons
-      .filter(icon => CATEGORY_ROLE[icon.category_id] === role && !hardcodedIds.has(icon.id))
+      .filter(icon => getCategoryRole(icon.category_id) === role)
       .map(mapIconToAAC);
 
   // Math challenge state for Caregiver Portal
@@ -361,33 +359,48 @@ export function App() {
     if (currentStep === 1) {
       setCurrentStep(2);
     } else if (currentStep === 2) {
-      const categoryId = (card as any).category_id || card.category;
-      const isAction = categoryId === 'actions' || 
-                       card.subCategory === 'action' || 
-                       (card.category as string) === 'action' || 
-                       card.id.startsWith('act') || 
-                       ['badmintor','bath','bicycle','football','play','read','run','sleep','swim','act1','act2','act3','act4','act5','act6','act7'].includes(card.id);
+      const cardId = (card.id || '').toLowerCase();
+      const eng = (card.englishMeaning || '').toLowerCase();
+      const bur = card.burmese || '';
+      const sub = card.subCategory;
 
-      if (isAction) {
-        // Actions: Finish sentence immediately without Page 3!
+      const isEat = cardId === 'v1' || cardId === 'eat' || eng.includes('eat') || bur.includes('စား');
+      const isDrink = cardId === 'v2' || cardId === 'drink' || eng.includes('drink') || bur.includes('သောက်');
+      const isGo = cardId === 'v10' || cardId === 'go' || eng.includes('go') || bur.includes('သွား');
+      const isHurt = cardId === 'v9' || cardId === 'm9' || eng.includes('hurt') || bur.includes('နာ');
+      const isFeel = cardId === 'm3' || cardId === 'm4' || cardId === 'v3' || cardId === 'v4' || eng.includes('feel') || bur.includes('ခံစား');
+      const isWantNeed = cardId === 'm1' || cardId === 'm2' || eng.includes('want') || eng.includes('need') || bur.includes('လိုချင်') || bur.includes('လိုတယ်');
+
+      const isVerbType = sub === 'verb' || sub === 'modal' || isEat || isDrink || isGo || isHurt || isFeel || isWantNeed;
+      const isActionType = sub === 'activity' || 
+                           sub === 'action' || 
+                           (card.category as string) === 'action' || 
+                           cardId.startsWith('a') || 
+                           cardId.startsWith('act') || 
+                           ['badmintor','bath','bicycle','football','play','read','run','sleep','swim','act1','act2','act3','act4','act5','act6','act7'].includes(cardId);
+
+      if (isActionType && !isEat && !isDrink && !isGo) {
+        // Actions: Finish sentence immediately & route to final page!
         logSentenceToSupabase(newSelected);
         setIsSentenceFinished(true);
-      } else {
+      } else if (isVerbType || isEat || isDrink || isGo) {
         // Verbs: Route to context-specific Page 3
         setCurrentStep(3);
-        if (card.id === 'go' || card.burmese.includes('သွား') || card.englishMeaning.toLowerCase().includes('go') || card.id === 'v10') {
-          setScreen3Category('locations');
-        } else if (card.id === 'eat' || card.burmese.includes('စား') || card.englishMeaning.toLowerCase().includes('eat') || card.id === 'v1') {
-          setScreen3Category('objects');
-        } else if (card.id === 'drink' || card.burmese.includes('သောက်') || card.englishMeaning.toLowerCase().includes('drink') || card.id === 'v2') {
-          setScreen3Category('objects');
-        } else if (card.id === 'v9') {
-          setScreen3Category('body_parts');
-        } else if (card.id === 'v3' || card.id === 'v4') {
-          setScreen3Category('feelings');
+        if (isEat || isDrink || isWantNeed) {
+          setScreen3Category('objects'); // Foods, drinks, snacks, objects
+        } else if (isGo) {
+          setScreen3Category('locations'); // Places & locations
+        } else if (isHurt) {
+          setScreen3Category('body_parts'); // Body parts
+        } else if (isFeel) {
+          setScreen3Category('feelings'); // Feelings
         } else {
           setScreen3Category('objects');
         }
+      } else {
+        // Fallback default for Page 2
+        logSentenceToSupabase(newSelected);
+        setIsSentenceFinished(true);
       }
     } else if (currentStep === 3) {
       logSentenceToSupabase(newSelected);
@@ -532,7 +545,7 @@ export function App() {
         <div className="drawer-overlay" onClick={() => setShowDrawer(false)}>
           <div className="drawer-panel" onClick={(e) => e.stopPropagation()}>
             <div className="drawer-header">
-              <h2 className="drawer-title">Menu</h2>
+              <h2 className="drawer-title">မီနူး</h2>
               <button className="drawer-close-btn" onClick={() => setShowDrawer(false)}>
                 <X size={20} />
               </button>
