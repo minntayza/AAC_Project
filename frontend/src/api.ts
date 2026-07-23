@@ -59,10 +59,10 @@ export function textToSpeech(text: string): Promise<Response> {
   });
 }
 
-export function saveSentence(text_my: string, text_en?: string): Promise<{ ok: boolean }> {
+export function saveSentence(text_my: string, text_en?: string, userId?: string): Promise<{ ok: boolean }> {
   return fetchJson("/sentences/save", {
     method: "POST",
-    body: JSON.stringify({ text_my, text_en }),
+    body: JSON.stringify({ text_my, text_en, user_id: userId }),
   });
 }
 
@@ -125,6 +125,7 @@ export function changePassword(userId: string, newPassword: string): Promise<{ o
 
 export interface CustomCardData {
   id?: string;
+  user_id?: string;
   category: string;
   burmese: string;
   englishMeaning: string;
@@ -141,18 +142,21 @@ export function saveCustomCard(card: CustomCardData): Promise<CustomCardData> {
   });
 }
 
-export function getCustomCards(): Promise<CustomCardData[]> {
-  return fetchJson("/cards/custom");
+export function getCustomCards(userId?: string): Promise<CustomCardData[]> {
+  const qs = userId ? `?user_id=${encodeURIComponent(userId)}` : "";
+  return fetchJson(`/cards/custom${qs}`);
 }
 
-export function deleteCustomCard(id: string): Promise<{ ok: boolean }> {
-  return fetchJson(`/cards/custom/${id}`, {
+export function deleteCustomCard(id: string, userId?: string): Promise<{ ok: boolean }> {
+  const qs = userId ? `?user_id=${encodeURIComponent(userId)}` : "";
+  return fetchJson(`/cards/custom/${id}${qs}`, {
     method: "DELETE",
   });
 }
 
-export function updateCustomCard(id: string, card: CustomCardData): Promise<CustomCardData> {
-  return fetchJson(`/cards/custom/${id}`, {
+export function updateCustomCard(id: string, card: CustomCardData, userId?: string): Promise<CustomCardData> {
+  const qs = userId ? `?user_id=${encodeURIComponent(userId)}` : "";
+  return fetchJson(`/cards/custom/${id}${qs}`, {
     method: "PUT",
     body: JSON.stringify(card),
   });

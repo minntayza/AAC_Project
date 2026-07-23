@@ -140,10 +140,13 @@ def change_password(user_id: str, new_password_hash: str) -> bool:
 
 
 # ── Custom Card Studio ──
-def save_custom_card(card_data: dict) -> dict:
+# ── Custom Card Studio ──
+def save_custom_card(card_data: dict, user_id: str | None = None) -> dict:
     card_id = card_data.get("id") or f"custom_{uuid.uuid4().hex[:8]}"
+    owner_id = user_id or card_data.get("user_id") or "default_owner"
     record = {
         "id": card_id,
+        "user_id": owner_id,
         "category": card_data.get("category", "object"),
         "burmese": card_data.get("burmese", ""),
         "englishMeaning": card_data.get("englishMeaning", ""),
@@ -172,12 +175,15 @@ def save_custom_card(card_data: dict) -> dict:
     return record
 
 
-def get_custom_cards() -> list[dict]:
+def get_custom_cards(user_id: str | None = None) -> list[dict]:
     local_data = _load_local_db()
-    return local_data.get("custom_cards", [])
+    all_cards = local_data.get("custom_cards", [])
+    if user_id:
+        return [c for c in all_cards if c.get("user_id") == user_id or not c.get("user_id")]
+    return all_cards
 
 
-def delete_custom_card(card_id: str) -> bool:
+def delete_custom_card(card_id: str, user_id: str | None = None) -> bool:
     db = get_db()
     if db is not None:
         try:
@@ -186,12 +192,15 @@ def delete_custom_card(card_id: str) -> bool:
             logger.warning("Supabase delete_custom_card failed: %s", e)
 
     local_data = _load_local_db()
-    local_data["custom_cards"] = [c for c in local_data.get("custom_cards", []) if c.get("id") != card_id]
+    local_data["custom_cards"] = [
+        c for c in local_data.get("custom_cards", []) 
+        if not (c.get("id") == card_id and (user_id is None or c.get("user_id") == user_id or not c.get("user_id")))
+    ]
     _save_local_db(local_data)
     return True
 
 
-def update_custom_card(card_id: str, card_data: dict) -> dict | None:
+def update_custom_card(card_id: str, card_data: dict, user_id: str | None = None) -> dict | None:
     db = get_db()
     if db is not None:
         try:
@@ -207,7 +216,7 @@ def update_custom_card(card_id: str, card_data: dict) -> dict | None:
     local_data = _load_local_db()
     cards = local_data.get("custom_cards", [])
     for c in cards:
-        if c.get("id") == card_id:
+        if c.get("id") == card_id and (user_id is None or c.get("user_id") == user_id or not c.get("user_id")):
             c.update({
                 "category": card_data.get("category", c.get("category")),
                 "burmese": card_data.get("burmese", c.get("burmese")),
@@ -220,6 +229,96 @@ def update_custom_card(card_id: str, card_data: dict) -> dict | None:
             _save_local_db(local_data)
             return c
     return None
+
+
+def get_sentence_analytics(user_id: str | None = None) -> dict:
+    from collections import Counter
+    db = get_db()
+    sentences = []
+    if db is not None:
+        try:
+            query = db.table("sentences").select("*")
+            if user_id:
+                query = query.eq("user_id", user_id)
+            res = query.order("created_at", desc=True).execute()
+            if res.data:
+                sentences = res.data
+        except Exception as e:
+            logger.warning("Supabase get_sentence_analytics failed, falling back to local DB: %s", e)
+
+    if not sentences:
+        local_data = _load_local_db()
+        sentences = local_data.get("sentences", [])
+        if user_id:
+            sentences = [s for s in sentences if s.get("user_id") == user_id or not s.get("user_id")]
+
+    total_sentences = len(sentences)
+    daily_counter = Counter()
+    weekly_counter = Counter()
+    monthly_counter = Counter()
+    word_counter = Counter()
+    sentence_counter = Counter()
+    category_counter = Counter()
+
+    daily_reports = {}
+
+    for s in sentences:
+        text = s.get("text_my", "").strip()
+        created = s.get("created_at", "")
+        if text:
+            sentence_counter[text] += 1
+            words = [w for w in text.split() if w]
+            for w in words:
+                word_counter[w] += 1
+                if w in ["စားမယ်", "သောက်မယ်", "သွားမယ်", "ကစားမယ်", "ဆော့မယ်", "အိပ်မယ်", "ရေချိုးမယ်", "လက်ဆေးမယ်"]:
+                    category_counter["Actions & Verbs"] += 1
+                elif w in ["မေမေ", "ဖေဖေ", "သား", "သမီး", "သူ", "အမေ", "အဖေ"]:
+                    category_counter["People & Subjects"] += 1
+                elif w in ["အိမ်", "ကျောင်း", "ကစားကွင်း", "ဆေးရုံ", "ဆိုင်", "အခန်း", "အိမ်သာ"]:
+                    category_counter["Places & Locations"] += 1
+                elif w in ["ရေ", "နို့", "ခေါက်ဆွဲ", "ငှက်ပျောသီး", "ပေါင်မုန့်", "မုန့်", "ထမင်း", "ဟင်း"]:
+                    category_counter["Food & Objects"] += 1
+                else:
+                    category_counter["Other Words"] += 1
+
+        if created:
+            try:
+                dt = datetime.fromisoformat(created)
+                day_str = dt.strftime("%Y-%m-%d")
+                week_str = f"Week {dt.strftime('%U')}"
+                month_str = dt.strftime("%b")
+
+                daily_counter[day_str] += 1
+                weekly_counter[week_str] += 1
+                monthly_counter[month_str] += 1
+
+                if day_str not in daily_reports:
+                    daily_reports[day_str] = {"date": day_str, "count": 0, "sentences": []}
+                daily_reports[day_str]["count"] += 1
+                daily_reports[day_str]["sentences"].append({
+                    "text_my": text,
+                    "text_en": s.get("text_en", ""),
+                    "time": dt.strftime("%H:%M")
+                })
+            except Exception:
+                pass
+
+    top_words = [{"word": k, "count": v} for k, v in word_counter.most_common(10)]
+    top_sentences = [{"sentence": k, "count": v} for k, v in sentence_counter.most_common(10)]
+
+    daily_list = sorted(list(daily_reports.values()), key=lambda x: x["date"], reverse=True)
+
+    return {
+        "total_sentences": total_sentences,
+        "daily": dict(daily_counter),
+        "weekly": dict(weekly_counter),
+        "monthly": dict(monthly_counter),
+        "categories": dict(category_counter),
+        "top_words": top_words,
+        "top_sentences": top_sentences,
+        "daily_report": daily_list,
+        "weekly_report": []
+    }
 
 
 

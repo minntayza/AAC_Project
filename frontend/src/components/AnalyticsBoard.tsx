@@ -57,7 +57,7 @@ export const AnalyticsBoard: React.FC<AnalyticsBoardProps> = ({ userId, childNic
     return (
       <div style={{ background: '#FFF', borderRadius: '20px', padding: '40px', border: '1px solid #E2E8F0', textAlign: 'center', color: '#64748B' }}>
         <RefreshCw className="animate-spin" size={32} style={{ margin: '0 auto 12px', color: '#2563EB' }} />
-        <p style={{ fontWeight: 700 }}>အချက်အလက်များ တွက်ချက်နေပါသည် (Loading Analytics...)</p>
+        <p style={{ fontWeight: 700 }}>အချက်အလက်များ တွက်ချက်နေပါသည်...</p>
       </div>
     );
   }
@@ -85,10 +85,10 @@ export const AnalyticsBoard: React.FC<AnalyticsBoardProps> = ({ userId, childNic
           </div>
           <div>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#F8FAFC' }}>
-              {childNickname ? `${childNickname} ၏ စကားပြော အချက်အလက်များ` : 'ကလေး၏ စကားပြော သုံးစွဲမှု အချက်အလက် (Analytics Board)'}
+              {childNickname ? `${childNickname} ၏ စကားပြော အချက်အလက်များ` : 'ကလေး၏ စကားပြော သုံးစွဲမှု အချက်အလက်'}
             </h2>
             <p style={{ fontSize: '0.82rem', color: '#94A3B8', marginTop: '2px' }}>
-              Real-time Database Activity Log • နေ့စဥ်၊ အပတ်စဉ်၊ လစဉ် စကားပြော အစီရင်ခံစာများ
+              နေ့စဥ်၊ အပတ်စဉ်၊ လစဉ် စကားပြော အစီရင်ခံစာများ
             </p>
           </div>
         </div>
@@ -97,7 +97,7 @@ export const AnalyticsBoard: React.FC<AnalyticsBoardProps> = ({ userId, childNic
           onClick={fetchAnalytics}
           style={{ padding: '10px 16px', borderRadius: '12px', background: '#334155', color: '#F8FAFC', border: 'none', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
         >
-          <RefreshCw size={16} /> Data Refresh
+          <RefreshCw size={16} /> အချက်အလက် ပြန်ယူမည်
         </button>
       </div>
 
@@ -105,7 +105,7 @@ export const AnalyticsBoard: React.FC<AnalyticsBoardProps> = ({ userId, childNic
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
         <div style={{ background: '#FFF', borderRadius: '20px', padding: '20px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#64748B' }}>စုစုပေါင်း စာကြောင်း (Total Sentences)</span>
+            <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#64748B' }}>စုစုပေါင်း စာကြောင်း</span>
             <div style={{ width: '36px', height: '36px', background: '#EFF6FF', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2563EB' }}>
               <Activity size={20} />
             </div>
@@ -113,38 +113,32 @@ export const AnalyticsBoard: React.FC<AnalyticsBoardProps> = ({ userId, childNic
           <div style={{ fontSize: '1.8rem', fontWeight: 900, color: '#0F172A' }}>
             {analytics?.total_sentences || 0}
           </div>
-          <div style={{ fontSize: '0.75rem', color: '#166534', fontWeight: 700, marginTop: '4px' }}>
-            ✓ Real Database Entries
-          </div>
         </div>
 
         <div style={{ background: '#FFF', borderRadius: '20px', padding: '20px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#64748B' }}>အသုံးအများဆုံး စကားလုံး (Top Card Word)</span>
+            <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#64748B' }}>အသုံးအများဆုံး စကားလုံး</span>
             <div style={{ width: '36px', height: '36px', background: '#FEF3C7', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D97706' }}>
               <Award size={20} />
             </div>
           </div>
           <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0F172A' }}>
-            {topWords.length > 0 ? topWords[0].word : 'N/A'}
+            {topWords.length > 0 ? topWords[0].word : 'မရှိသေးပါ'}
           </div>
           <div style={{ fontSize: '0.75rem', color: '#D97706', fontWeight: 700, marginTop: '4px' }}>
-            {topWords.length > 0 ? `${topWords[0].count} ကြိမ် အသုံးပြုထားသည်` : 'No data yet'}
+            {topWords.length > 0 ? `${topWords[0].count} ကြိမ် အသုံးပြုထားသည်` : 'အချက်အလက် မရှိသေးပါ'}
           </div>
         </div>
 
         <div style={{ background: '#FFF', borderRadius: '20px', padding: '20px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#64748B' }}>အသုံးအများဆုံး စာလုံးအမျိုးအစား (Top Category)</span>
+            <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#64748B' }}>အသုံးအများဆုံး စာလုံးအမျိုးအစား</span>
             <div style={{ width: '36px', height: '36px', background: '#DCFCE7', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#166534' }}>
               <TrendingUp size={20} />
             </div>
           </div>
           <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0F172A' }}>
-            {categoryEntries.length > 0 ? categoryEntries.sort((a, b) => b[1] - a[1])[0][0] : 'N/A'}
-          </div>
-          <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '4px' }}>
-            Most selected category
+            {categoryEntries.length > 0 ? categoryEntries.sort((a, b) => b[1] - a[1])[0][0] : 'မရှိသေးပါ'}
           </div>
         </div>
       </div>
@@ -154,9 +148,8 @@ export const AnalyticsBoard: React.FC<AnalyticsBoardProps> = ({ userId, childNic
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
             <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#1E293B', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Calendar size={20} color="#2563EB" /> စကားပြော သုံးစွဲမှု ပုံစံများ (Usage Trends)
+              <Calendar size={20} color="#2563EB" /> စကားပြော သုံးစွဲမှု ပုံစံများ
             </h3>
-            <p style={{ fontSize: '0.8rem', color: '#64748B' }}>နေ့စဥ်၊ အပတ်စဉ်၊ လစဉ် စာကြောင်း အရေအတွက် Chart များ</p>
           </div>
 
           {/* Timeframe Selector Pills */}
@@ -166,21 +159,21 @@ export const AnalyticsBoard: React.FC<AnalyticsBoardProps> = ({ userId, childNic
               onClick={() => setActiveFilter('daily')}
               style={{ padding: '6px 14px', borderRadius: '10px', border: 'none', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', background: activeFilter === 'daily' ? '#FFF' : 'transparent', color: activeFilter === 'daily' ? '#2563EB' : '#64748B', boxShadow: activeFilter === 'daily' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none' }}
             >
-              နေ့စဥ် (Daily)
+              နေ့စဥ်
             </button>
             <button
               type="button"
               onClick={() => setActiveFilter('weekly')}
               style={{ padding: '6px 14px', borderRadius: '10px', border: 'none', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', background: activeFilter === 'weekly' ? '#FFF' : 'transparent', color: activeFilter === 'weekly' ? '#2563EB' : '#64748B', boxShadow: activeFilter === 'weekly' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none' }}
             >
-              အပတ်စဉ် (Weekly)
+              အပတ်စဉ်
             </button>
             <button
               type="button"
               onClick={() => setActiveFilter('monthly')}
               style={{ padding: '6px 14px', borderRadius: '10px', border: 'none', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', background: activeFilter === 'monthly' ? '#FFF' : 'transparent', color: activeFilter === 'monthly' ? '#2563EB' : '#64748B', boxShadow: activeFilter === 'monthly' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none' }}
             >
-              လစဉ် (Monthly)
+              လစဉ်
             </button>
           </div>
         </div>
@@ -226,7 +219,7 @@ export const AnalyticsBoard: React.FC<AnalyticsBoardProps> = ({ userId, childNic
         {/* Report Selector Pills */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
           <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#1E293B', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <MessageSquare size={20} color="#2563EB" /> ကလေးငယ်၏ စကားပြော အစီရင်ခံစာများ (Child Speech Reports)
+            <MessageSquare size={20} color="#2563EB" /> ကလေးငယ်၏ စကားပြော အစီရင်ခံစာများ
           </h3>
 
           <div style={{ display: 'flex', background: '#F1F5F9', borderRadius: '12px', padding: '3px', flexWrap: 'wrap', gap: '2px' }}>
@@ -235,7 +228,7 @@ export const AnalyticsBoard: React.FC<AnalyticsBoardProps> = ({ userId, childNic
               onClick={() => setReportTab('top_sentences')}
               style={{ padding: '6px 12px', borderRadius: '10px', border: 'none', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer', background: reportTab === 'top_sentences' ? '#FFF' : 'transparent', color: reportTab === 'top_sentences' ? '#2563EB' : '#64748B', boxShadow: reportTab === 'top_sentences' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none' }}
             >
-              အသုံးအများဆုံး စာကြောင်း (Top Sentences)
+              အသုံးအများဆုံး စာကြောင်း
             </button>
 
             <button
@@ -243,7 +236,7 @@ export const AnalyticsBoard: React.FC<AnalyticsBoardProps> = ({ userId, childNic
               onClick={() => setReportTab('top_words')}
               style={{ padding: '6px 12px', borderRadius: '10px', border: 'none', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer', background: reportTab === 'top_words' ? '#FFF' : 'transparent', color: reportTab === 'top_words' ? '#2563EB' : '#64748B', boxShadow: reportTab === 'top_words' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none' }}
             >
-              အသုံးအများဆုံး စကားလုံး (Top Words)
+              အသုံးအများဆုံး စကားလုံး
             </button>
 
             <button
@@ -251,7 +244,7 @@ export const AnalyticsBoard: React.FC<AnalyticsBoardProps> = ({ userId, childNic
               onClick={() => setReportTab('daily_logs')}
               style={{ padding: '6px 12px', borderRadius: '10px', border: 'none', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer', background: reportTab === 'daily_logs' ? '#FFF' : 'transparent', color: reportTab === 'daily_logs' ? '#2563EB' : '#64748B', boxShadow: reportTab === 'daily_logs' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none' }}
             >
-              နေ့စဥ် အစီရင်ခံစာ (Daily Logs)
+              နေ့စဥ် အစီရင်ခံစာ
             </button>
 
             <button
@@ -259,7 +252,7 @@ export const AnalyticsBoard: React.FC<AnalyticsBoardProps> = ({ userId, childNic
               onClick={() => setReportTab('weekly_logs')}
               style={{ padding: '6px 12px', borderRadius: '10px', border: 'none', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer', background: reportTab === 'weekly_logs' ? '#FFF' : 'transparent', color: reportTab === 'weekly_logs' ? '#2563EB' : '#64748B', boxShadow: reportTab === 'weekly_logs' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none' }}
             >
-              အပတ်စဉ် အစီရင်ခံစာ (Weekly Logs)
+              အပတ်စဉ် အစီရင်ခံစာ
             </button>
           </div>
         </div>

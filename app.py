@@ -13,7 +13,7 @@ from db import (
     authenticate_user, create_user, change_password,
     get_categories, get_icons,
     get_favorites, toggle_favorite,
-    save_sentence, get_recent_sentences,
+    save_sentence, get_recent_sentences, get_sentence_analytics,
     create_routine, get_routines, get_routine_steps, delete_routine,
     save_custom_card, get_custom_cards, delete_custom_card, update_custom_card,
 )
@@ -120,11 +120,13 @@ def change_pwd():
 @app.route("/api/cards/custom", methods=["GET", "POST"])
 def custom_cards():
     try:
+        user_id = session.get("user_id") or request.args.get("user_id")
         if request.method == "POST":
             data = request.get_json() or {}
-            card = save_custom_card(data)
+            card_user_id = user_id or data.get("user_id")
+            card = save_custom_card(data, user_id=card_user_id)
             return jsonify(card), 201
-        return jsonify(get_custom_cards())
+        return jsonify(get_custom_cards(user_id=user_id))
     except Exception as e:
         return jsonify({"error": "Failed to process custom cards", "detail": str(e)}), 500
 
@@ -132,12 +134,13 @@ def custom_cards():
 @app.route("/api/cards/custom/<card_id>", methods=["DELETE", "PUT"])
 def custom_card_detail(card_id):
     try:
+        user_id = session.get("user_id") or request.args.get("user_id")
         if request.method == "DELETE":
-            delete_custom_card(card_id)
+            delete_custom_card(card_id, user_id=user_id)
             return jsonify({"ok": True, "id": card_id})
         elif request.method == "PUT":
             data = request.get_json() or {}
-            updated = update_custom_card(card_id, data)
+            updated = update_custom_card(card_id, data, user_id=user_id)
             if updated:
                 return jsonify(updated)
             return jsonify({"error": "Card not found"}), 404
@@ -285,10 +288,8 @@ def recent_sentences():
 @app.route("/api/sentences/save", methods=["POST"])
 def save_sent():
     try:
-        user_id = session.get("user_id")
-        if not user_id:
-            return jsonify({"error": "Not logged in"}), 401
         data = request.get_json() or {}
+        user_id = session.get("user_id") or data.get("user_id") or "guest_child"
         text_my = data.get("text_my", "")
         if not text_my:
             return jsonify({"error": "text_my is required"}), 400
@@ -296,6 +297,15 @@ def save_sent():
         return jsonify({"ok": True})
     except Exception as e:
         return jsonify({"error": "Failed to save sentence", "detail": str(e)}), 500
+
+
+@app.route("/api/analytics/sentences")
+def analytics_sentences():
+    try:
+        user_id = session.get("user_id") or request.args.get("user_id")
+        return jsonify(get_sentence_analytics(user_id))
+    except Exception as e:
+        return jsonify({"error": "Failed to fetch analytics", "detail": str(e)}), 500
 
 
 # ──────────────────────────────────────────────

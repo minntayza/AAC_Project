@@ -77,9 +77,9 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
 
   // Fetch custom cards & Admin DB photo icons on mount
   useEffect(() => {
-    getCustomCards().then(cards => setCustomCards(cards)).catch(() => { });
+    getCustomCards(user.id).then(cards => setCustomCards(cards)).catch(() => { });
     getIcons().then(icons => setApiIcons(icons)).catch(() => { });
-  }, []);
+  }, [user.id]);
 
   // Handle Photo Upload File
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -183,7 +183,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
     if (!cardId) return;
     if (window.confirm('ဤကတ်ကို ဖျက်ရန် သေချာပါသလား (Are you sure you want to delete this card?)')) {
       try {
-        await deleteCustomCard(cardId);
+        await deleteCustomCard(cardId, user.id);
         setCustomCards(prev => prev.filter(c => c.id !== cardId));
         setCardSuccessMsg('ကတ် ပယ်ဖျက်ပြီးပါပြီ (Card deleted successfully)');
         setTimeout(() => setCardSuccessMsg(''), 3000);
@@ -198,7 +198,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
     e.preventDefault();
     if (!editingCard || !editingCard.id) return;
     try {
-      const updated = await updateCustomCard(editingCard.id, editingCard);
+      const updated = await updateCustomCard(editingCard.id, editingCard, user.id);
       setCustomCards(prev => prev.map(c => c.id === editingCard.id ? updated : c));
       setEditingCard(null);
       setCardSuccessMsg('ကတ် အချက်အလက် ပြင်ဆင်ပြီးပါပြီ (Card updated successfully)');
@@ -214,6 +214,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
     if (!cardBurmese) return;
 
     const newCardData: CustomCardData = {
+      user_id: user.id,
       category: cardCategory,
       burmese: cardBurmese,
       englishMeaning: cardEnglish || cardBurmese,
@@ -251,6 +252,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
     reader.onloadend = async () => {
       const audioBase64 = reader.result as string;
       const storyCard: CustomCardData = {
+        user_id: user.id,
         category: 'shortcut',
         burmese: storyTitle,
         englishMeaning: `Mom's 1-Min Story (${storySeconds}s)`,
@@ -367,7 +369,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
             }}
           >
             <LayoutDashboard size={20} />
-            ကတ် စာကြည့်တိုက် (Card Library)
+            ကတ် စာကြည့်တိုက်
           </button>
 
           <button
@@ -379,7 +381,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
             }}
           >
             <PlusCircle size={20} />
-            ကတ်အသစ် ဖန်တီးမည် (Add Card)
+            ကတ်အသစ် ဖန်တီးမည်
           </button>
 
           <button
@@ -391,7 +393,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
             }}
           >
             <BookOpen size={20} />
-            မေမေ့ပုံပြင် ၁ မိနစ် (1-Min Story)
+            မေမေ့ပုံပြင် ၁ မိနစ်
           </button>
 
           <button
@@ -403,7 +405,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
             }}
           >
             <BarChart3 size={20} />
-            အချက်အလက် စာရင်း (Analytics Board)
+            အချက်အလက် စာရင်း
           </button>
 
           <button
@@ -415,7 +417,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
             }}
           >
             <Settings size={20} />
-            ဆက်တင် / စကားဝှက် (Settings)
+            ဆက်တင် / စကားဝှက်
           </button>
         </nav>
 
@@ -425,7 +427,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
             onClick={onExit}
             style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', background: '#1E293B', color: '#E2E8F0', border: 'none', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
           >
-            ကလေးမုဒ် သို့ ပြန်သွားမည် (Child Mode)
+            ကလေးမုဒ် သို့ ပြန်သွားမည်
           </button>
 
           <button
@@ -433,7 +435,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
             style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', background: 'rgba(239,68,68,0.15)', color: '#F87171', border: 'none', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
           >
             <LogOut size={16} />
-            ထွက်မည် (Sign Out)
+            အကောင့်ထွက်မည်
           </button>
         </div>
       </aside>
@@ -546,7 +548,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
 
             {/* Admin DB Photo Cards */}
             <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#1E293B', marginBottom: '12px' }}>
-              မူလ ဓာတ်ပုံ ကတ်များ (Default Photo Cards)
+              မူလ ဓာတ်ပုံ ကတ်များ
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '12px' }}>
               {apiIcons.map(icon => (
@@ -558,10 +560,8 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                       {icon.image_url && icon.image_url.length <= 4 ? icon.image_url : '🖼️'}
                     </div>
                   )}
-                  <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#1E293B', marginTop: '6px' }}>{icon.label_my}</div>
-                  <div style={{ fontSize: '0.75rem', color: '#64748B' }}>{icon.label_en}</div>
-                  <div style={{ marginTop: '6px', fontSize: '0.68rem', padding: '2px 8px', borderRadius: '10px', background: '#EFF6FF', color: '#1D4ED8', fontWeight: 700 }}>
-                    Category: {icon.category_id}
+                  <div style={{ marginTop: '8px', fontSize: '0.68rem', padding: '2px 8px', borderRadius: '10px', background: '#EFF6FF', color: '#1D4ED8', fontWeight: 700 }}>
+                    အမျိုးအစား: {icon.category_id}
                   </div>
                 </div>
               ))}
@@ -780,23 +780,42 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
 
                 {cardAudioMode === 'custom_voice' && (
                   <div style={{ background: '#F8FAFC', padding: '16px', borderRadius: '14px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
-                    {!isRecording ? (
-                      <button
-                        type="button"
-                        onClick={startRecordingVoice}
-                        style={{ padding: '10px 20px', borderRadius: '30px', background: '#EF4444', color: '#FFF', border: 'none', fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(239,68,68,0.3)' }}
-                      >
-                        <Mic size={18} /> မိခင်အသံ သွင်းမည် (Record Mom's Voice)
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={stopRecordingVoice}
-                        style={{ padding: '10px 20px', borderRadius: '30px', background: '#1E293B', color: '#FFF', border: 'none', fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
-                      >
-                        <Square size={18} color="#EF4444" /> ရပ်မည် ({recordingSeconds}s)
-                      </button>
-                    )}
+                    <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '10px' }}>
+                      {!isRecording ? (
+                        <button
+                          type="button"
+                          onClick={startRecordingVoice}
+                          style={{ padding: '10px 20px', borderRadius: '30px', background: '#EF4444', color: '#FFF', border: 'none', fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(239,68,68,0.3)' }}
+                        >
+                          <Mic size={18} /> မိခင်အသံ သွင်းမည် (Start Record)
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={stopRecordingVoice}
+                          style={{ padding: '10px 20px', borderRadius: '30px', background: '#1E293B', color: '#FFF', border: 'none', fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                        >
+                          <Square size={18} color="#EF4444" /> ⏹️ ရပ်မည် Stop ({recordingSeconds}s)
+                        </button>
+                      )}
+
+                      {cardAudioUrl && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            try {
+                              const audio = new Audio(cardAudioUrl);
+                              audio.play();
+                            } catch (e) {
+                              alert('အသံ ဖွင့်၍ မရပါ');
+                            }
+                          }}
+                          style={{ padding: '10px 20px', borderRadius: '30px', background: '#10B981', color: '#FFF', border: 'none', fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}
+                        >
+                          <Volume2 size={18} /> ▶️ နားထောင်မည် (Play)
+                        </button>
+                      )}
+                    </div>
 
                     {recordedAudioBlob && (
                       <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
