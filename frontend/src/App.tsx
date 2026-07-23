@@ -33,7 +33,7 @@ export function App() {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [screen3Category, setScreen3Category] = useState<Screen3Category>('objects');
   const [isSentenceFinished, setIsSentenceFinished] = useState(false);
-  const [rephrasedText, setRephrasedText] = useState<string | null>(null);
+  const [, setRephrasedText] = useState<string | null>(null);
 
   // Side drawer & game state
   const [showDrawer, setShowDrawer] = useState(false);
@@ -79,6 +79,9 @@ export function App() {
       );
     }
 
+    // Mom's Voice Custom Card (with Audio Play Badge)
+    const isMomVoiceCard = card.audioUrl || (card as any).audio_url || (card as any).card_type === 'custom_voice';
+
     // Standard Emoji / Icon Card with Subcategory color styling
     const subClass = card.subCategory ? `sub-${card.subCategory}` : '';
     return (
@@ -86,13 +89,19 @@ export function App() {
         key={card.id} 
         className={`aac-card category-${card.category} ${subClass}`}
         onClick={onClick}
+        style={isMomVoiceCard ? { border: '2px solid #10B981', position: 'relative' } : {}}
       >
         {card.imageUrl ? (
           <img src={card.imageUrl} alt="" className="card-image" />
         ) : (
-          <div className="card-emoji">{card.emoji || '⭐'}</div>
+          <div className="card-emoji">{card.emoji || (isMomVoiceCard ? '🎙️' : '⭐')}</div>
         )}
         <div className="card-text">{card.burmese}</div>
+        {isMomVoiceCard && (
+          <div style={{ position: 'absolute', top: '6px', right: '6px', background: '#10B981', color: '#FFF', borderRadius: '50%', width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', boxShadow: '0 2px 6px rgba(0,0,0,0.15)' }}>
+            🔊
+          </div>
+        )}
       </button>
     );
   };
@@ -120,8 +129,8 @@ export function App() {
 
   // Fetch custom cards on mount and whenever exiting parent mode
   useEffect(() => {
-    getCustomCards().then(cards => setCustomCards(cards)).catch(() => {});
-  }, [parentMode]);
+    getCustomCards(currentUser?.id).then(cards => setCustomCards(cards)).catch(() => {});
+  }, [parentMode, currentUser?.id]);
 
   // Fetch icons + categories from Supabase API on mount and parentMode change
   useEffect(() => {
@@ -331,7 +340,7 @@ export function App() {
     if (cards.length === 0) return;
     const text_my = cards.map(c => c.burmese).join(' ').replace(/(\S+)\s*က\s*/g, '$1 ').trim();
     const text_en = cards.map(c => c.englishMeaning).join(' ');
-    saveSentence(text_my, text_en).catch(err => {
+    saveSentence(text_my, text_en, currentUser?.id).catch(err => {
       console.warn('Sentence save skipped:', err);
     });
   };
@@ -352,26 +361,37 @@ export function App() {
     if (currentStep === 1) {
       setCurrentStep(2);
     } else if (currentStep === 2) {
-      setCurrentStep(3);
-      if (card.id === 'v10') {
-        setScreen3Category('locations');
-      } else if (card.id === 'v9') {
-        setScreen3Category('body_parts');
-      } else if (card.id === 'v3' || card.id === 'v4') {
-        setScreen3Category('feelings');
+      const categoryId = (card as any).category_id || card.category;
+      const isAction = categoryId === 'actions' || 
+                       card.subCategory === 'action' || 
+                       (card.category as string) === 'action' || 
+                       card.id.startsWith('act') || 
+                       ['badmintor','bath','bicycle','football','play','read','run','sleep','swim','act1','act2','act3','act4','act5','act6','act7'].includes(card.id);
+
+      if (isAction) {
+        // Actions: Finish sentence immediately without Page 3!
+        logSentenceToSupabase(newSelected);
+        setIsSentenceFinished(true);
       } else {
-        setScreen3Category('objects');
+        // Verbs: Route to context-specific Page 3
+        setCurrentStep(3);
+        if (card.id === 'go' || card.burmese.includes('သွား') || card.englishMeaning.toLowerCase().includes('go') || card.id === 'v10') {
+          setScreen3Category('locations');
+        } else if (card.id === 'eat' || card.burmese.includes('စား') || card.englishMeaning.toLowerCase().includes('eat') || card.id === 'v1') {
+          setScreen3Category('objects');
+        } else if (card.id === 'drink' || card.burmese.includes('သောက်') || card.englishMeaning.toLowerCase().includes('drink') || card.id === 'v2') {
+          setScreen3Category('objects');
+        } else if (card.id === 'v9') {
+          setScreen3Category('body_parts');
+        } else if (card.id === 'v3' || card.id === 'v4') {
+          setScreen3Category('feelings');
+        } else {
+          setScreen3Category('objects');
+        }
       }
     } else if (currentStep === 3) {
-      const selectedVerb = selectedCards.find(c => c.category === 'verb');
-      
-      if (screen3Category === 'objects' && (selectedVerb?.id === 'v1' || selectedVerb?.id === 'v2')) {
-        setScreen3Category('numbers');
-      } else if (card.category === 'direction') {
-        setScreen3Category('locations');
-      } else if (card.category === 'number') {
-        setScreen3Category('objects');
-      }
+      logSentenceToSupabase(newSelected);
+      setIsSentenceFinished(true);
     }
   };
 
@@ -771,16 +791,15 @@ export function App() {
         {isSentenceFinished ? (
           <div className="complete-sentence-view">
 
-            {/* Render selected cards as full AAC cards horizontally */}
+            {/* Render selected cards horizontally without description text or borders */}
             <div className="complete-sentence-cards-horizontal">
               {selectedCards.map((card, index) => (
-                <div key={`complete-${index}`} className={`aac-card category-${card.category}`}>
+                <div key={`complete-${index}`} className="complete-card-clean">
                   {card.imageUrl ? (
-                    <img src={card.imageUrl} alt="" className="card-image" />
+                    <img src={card.imageUrl} alt="" className="complete-card-img" />
                   ) : (
-                    <div className="card-emoji">{card.emoji || '⭐'}</div>
+                    <div className="complete-card-emoji">{card.emoji || '⭐'}</div>
                   )}
-                  <div className="card-text">{card.burmese}</div>
                 </div>
               ))}
             </div>
@@ -845,7 +864,7 @@ export function App() {
               </>
             )}
 
-            {/* SCREEN 2: Actions & Modals (Requirement 2: Normal grid without subtopic dividers) */}
+            {/* SCREEN 2: Actions & Modals */}
             {currentStep === 2 && (
               <div>
                 <div className="section-header">
@@ -865,7 +884,7 @@ export function App() {
                 <div className="section-header">
                   <h2 className="section-title">
                     <span>
-                      ၃။ {selectedVerbCard ? selectedVerbCard.burmese : ''} (Details & Activities)
+                      ၃။ {selectedVerbCard ? selectedVerbCard.burmese : ''}
                     </span>
                   </h2>
                   {screen3Category === 'activities' && (

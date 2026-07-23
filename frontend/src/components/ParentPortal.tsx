@@ -77,9 +77,9 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
 
   // Fetch custom cards & Admin DB photo icons on mount
   useEffect(() => {
-    getCustomCards().then(cards => setCustomCards(cards)).catch(() => { });
+    getCustomCards(user.id).then(cards => setCustomCards(cards)).catch(() => { });
     getIcons().then(icons => setApiIcons(icons)).catch(() => { });
-  }, []);
+  }, [user.id]);
 
   // Handle Photo Upload File
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -183,7 +183,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
     if (!cardId) return;
     if (window.confirm('ဤကတ်ကို ဖျက်ရန် သေချာပါသလား (Are you sure you want to delete this card?)')) {
       try {
-        await deleteCustomCard(cardId);
+        await deleteCustomCard(cardId, user.id);
         setCustomCards(prev => prev.filter(c => c.id !== cardId));
         setCardSuccessMsg('ကတ် ပယ်ဖျက်ပြီးပါပြီ (Card deleted successfully)');
         setTimeout(() => setCardSuccessMsg(''), 3000);
@@ -198,7 +198,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
     e.preventDefault();
     if (!editingCard || !editingCard.id) return;
     try {
-      const updated = await updateCustomCard(editingCard.id, editingCard);
+      const updated = await updateCustomCard(editingCard.id, editingCard, user.id);
       setCustomCards(prev => prev.map(c => c.id === editingCard.id ? updated : c));
       setEditingCard(null);
       setCardSuccessMsg('ကတ် အချက်အလက် ပြင်ဆင်ပြီးပါပြီ (Card updated successfully)');
@@ -214,6 +214,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
     if (!cardBurmese) return;
 
     const newCardData: CustomCardData = {
+      user_id: user.id,
       category: cardCategory,
       burmese: cardBurmese,
       englishMeaning: cardEnglish || cardBurmese,
@@ -251,6 +252,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
     reader.onloadend = async () => {
       const audioBase64 = reader.result as string;
       const storyCard: CustomCardData = {
+        user_id: user.id,
         category: 'shortcut',
         burmese: storyTitle,
         englishMeaning: `Mom's 1-Min Story (${storySeconds}s)`,
@@ -372,7 +374,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
             }}
           >
             <LayoutDashboard size={20} />
-            ကတ် စာကြည့်တိုက် (Card Library)
+            ကတ် စာကြည့်တိုက်
           </button>
 
           <button
@@ -385,7 +387,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
             }}
           >
             <PlusCircle size={20} />
-            ကတ်အသစ် ဖန်တီးမည် (Add Card)
+            ကတ်အသစ် ဖန်တီးမည်
           </button>
 
           <button
@@ -398,7 +400,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
             }}
           >
             <BookOpen size={20} />
-            မေမေ့ပုံပြင် ၁ မိနစ် (1-Min Story)
+            မေမေ့ပုံပြင် ၁ မိနစ်
           </button>
 
           <button
@@ -411,7 +413,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
             }}
           >
             <BarChart3 size={20} />
-            အချက်အလက် စာရင်း (Analytics Board)
+            အချက်အလက် စာရင်း
           </button>
 
           <button
@@ -424,7 +426,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
             }}
           >
             <Settings size={20} />
-            ဆက်တင် / စကားဝှက် (Settings)
+            ဆက်တင် / စကားဝှက်
           </button>
         </nav>
 
@@ -434,7 +436,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
             onClick={onExit}
             style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', background: '#F9FAFB', color: '#000000', border: '1px solid rgba(102, 126, 234, 0.15)', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }}
           >
-            ကလေးမုဒ် သို့ ပြန်သွားမည် (Child Mode)
+            ကလေးမုဒ် သို့ ပြန်သွားမည်
           </button>
 
           <button
@@ -442,7 +444,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
             style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }}
           >
             <LogOut size={16} />
-            ထွက်မည် (Sign Out)
+            အကောင့်ထွက်မည်
           </button>
         </div>
       </aside>

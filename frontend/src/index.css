@@ -343,16 +343,35 @@ body::before {
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 20px;
   margin: 24px 0 32px;
   overflow-x: auto;
   width: 100%;
   padding: 10px;
 }
 
-.complete-sentence-cards-horizontal .aac-card {
-  min-width: 130px;
-  transform: none !important;
+.complete-card-clean {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0;
+  margin: 0;
+}
+
+.complete-card-img {
+  width: 110px;
+  height: 110px;
+  object-fit: contain;
+  border: none !important;
+  border-radius: 16px;
+}
+
+.complete-card-emoji {
+  font-size: 5rem;
+  line-height: 1;
 }
 
 .complete-actions {
