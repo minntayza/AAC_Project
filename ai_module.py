@@ -29,7 +29,7 @@ def process_image_for_aac(image_bytes: bytes) -> dict:
     client = get_anthropic()
     response = client.messages.create(
         model="mimo-v2.5-pro",
-        max_tokens=300,
+        max_tokens=3000,
         messages=[{
             "role": "user",
             "content": [
@@ -90,7 +90,7 @@ def rephrase_sentence(raw_text: str) -> str | None:
             headers={"Authorization": f"Bearer {ANTHROPIC_API_KEY}", "Content-Type": "application/json"},
             json={
                 "model": "mimo-v2.5-pro",
-                "max_tokens": 1024,
+                "max_tokens": 3000,
                 "temperature": 0.3,
                 "messages": [{
                     "role": "user",

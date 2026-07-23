@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart3, TrendingUp, Calendar, Activity, Sparkles, RefreshCw, Volume2, MessageSquare, Award, Clock } from 'lucide-react';
-import { getSentenceAnalytics, textToSpeech, type SentenceAnalyticsData } from '../api';
+import { getSentenceAnalytics, textToSpeech, getEmotionStats, type SentenceAnalyticsData, type EmotionStats } from '../api';
 
 interface AnalyticsBoardProps {
   userId?: string;
@@ -9,24 +9,27 @@ interface AnalyticsBoardProps {
 
 export const AnalyticsBoard: React.FC<AnalyticsBoardProps> = ({ userId, childNickname }) => {
   const [analytics, setAnalytics] = useState<SentenceAnalyticsData | null>(null);
+  const [emotionStats, setEmotionStats] = useState<EmotionStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [reportTab, setReportTab] = useState<'top_sentences' | 'top_words' | 'daily_logs' | 'weekly_logs'>('top_sentences');
 
   const fetchAnalytics = () => {
     setLoading(true);
-    getSentenceAnalytics(userId)
-      .then(data => setAnalytics(data))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    Promise.all([
+      getSentenceAnalytics(userId).catch(() => null),
+      getEmotionStats().catch(() => null),
+    ]).then(([sentenceData, emoData]) => {
+      if (sentenceData) setAnalytics(sentenceData);
+      if (emoData) setEmotionStats(emoData);
+    }).finally(() => setLoading(false));
   };
 
   useEffect(() => {
     fetchAnalytics();
     const timer = setInterval(() => {
-      getSentenceAnalytics(userId)
-        .then(data => setAnalytics(data))
-        .catch(() => {});
+      getSentenceAnalytics(userId).then(data => setAnalytics(data)).catch(() => {});
+      getEmotionStats().then(data => setEmotionStats(data)).catch(() => {});
     }, 4000);
     return () => clearInterval(timer);
   }, [userId]);
@@ -447,6 +450,57 @@ export const AnalyticsBoard: React.FC<AnalyticsBoardProps> = ({ userId, childNic
                 </div>
               );
             })}
+          </div>
+        )}
+      </div>
+
+      {/* Emotion History */}
+      <div style={{ background: '#FFF9E6', borderRadius: '20px', padding: '24px', border: '2px solid rgba(102, 126, 234, 0.12)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+        <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#000', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Activity size={20} color="#667eea" /> Emotion Tracking (AuraSensor)
+        </h3>
+
+        {!emotionStats || emotionStats.total === 0 ? (
+          <p style={{ color: '#94A3B8', fontSize: '0.85rem' }}>Emotion data will appear here once the camera detects facial expressions</p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
+              <div style={{ background: '#FFF', borderRadius: '14px', padding: '14px', border: '1px solid #E2E8F0', textAlign: 'center' }}>
+                <div style={{ fontSize: '0.78rem', color: '#64748B', fontWeight: 700, marginBottom: '4px' }}>Total Readings</div>
+                <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#667eea' }}>{emotionStats.total}</div>
+              </div>
+              {Object.entries(emotionStats.counts).map(([emo, count]) => {
+                const colors: Record<string, { bg: string; text: string }> = {
+                  neutral: { bg: '#eff6ff', text: '#3b82f6' },
+                  happy: { bg: '#ecfdf5', text: '#10b981' },
+                  distressed: { bg: '#fef2f2', text: '#ef4444' },
+                };
+                const c = colors[emo] || { bg: '#F1F5F9', text: '#64748B' };
+                return (
+                  <div key={emo} style={{ background: c.bg, borderRadius: '14px', padding: '14px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '0.78rem', color: c.text, fontWeight: 700, textTransform: 'capitalize', marginBottom: '4px' }}>{emo}</div>
+                    <div style={{ fontSize: '1.6rem', fontWeight: 900, color: c.text }}>{count}</div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155', marginBottom: '8px' }}>Daily Emotion Activity</div>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: '100px', padding: '8px 0', borderBottom: '1px solid #E2E8F0' }}>
+                {Object.entries(emotionStats.daily).slice(-14).map(([day, count]) => {
+                  const maxDaily = Math.max(...Object.values(emotionStats!.daily), 1);
+                  const h = Math.max((count / maxDaily) * 100, 8);
+                  return (
+                    <div key={day} style={{ flex: 1, minWidth: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', height: '100%', justifyContent: 'flex-end' }}>
+                      <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#667eea' }}>{count}</div>
+                      <div style={{ width: '100%', maxWidth: '24px', height: `${h}%`, background: 'linear-gradient(180deg, #667eea, #764ba2)', borderRadius: '4px 4px 2px 2px' }} />
+                      <div style={{ fontSize: '0.6rem', color: '#94A3B8', whiteSpace: 'nowrap' }}>{day.slice(5)}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         )}
       </div>

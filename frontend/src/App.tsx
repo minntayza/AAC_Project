@@ -14,7 +14,7 @@ import {
   CATEGORY_ROLE,
 } from './data';
 import type { AACCard } from './data';
-import { textToSpeech, saveSentence, getCustomCards, getCategories, getIcons, rephraseSentence, type CustomCardData, type IconData } from './api';
+import { textToSpeech, saveSentence, getCustomCards, getCategories, getIcons, rephraseSentence, logEmotion, type CustomCardData, type IconData } from './api';
 import { AuthModal } from './components/AuthModal';
 import { ParentPortal } from './components/ParentPortal';
 import { ConcentrationGame } from './components/ConcentrationGame';
@@ -671,7 +671,15 @@ export function App() {
           >
             <Menu size={22} />
           </button>
-          <AuraAACSensor onEmotionChange={(e) => setDetectedEmotion(e)} />
+          <AuraAACSensor onEmotionChange={(emotion) => {
+            setDetectedEmotion(emotion);
+            logEmotion(emotion).catch(() => {});
+            if (emotion === 'distressed') {
+              setScreen3Category('feelings');
+            } else if (emotion === 'happy') {
+              setScreen3Category('activities');
+            }
+          }} />
         </div>
 
         {/* Step Navigation Pills */}
