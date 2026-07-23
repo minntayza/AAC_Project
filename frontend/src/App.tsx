@@ -99,6 +99,14 @@ export function App() {
     );
   };
 
+  const SkeletonGrid = () => (
+    <div className="card-grid">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={`skel-${i}`} className="skeleton-card" />
+      ))}
+    </div>
+  );
+
   const [parentMode, setParentMode] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
@@ -109,6 +117,7 @@ export function App() {
 
   // API-fetched icons from Supabase
   const [apiIcons, setApiIcons] = useState<IconData[]>([]);
+  const [iconsLoading, setIconsLoading] = useState(true);
 
   // Caregiver user state (persisted in localStorage)
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string; role: string } | null>(() => {
@@ -120,17 +129,18 @@ export function App() {
     }
   });
 
-  // Fetch custom cards on mount and whenever exiting parent mode
+  // Fetch custom cards + icons on mount and parentMode change
   useEffect(() => {
-    getCustomCards(currentUser?.id).then(cards => setCustomCards(cards)).catch(() => {});
+    setIconsLoading(true);
+    Promise.all([
+      getCustomCards(currentUser?.id),
+      getCategories(),
+      getIcons(),
+    ]).then(([cards, , icons]) => {
+      setCustomCards(cards);
+      setApiIcons(icons);
+    }).catch(() => {}).finally(() => setIconsLoading(false));
   }, [parentMode, currentUser?.id]);
-
-  // Fetch icons + categories from Supabase API on mount and parentMode change
-  useEffect(() => {
-    Promise.all([getCategories(), getIcons()])
-      .then(([, icons]) => setApiIcons(icons))
-      .catch(() => {});
-  }, [parentMode]);
 
   // Map DB Icon → AACCard (detect URL vs emoji, flag as admin card)
   const mapIconToAAC = (icon: IconData): AACCard & { imageUrl?: string; audioUrl?: string; is_admin?: boolean; category_id?: string } => ({
@@ -221,11 +231,6 @@ export function App() {
   const activeBodyParts = dedupeCards([
     ...apiByRole('body_part'),
     ...customCards.filter(c => c.category === 'body_part' && c.card_type !== 'story_1min').map(mapCustomToAAC)
-  ]);
-
-  const activeActions = dedupeCards([
-    ...apiByRole('action'),
-    ...customCards.filter(c => c.category === 'action' && c.card_type !== 'story_1min').map(mapCustomToAAC)
   ]);
 
   const activeShortcuts = dedupeCards([
@@ -382,27 +387,9 @@ export function App() {
         // Actions: Finish sentence immediately & route to final page!
         logSentenceToSupabase(newSelected);
         setIsSentenceFinished(true);
-      } else if (card.category === 'verb') {
-        // Verbs → route to context-specific Step 3
-        setCurrentStep(3);
-        const id = (card.id || '').toLowerCase();
-        const eng = (card.englishMeaning || '').toLowerCase();
-        const bur = card.burmese || '';
-
-        if (eng.includes('eat') || bur.includes('စား') || id === 'eat') {
-          setScreen3Category('objects'); // food items
-        } else if (eng.includes('drink') || bur.includes('သောက်') || id === 'drink') {
-          setScreen3Category('objects'); // drinks/food
-        } else if (eng.includes('go') || bur.includes('သွား') || id === 'go') {
-          setScreen3Category('locations');
-        } else {
-          // Other verbs/choices → activities or objects
-          setScreen3Category('activities');
-        }
       } else {
-        // Fallback for unknown category
-        logSentenceToSupabase(newSelected);
-        setIsSentenceFinished(true);
+        // Object/feeling/etc. → advance to Step 3 (verbs)
+        setCurrentStep(3);
       }
     } else if (currentStep === 3) {
       logSentenceToSupabase(newSelected);
@@ -436,12 +423,6 @@ export function App() {
         setScreen3Category('objects');
       } else {
         setCurrentStep(3);
-        const lastCard = newSelected[newSelected.length - 1];
-        if (lastCard.category === 'direction') {
-          setScreen3Category('locations');
-        } else if (lastCard.category === 'number') {
-          setScreen3Category('objects');
-        }
       }
     }
   };
@@ -472,9 +453,8 @@ export function App() {
   };
 
   const activeActivities = dedupeCards([
-    ...apiByRole('verb'),
     ...apiByRole('action'),
-    ...customCards.filter(c => (c.category === 'verb' || c.category === 'action' || (c as any).subCategory === 'activity') && c.card_type !== 'story_1min').map(mapCustomToAAC)
+    ...customCards.filter(c => (c.category === 'action' || (c as any).subCategory === 'activity') && c.card_type !== 'story_1min').map(mapCustomToAAC)
   ]);
 
   const activeNumbers = dedupeCards([
@@ -493,43 +473,7 @@ export function App() {
     handleClear();
   };
 
-  const getContextObjects = (): (AACCard & { audioUrl?: string; imageUrl?: string; is_admin?: boolean })[] => {
-    const selectedVerb = selectedCards.find(c => c.category === 'verb');
-    if (!selectedVerb) return activeObjects;
 
-    const verbId = (selectedVerb.id || '').toLowerCase();
-    const verbEng = (selectedVerb.englishMeaning || '').toLowerCase();
-    const verbBur = selectedVerb.burmese || '';
-
-    const isEat = verbId === 'eat' || verbEng.includes('eat') || verbBur.includes('စား');
-    const isDrink = verbId === 'drink' || verbEng.includes('drink') || verbBur.includes('သောက်');
-    const isGo = verbId === 'go' || verbEng.includes('go') || verbBur.includes('သွား');
-
-    if (isEat || isDrink) {
-      return dedupeCards(
-        apiIcons
-          .filter(icon => icon.category_id === 'food')
-          .map(mapIconToAAC)
-      );
-    }
-
-    if (isGo) {
-      return activeLocations;
-    }
-
-    // Fallback to screen3Category pills
-    if (screen3Category === 'activities') return activeActivities;
-    if (screen3Category === 'locations') return activeLocations;
-    if (screen3Category === 'body_parts') return activeBodyParts;
-    if (screen3Category === 'feelings') return activeFeelings;
-    if (screen3Category === 'numbers') return activeNumbers;
-    if (screen3Category === 'directions') return activeDirections;
-    return activeObjects;
-  };
-
-
-  const selectedVerbCard = selectedCards.find(c => c.category === 'verb');
-  const contextObjects = getContextObjects();
 
   if (parentMode && currentUser) {
     return (
@@ -747,7 +691,7 @@ export function App() {
               onClick={() => { if (selectedCards.length >= 1) setCurrentStep(2); }}
               disabled={selectedCards.length < 1}
             >
-              ၂။ ဘာလုပ်ချင်လဲ
+              ၂။ ဘာလေးလဲ
             </button>
               <span style={{ color: '#9CA3AF', fontSize: '0.8rem' }}>&#8594;</span>
             <button 
@@ -755,7 +699,7 @@ export function App() {
               onClick={() => { if (selectedCards.length >= 2) setCurrentStep(3); }}
               disabled={selectedCards.length < 2}
             >
-              ၃။ ဘာလေးလဲ
+              ၃။ ဘာလုပ်ချင်လဲ
             </button>
           </div>
         )}
@@ -865,9 +809,10 @@ export function App() {
                       <span>၁။ ဘယ်သူလဲဟင်?</span>
                     </h2>
                   </div>
+                  {iconsLoading ? <SkeletonGrid /> : (
                   <div className="card-grid">
                     {activeSubjects.map(card => renderCardButton(card, () => handleCardClick(card)))}
-                  </div>
+                  </div>)}
                 </div>
 
                 {/* Grid 2: Daily Shortcuts & Mom's Voice / Stories */}
@@ -888,73 +833,26 @@ export function App() {
                       <div className="card-text" style={{ color: '#facc15', fontWeight: 800 }}>မေမေ့ပုံပြင်များ</div>
                     </button>
 
-                    {activeShortcuts.map(card => renderCardButton(card, () => handleCardClick(card)))}
+                    {iconsLoading && activeShortcuts.length === 0 ? (
+                      Array.from({ length: 3 }).map((_, i) => <div key={`skel-short-${i}`} className="skeleton-card" />)
+                    ) : (
+                      activeShortcuts.map(card => renderCardButton(card, () => handleCardClick(card)))
+                    )}
                   </div>
                 </div>
               </>
             )}
 
-            {/* SCREEN 2: Actions & Modals */}
+            {/* SCREEN 2: Objects, Activities, Numbers, Directions, Locations */}
             {currentStep === 2 && (
-              <div>
-                <div className="section-header">
-                  <h2 className="section-title">
-                    <span>၂။ ဘာလုပ်ချင်လဲ / ဘယ်လိုနေလဲ?</span>
-                  </h2>
-                </div>
-                <div className="card-grid">
-                  {[...activeVerbs, ...activeActions].map(card => renderCardButton(card, () => handleCardClick(card)))}
-                </div>
-              </div>
-            )}
-
-            {/* SCREEN 3: Object / Activity / Quantity / Direction / Location Selection */}
-            {currentStep === 3 && (
               <>
                 <div className="section-header">
                   <h2 className="section-title">
-                    <span>
-                      ၃။ {selectedVerbCard ? selectedVerbCard.burmese : ''}
-                    </span>
+                    <span>၂။ ဘာလေးလဲ</span>
                   </h2>
-                  {screen3Category === 'activities' && (
-                    <span className="section-badge">
-                      လှုပ်ရှားမှု ရွေးရအောင်
-                    </span>
-                  )}
-                  {screen3Category === 'locations' && (
-                    <span className="section-badge">
-                      ဘယ်နေရာမှာလဲ ပြောရအောင်
-                    </span>
-                  )}
-                  {screen3Category === 'numbers' && (
-                    <span className="section-badge">
-                      ပမာဏနဲ့ ဂဏန်းလေး ရွေးရအောင်
-                    </span>
-                  )}
-                  {screen3Category === 'objects' && (selectedVerbCard?.id === 'v1' || selectedVerbCard?.id === 'v2') && (
-                    <span className="section-badge">
-                      မုန့်/ပစ္စည်း ပြီးရင် ပမာဏမေးပါမည်
-                    </span>
-                  )}
-                  {screen3Category === 'feelings' && (
-                    <span className="section-badge">
-                      ခံစားချက်/အခြေအနေ ရွေးရအောင်
-                    </span>
-                  )}
                 </div>
 
-                {/* Requirement 3: Compact Category Pill Bar for Step 3 */}
                 <div className="category-pill-bar">
-                  <button 
-                    type="button"
-                    className={`category-pill ${screen3Category === 'activities' ? 'active' : ''}`}
-                    onClick={() => setScreen3Category('activities')}
-                  >
-                    <span><Zap size={16} /></span>
-                    <span>လှုပ်ရှားမှုများ</span>
-                  </button>
-
                   <button 
                     type="button"
                     className={`category-pill ${screen3Category === 'objects' ? 'active' : ''}`}
@@ -962,6 +860,15 @@ export function App() {
                   >
                     <span><ShoppingBag size={16} /></span>
                     <span>အရာဝတ္ထုနဲ့ မုန့်</span>
+                  </button>
+
+                  <button 
+                    type="button"
+                    className={`category-pill ${screen3Category === 'activities' ? 'active' : ''}`}
+                    onClick={() => setScreen3Category('activities')}
+                  >
+                    <span><Zap size={16} /></span>
+                    <span>လှုပ်ရှားမှုများ</span>
                   </button>
 
                   <button 
@@ -992,29 +899,32 @@ export function App() {
                   </button>
                 </div>
 
-
                 {screen3Category === 'activities' && (
+                  iconsLoading ? <SkeletonGrid /> : (
                   <div className="card-grid">
                     {activeActivities.map(card => renderCardButton(card, () => handleCardClick(card)))}
-                  </div>
+                  </div>)
                 )}
 
                 {screen3Category === 'objects' && (
+                  iconsLoading ? <SkeletonGrid /> : (
                   <div className="card-grid">
-                    {contextObjects.map(card => renderCardButton(card, () => handleCardClick(card)))}
-                  </div>
+                    {activeObjects.map(card => renderCardButton(card, () => handleCardClick(card)))}
+                  </div>)
                 )}
 
                 {screen3Category === 'body_parts' && (
+                  iconsLoading ? <SkeletonGrid /> : (
                   <div className="card-grid">
                     {activeBodyParts.map(card => renderCardButton(card, () => handleCardClick(card)))}
-                  </div>
+                  </div>)
                 )}
 
                 {screen3Category === 'feelings' && (
+                  iconsLoading ? <SkeletonGrid /> : (
                   <div className="card-grid">
                     {activeFeelings.map(card => renderCardButton(card, () => handleCardClick(card)))}
-                  </div>
+                  </div>)
                 )}
 
                 {screen3Category === 'numbers' && (
@@ -1030,11 +940,27 @@ export function App() {
                 )}
 
                 {screen3Category === 'locations' && (
+                  iconsLoading ? <SkeletonGrid /> : (
                   <div className="card-grid">
                     {activeLocations.map(card => renderCardButton(card, () => handleCardClick(card)))}
-                  </div>
+                  </div>)
                 )}
               </>
+            )}
+
+            {/* SCREEN 3: Verbs & Modals */}
+            {currentStep === 3 && (
+              <div>
+                <div className="section-header">
+                  <h2 className="section-title">
+                    <span>၃။ ဘာလုပ်ချင်လဲ</span>
+                  </h2>
+                </div>
+                {iconsLoading ? <SkeletonGrid /> : (
+                <div className="card-grid">
+                  {activeVerbs.map(card => renderCardButton(card, () => handleCardClick(card)))}
+                </div>)}
+              </div>
             )}
           </>
         )}
