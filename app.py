@@ -329,6 +329,22 @@ def sentence_analytics():
 
 
 # ──────────────────────────────────────────────
+# Emotions (stub — AuraAACSensor calls these)
+# ──────────────────────────────────────────────
+@app.route("/api/emotions/log", methods=["POST"])
+def emotion_log():
+    return jsonify({"ok": True})
+
+@app.route("/api/emotions/history")
+def emotion_history():
+    return jsonify([])
+
+@app.route("/api/emotions/stats")
+def emotion_stats():
+    return jsonify({"total": 0, "counts": {}, "daily": {}, "hourly": {}})
+
+
+# ──────────────────────────────────────────────
 # Routines
 # ──────────────────────────────────────────────
 @app.route("/api/routines", methods=["GET", "POST"])

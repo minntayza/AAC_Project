@@ -33,7 +33,7 @@ export function App() {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [screen3Category, setScreen3Category] = useState<Screen3Category>('objects');
   const [isSentenceFinished, setIsSentenceFinished] = useState(false);
-  const [, setRephrasedText] = useState<string | null>(null);
+  const [rephrasedText, setRephrasedText] = useState<string | null>(null);
 
   // Side drawer & game state
   const [showDrawer, setShowDrawer] = useState(false);
@@ -271,7 +271,7 @@ export function App() {
         setShowAuthModal(true);
       }
     } else {
-      setMathError('အဖြေ မှားနေပါသည် (Incorrect answer, try again!)');
+      setMathError('အဖြေ မှားနေပါသည်');
       generateMathChallenge();
     }
   };
@@ -492,10 +492,28 @@ export function App() {
 
   const getContextObjects = (): (AACCard & { audioUrl?: string; imageUrl?: string; is_admin?: boolean })[] => {
     const selectedVerb = selectedCards.find(c => c.category === 'verb');
+    const verbId = (selectedVerb?.id || '').toLowerCase();
+    const verbEng = (selectedVerb?.englishMeaning || '').toLowerCase();
+
+    const isEat = verbId === 'eat' || verbId === 'v1' || verbEng.includes('eat') || (selectedVerb as any)?.category_id === 'food';
+    const isDrink = verbId === 'drink' || verbId === 'v2' || verbEng.includes('drink');
+    const isGo = verbId === 'go' || verbId === 'v10' || verbEng.includes('go');
+
+    if (isEat || isDrink) {
+      return dedupeCards(
+        apiIcons
+          .filter(icon => icon.category_id === 'food')
+          .map(mapIconToAAC)
+      );
+    }
+
+    if (isGo) {
+      return activeLocations;
+    }
 
     if (screen3Category === 'activities' || selectedVerb?.subCategory === 'modal' || selectedVerb?.id.startsWith('m')) {
       return activeActivities;
-    } else if (screen3Category === 'locations' || selectedVerb?.id === 'v10') {
+    } else if (screen3Category === 'locations') {
       return activeLocations;
     } else if (screen3Category === 'body_parts' || selectedVerb?.id === 'v9' || selectedVerb?.id === 'm9') {
       return activeBodyParts;
@@ -557,8 +575,8 @@ export function App() {
               >
                 <span className="drawer-item-icon game-icon-bounce"><Gamepad2 size={20} /></span>
                 <div className="drawer-item-text">
-                  <span className="drawer-item-label">Memory Game</span>
-                  <span className="drawer-item-sublabel">တိရစ္ဆာန် memory ကစားပွဲ</span>
+                  <span className="drawer-item-label">မှတ်ဉာဏ်ကစားပွဲ</span>
+                  <span className="drawer-item-sublabel">တိရစ္ဆာန် မှတ်ဉာဏ်ကစားပွဲ</span>
                 </div>
               </button>
               <button
@@ -574,7 +592,7 @@ export function App() {
               >
                 <span className="drawer-item-icon"><Settings size={20} /></span>
                 <div className="drawer-item-text">
-                  <span className="drawer-item-label">Caregiver Settings</span>
+                  <span className="drawer-item-label">မိဘ/ဆရာမ ပြင်ဆင်ရန်</span>
                   <span className="drawer-item-sublabel">မိဘ/ဆရာမ ပြင်ဆင်ရန်</span>
                 </div>
               </button>
@@ -610,7 +628,7 @@ export function App() {
               <Lock size={28} />
             </div>
 
-            <h2 className="portal-title">မိဘ/ဆရာမ ပြင်ဆင်ရန် နေရာ (Caregiver Portal)</h2>
+            <h2 className="portal-title">မိဘ/ဆရာမ ပြင်ဆင်ရန် နေရာ</h2>
             <p className="portal-subtitle">ကလေးငယ်များ မတော်တဆ ပြင်ဆင်မှုမပြုနိုင်ရန် အောက်ပါ ပုစ္ဆာကို ဖြေဆိုပါ</p>
 
             <form onSubmit={handleUnlockPortal} className="portal-math-box">
@@ -628,7 +646,7 @@ export function App() {
               {mathError && <div className="error-hint">{mathError}</div>}
               
               <button type="submit" className="btn-portal-unlock">
-                ပြင်ဆင်ရန် ဝင်မည် (Unlock Settings)
+                ပြင်ဆင်ရန် ဝင်မည်
               </button>
             </form>
           </div>
@@ -641,7 +659,7 @@ export function App() {
           <div className="portal-modal" style={{ maxWidth: '540px', width: '92%', borderRadius: '24px', padding: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#1F2937', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <BookOpen size={24} color="#667eea" /> မေမေ့ ၁ မိနစ် ပုံပြင်များ (Mom's Stories)
+                <BookOpen size={24} color="#667eea" /> မေမေ့ ၁ မိနစ် ပုံပြင်များ
               </h2>
               <button onClick={() => setShowStoriesModal(false)} style={{ border: 'none', background: '#F3F4F6', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#6B7280' }}><X size={18} /></button>
             </div>
@@ -688,7 +706,7 @@ export function App() {
               onClick={() => setShowStoriesModal(false)}
               style={{ marginTop: '20px', width: '100%', padding: '12px', borderRadius: '14px', background: '#F5F3FF', color: '#667eea', border: '2px solid rgba(102, 126, 234, 0.15)', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.95rem' }}
             >
-              ပိတ်မည် (Close)
+              ပိတ်မည်
             </button>
           </div>
         </div>
@@ -750,7 +768,7 @@ export function App() {
           <div className="sentence-display">
             {selectedCards.length === 0 ? (
               <div className="sentence-placeholder">
-                <span>ပုံလေးတွေ နှိပ်ပြီး ပြောကြည့်ရအောင် (Tap pictures to build sentence)</span>
+                <span>ပုံလေးတွေ နှိပ်ပြီး ပြောကြည့်ရအောင်</span>
               </div>
             ) : (
               selectedCards.map((card: any, index) => (
@@ -845,7 +863,7 @@ export function App() {
                 <div>
                   <div className="section-header">
                     <h2 className="section-title">
-                      <span>၁။ ဘယ်သူလဲဟင်? (Who is it?)</span>
+                      <span>၁။ ဘယ်သူလဲဟင်?</span>
                     </h2>
                   </div>
                   <div className="card-grid">
@@ -857,7 +875,7 @@ export function App() {
                 <div style={{ marginTop: '16px' }}>
                   <div className="section-header">
                     <h2 className="section-title">
-                      <span>ခဏခဏ ပြောတာတွေ (Daily Shortcuts & Mom's Voice)</span>
+                      <span>ခဏခဏ ပြောတာတွေ</span>
                     </h2>
                   </div>
                   <div className="card-grid">
@@ -882,7 +900,7 @@ export function App() {
               <div>
                 <div className="section-header">
                   <h2 className="section-title">
-                    <span>၂။ ဘာလုပ်ချင်လဲ / ဘယ်လိုနေလဲ? (Actions & Modals)</span>
+                    <span>၂။ ဘာလုပ်ချင်လဲ / ဘယ်လိုနေလဲ?</span>
                   </h2>
                 </div>
                 <div className="card-grid">
@@ -902,27 +920,27 @@ export function App() {
                   </h2>
                   {screen3Category === 'activities' && (
                     <span className="section-badge">
-                      လှုပ်ရှားမှု ရွေးရအောင် (Pick Activity)
+                      လှုပ်ရှားမှု ရွေးရအောင်
                     </span>
                   )}
                   {screen3Category === 'locations' && (
                     <span className="section-badge">
-                      ဘယ်နေရာမှာလဲ ပြောရအောင် (Pick Location)
+                      ဘယ်နေရာမှာလဲ ပြောရအောင်
                     </span>
                   )}
                   {screen3Category === 'numbers' && (
                     <span className="section-badge">
-                      ပမာဏနဲ့ ဂဏန်းလေး ရွေးရအောင် (Pick Amount/Number)
+                      ပမာဏနဲ့ ဂဏန်းလေး ရွေးရအောင်
                     </span>
                   )}
                   {screen3Category === 'objects' && (selectedVerbCard?.id === 'v1' || selectedVerbCard?.id === 'v2') && (
                     <span className="section-badge">
-                      မုန့်/ပစ္စည်း ပြီးရင် ပမာဏမေးပါမည် (Pick Object)
+                      မုန့်/ပစ္စည်း ပြီးရင် ပမာဏမေးပါမည်
                     </span>
                   )}
                   {screen3Category === 'feelings' && (
                     <span className="section-badge">
-                      ခံစားချက်/အခြေအနေ ရွေးရအောင် (Pick Feeling)
+                      ခံစားချက်/အခြေအနေ ရွေးရအောင်
                     </span>
                   )}
                 </div>
@@ -935,7 +953,7 @@ export function App() {
                     onClick={() => setScreen3Category('activities')}
                   >
                     <span><Zap size={16} /></span>
-                    <span>လှုပ်ရှားမှုများ (Activities)</span>
+                    <span>လှုပ်ရှားမှုများ</span>
                   </button>
 
                   <button 
@@ -944,7 +962,7 @@ export function App() {
                     onClick={() => setScreen3Category('objects')}
                   >
                     <span><ShoppingBag size={16} /></span>
-                    <span>အရာဝတ္ထုနဲ့ မုန့် (Things & Snacks)</span>
+                    <span>အရာဝတ္ထုနဲ့ မုန့်</span>
                   </button>
 
                   <button 
@@ -953,7 +971,7 @@ export function App() {
                     onClick={() => setScreen3Category('numbers')}
                   >
                     <span><Hash size={16} /></span>
-                    <span>ပမာဏနဲ့ ဂဏန်း (Amounts & Numbers)</span>
+                    <span>ပမာဏနဲ့ ဂဏန်း</span>
                   </button>
 
                   <button 
@@ -962,7 +980,7 @@ export function App() {
                     onClick={() => setScreen3Category('directions')}
                   >
                     <span><Navigation size={16} /></span>
-                    <span>လမ်းကြောင်း (Directions)</span>
+                    <span>လမ်းကြောင်း</span>
                   </button>
 
                   <button 
@@ -971,7 +989,7 @@ export function App() {
                     onClick={() => setScreen3Category('locations')}
                   >
                     <span><MapPin size={16} /></span>
-                    <span>နေရာ (Places & Locations)</span>
+                    <span>နေရာ</span>
                   </button>
                 </div>
 
