@@ -25,7 +25,7 @@ import {
   ArrowDown,
 } from 'lucide-react';
 import { allCards } from '../data';
-import { changePassword, saveCustomCard, getCustomCards, deleteCustomCard, updateCustomCard, getRoutines, createRoutine, deleteRoutine, type CustomCardData, type Routine, type RoutineInput } from '../api';
+import { changePassword, saveCustomCard, getCustomCards, deleteCustomCard, updateCustomCard, getRoutines, createRoutine, deleteRoutine, type CustomCardData, type Routine } from '../api';
 
 interface ParentPortalProps {
   user: { id: string; username: string; role: string };
