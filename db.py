@@ -342,6 +342,95 @@ def get_sentence_analytics(user_id: str | None = None) -> dict:
 
 
 # ── Icons & Categories ──
+LOCAL_SEED_CATEGORIES = [
+    {"id": "food",     "name_en": "Food & Drink",  "name_my": "အစားအသောက်",   "color": "#FF6B6B", "icon_order": 1},
+    {"id": "feelings", "name_en": "Feelings",      "name_my": "ခံစားချက်များ",    "color": "#FFD93D", "icon_order": 2},
+    {"id": "actions",  "name_en": "Actions",       "name_my": "လုပ်ဆောင်ချက်များ", "color": "#6BCB77", "icon_order": 3},
+    {"id": "verbs",    "name_en": "Verbs",         "name_my": "ကြိယာများ",       "color": "#4CAF50", "icon_order": 3},
+    {"id": "places",   "name_en": "Places",        "name_my": "နေရာများ",        "color": "#4D96FF", "icon_order": 4},
+    {"id": "people",   "name_en": "People",        "name_my": "လူများ",          "color": "#9B59B6", "icon_order": 5},
+    {"id": "body",     "name_en": "Body & Health", "name_my": "ခန္ဓာကိုယ်",      "color": "#E67E22", "icon_order": 6},
+    {"id": "shortcuts","name_en": "Shortcuts",     "name_my": "အတိုကောက်များ",  "color": "#F59E0B", "icon_order": 7},
+    {"id": "choices",  "name_en": "Choices",       "name_my": "ရွေးချယ်မှုများ",  "color": "#EC4899", "icon_order": 8},
+]
+
+LOCAL_SEED_ICONS = [
+    # Food & Drink
+    {"id": "water",      "category_id": "food", "label_en": "Water",  "label_my": "ရေ",        "image_url": "💧",  "icon_order": 1},
+    {"id": "noodles",    "category_id": "food", "label_en": "Noodles","label_my": "ခေါက်ဆွဲ",    "image_url": "🍜",  "icon_order": 2},
+    {"id": "milk",       "category_id": "food", "label_en": "Milk",   "label_my": "နို့",        "image_url": "🥛",  "icon_order": 3},
+    {"id": "banana",     "category_id": "food", "label_en": "Banana", "label_my": "ငှက်ပျောသီး","image_url": "🍌",  "icon_order": 4},
+    {"id": "bread",      "category_id": "food", "label_en": "Bread",  "label_my": "ပေါင်မုန့်",   "image_url": "🍞",  "icon_order": 5},
+    {"id": "chips",      "category_id": "food", "label_en": "Chips",  "label_my": "အာလူးကြော်",  "image_url": "🍟",  "icon_order": 6},
+    {"id": "friedChicken","category_id": "food","label_en": "Fried chicken","label_my": "ကြက်ကြော်","image_url": "🍗","icon_order": 7},
+    {"id": "cake",       "category_id": "food", "label_en": "Cake",   "label_my": "ကိတ်မုန့်",    "image_url": "🎂",  "icon_order": 8},
+    {"id": "candy",      "category_id": "food", "label_en": "Candy",  "label_my": "သကြားလုံး",   "image_url": "🍬",  "icon_order": 9},
+    {"id": "icecream",   "category_id": "food", "label_en": "Ice cream","label_my": "ရေခဲမုန့်",  "image_url": "🍦",  "icon_order": 10},
+    {"id": "chocolate",  "category_id": "food", "label_en": "Chocolate","label_my": "ချောကလတ်",  "image_url": "🍫", "icon_order": 11},
+    # Feelings
+    {"id": "happy",      "category_id": "feelings", "label_en": "Happy",   "label_my": "ပျော်တယ်",     "image_url": "😊", "icon_order": 1},
+    {"id": "sad",        "category_id": "feelings", "label_en": "Sad",     "label_my": "ဝမ်းနည်းတယ်",  "image_url": "😢", "icon_order": 2},
+    {"id": "angry",      "category_id": "feelings", "label_en": "Angry",   "label_my": "စိတ်ဆိုးတယ်",   "image_url": "😠", "icon_order": 3},
+    {"id": "scared",     "category_id": "feelings", "label_en": "Scared",  "label_my": "ကြောက်တယ်",    "image_url": "😨", "icon_order": 4},
+    {"id": "tired",      "category_id": "feelings", "label_en": "Tired",   "label_my": "ပင်ပန်းတယ်",   "image_url": "😴", "icon_order": 5},
+    {"id": "hungry",     "category_id": "feelings", "label_en": "Hungry",  "label_my": "ဗိုက်ဆာတယ်",   "image_url": "🤤", "icon_order": 6},
+    {"id": "sick",       "category_id": "feelings", "label_en": "Sick",    "label_my": "မကျန်းမာဘူး",  "image_url": "🤒", "icon_order": 7},
+    {"id": "love",       "category_id": "feelings", "label_en": "Love",    "label_my": "ချစ်တယ်",      "image_url": "❤️", "icon_order": 8},
+    {"id": "cold",       "category_id": "feelings", "label_en": "Cold",    "label_my": "အေးတယ်",       "image_url": "🥶", "icon_order": 9},
+    # Actions (activity-type — finish sentence directly)
+    {"id": "run",        "category_id": "actions", "label_en": "Run",         "label_my": "ပြေးမယ်",       "image_url": "🏃", "icon_order": 1},
+    {"id": "read",       "category_id": "actions", "label_en": "Read",        "label_my": "စာဖတ်မယ်",      "image_url": "📖", "icon_order": 2},
+    {"id": "play",       "category_id": "actions", "label_en": "Play",        "label_my": "ကစားမယ်",       "image_url": "🎮", "icon_order": 3},
+    {"id": "sleep",      "category_id": "actions", "label_en": "Sleep",       "label_my": "အိပ်မယ်",       "image_url": "🛏️", "icon_order": 4},
+    {"id": "bath",       "category_id": "actions", "label_en": "Take a bath", "label_my": "ရေချိုးမယ်",     "image_url": "🚿", "icon_order": 5},
+    {"id": "badminton",  "category_id": "actions", "label_en": "Play badminton","label_my": "ကြက်တောင်ရိုက်မယ်","image_url": "🏸","icon_order": 6},
+    {"id": "swim",       "category_id": "actions", "label_en": "Swim",        "label_my": "ရေကူးမယ်",      "image_url": "🏊", "icon_order": 7},
+    {"id": "football",   "category_id": "actions", "label_en": "Play football","label_my": "ဘောလုံးကန်မယ်",  "image_url": "⚽", "icon_order": 8},
+    {"id": "bicycle",    "category_id": "actions", "label_en": "Ride bicycle","label_my": "စက်ဘီးစီးမယ်",   "image_url": "🚲", "icon_order": 9},
+    # Verbs (eat/drink/go — route to page 3)
+    {"id": "eat",        "category_id": "verbs", "label_en": "Eat",   "label_my": "စားမယ်",  "image_url": "🍽️", "icon_order": 1},
+    {"id": "go",         "category_id": "verbs", "label_en": "Go",    "label_my": "သွားမယ်",  "image_url": "🚶",  "icon_order": 2},
+    {"id": "drink",      "category_id": "verbs", "label_en": "Drink", "label_my": "သောက်မယ်","image_url": "🥤",  "icon_order": 3},
+    # Places
+    {"id": "home",       "category_id": "places", "label_en": "Home",     "label_my": "အိမ်",      "image_url": "🏠", "icon_order": 1},
+    {"id": "school",     "category_id": "places", "label_en": "School",   "label_my": "ကျောင်း",   "image_url": "🏫", "icon_order": 2},
+    {"id": "hospital",   "category_id": "places", "label_en": "Hospital", "label_my": "ဆေးရုံ",    "image_url": "🏥", "icon_order": 3},
+    {"id": "park",       "category_id": "places", "label_en": "Park",     "label_my": "ပန်းခြံ",    "image_url": "🌳", "icon_order": 4},
+    {"id": "market",     "category_id": "places", "label_en": "Market",   "label_my": "ဈေး",       "image_url": "🏪", "icon_order": 5},
+    {"id": "playground", "category_id": "places", "label_en": "Playground","label_my": "ကစားကွင်း","image_url": "🛝", "icon_order": 6},
+    {"id": "cinema",     "category_id": "places", "label_en": "Cinema",   "label_my": "ရုပ်ရှင်ရုံ","image_url": "🎬",  "icon_order": 7},
+    {"id": "zoo",        "category_id": "places", "label_en": "Zoo",      "label_my": "တိရစ္ဆာန်ရုံ","image_url": "🐘","icon_order": 8},
+    {"id": "pagoda",     "category_id": "places", "label_en": "Pagoda",   "label_my": "ဘုရား",     "image_url": "🛕", "icon_order": 9},
+    # People
+    {"id": "mom",        "category_id": "people", "label_en": "Mom",     "label_my": "အမေ",     "image_url": "👩", "icon_order": 1},
+    {"id": "dad",        "category_id": "people", "label_en": "Dad",     "label_my": "အဖေ",     "image_url": "👨", "icon_order": 2},
+    {"id": "teacher",    "category_id": "people", "label_en": "Teacher", "label_my": "တီချယ်",   "image_url": "👩‍🏫","icon_order": 3},
+    {"id": "friend",     "category_id": "people", "label_en": "Friend",  "label_my": "သူငယ်ချင်း","image_url": "👫", "icon_order": 4},
+    {"id": "grandpa",    "category_id": "people", "label_en": "Grandpa", "label_my": "အဖိုး",     "image_url": "👴", "icon_order": 5},
+    {"id": "grandma",    "category_id": "people", "label_en": "Grandma", "label_my": "အဖွား",     "image_url": "👵", "icon_order": 6},
+    {"id": "uncle",      "category_id": "people", "label_en": "Uncle",   "label_my": "ဦးလေး",    "image_url": "👨‍💼","icon_order": 7},
+    {"id": "aunt",       "category_id": "people", "label_en": "Aunt",    "label_my": "အန်တီ",    "image_url": "👩‍💼","icon_order": 8},
+    {"id": "he",         "category_id": "people", "label_en": "He",      "label_my": "သူ",       "image_url": "👦", "icon_order": 9},
+    {"id": "she",        "category_id": "people", "label_en": "She",     "label_my": "သူမ",      "image_url": "👧", "icon_order": 10},
+    # Body & Health
+    {"id": "head",       "category_id": "body", "label_en": "Head hurts",    "label_my": "ခေါင်းကိုက်တယ်","image_url": "🤕","icon_order": 1},
+    {"id": "stomach",    "category_id": "body", "label_en": "Stomach hurts", "label_my": "ဗိုက်နာတယ်",    "image_url": "🤢","icon_order": 2},
+    {"id": "hot",        "category_id": "body", "label_en": "Hot",           "label_my": "ပူတယ်",        "image_url": "🥵","icon_order": 3},
+    # Shortcuts
+    {"id": "yes",         "category_id": "shortcuts", "label_en": "Yes",                "label_my": "ဟုတ်ကဲ့",      "image_url": "👍", "icon_order": 1},
+    {"id": "no",          "category_id": "shortcuts", "label_en": "No",                 "label_my": "မဟုတ်ဘူး",     "image_url": "👎", "icon_order": 2},
+    {"id": "emergency",   "category_id": "shortcuts", "label_en": "Help, emergency",    "label_my": "အရေးပေါ်ကူညီပါ","image_url": "🆘","icon_order": 3},
+    {"id": "toilet",      "category_id": "shortcuts", "label_en": "Toilet",             "label_my": "အိမ်သာသွားမယ်","image_url": "🚽","icon_order": 4},
+    {"id": "drinkWater",  "category_id": "shortcuts", "label_en": "I want to drink water","label_my": "ရေသောက်မယ်","image_url": "🚰","icon_order": 5},
+    {"id": "iAmHungry",   "category_id": "shortcuts", "label_en": "I am hungry",        "label_my": "ဗိုက်ဆာတယ်",   "image_url": "🍽️","icon_order": 6},
+    {"id": "wantToSleep", "category_id": "shortcuts", "label_en": "Want to sleep",      "label_my": "အိပ်ချင်တယ်",  "image_url": "🥱", "icon_order": 7},
+    {"id": "iAmScare",    "category_id": "shortcuts", "label_en": "I am scared",        "label_my": "ကြောက်တယ်",   "image_url": "😨", "icon_order": 8},
+    # Choices (modals)
+    {"id": "wantTo",      "category_id": "choices", "label_en": "Want to",      "label_my": "လုပ်ချင်တယ်", "image_url": "🤲", "icon_order": 1},
+    {"id": "dontWantTo",  "category_id": "choices", "label_en": "Don't want to","label_my": "မလုပ်ချင်ဘူး","image_url": "🙅", "icon_order": 2},
+]
+
+
 def get_categories() -> list[dict]:
     db = get_db()
     if db is not None:
@@ -351,7 +440,7 @@ def get_categories() -> list[dict]:
                 return result.data
         except Exception as e:
             logger.error("get_categories failed: %s", e)
-    return []
+    return list(LOCAL_SEED_CATEGORIES)
 
 
 def get_icons(category_id: str | None = None) -> list[dict]:
@@ -366,7 +455,10 @@ def get_icons(category_id: str | None = None) -> list[dict]:
                 return result.data
         except Exception as e:
             logger.error("get_icons failed: %s", e)
-    return []
+    icons = list(LOCAL_SEED_ICONS)
+    if category_id:
+        icons = [ic for ic in icons if ic["category_id"] == category_id]
+    return icons
 
 
 # ── Favorites ──

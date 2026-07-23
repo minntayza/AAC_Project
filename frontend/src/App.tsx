@@ -33,7 +33,7 @@ export function App() {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [screen3Category, setScreen3Category] = useState<Screen3Category>('objects');
   const [isSentenceFinished, setIsSentenceFinished] = useState(false);
-  const [, setRephrasedText] = useState<string | null>(null);
+  const [rephrasedText, setRephrasedText] = useState<string | null>(null);
 
   // Side drawer & game state
   const [showDrawer, setShowDrawer] = useState(false);
@@ -479,10 +479,28 @@ export function App() {
 
   const getContextObjects = (): (AACCard & { audioUrl?: string; imageUrl?: string; is_admin?: boolean })[] => {
     const selectedVerb = selectedCards.find(c => c.category === 'verb');
+    const verbId = (selectedVerb?.id || '').toLowerCase();
+    const verbEng = (selectedVerb?.englishMeaning || '').toLowerCase();
+
+    const isEat = verbId === 'eat' || verbId === 'v1' || verbEng.includes('eat') || (selectedVerb as any)?.category_id === 'food';
+    const isDrink = verbId === 'drink' || verbId === 'v2' || verbEng.includes('drink');
+    const isGo = verbId === 'go' || verbId === 'v10' || verbEng.includes('go');
+
+    if (isEat || isDrink) {
+      return dedupeCards(
+        apiIcons
+          .filter(icon => icon.category_id === 'food')
+          .map(mapIconToAAC)
+      );
+    }
+
+    if (isGo) {
+      return activeLocations;
+    }
 
     if (screen3Category === 'activities' || selectedVerb?.subCategory === 'modal' || selectedVerb?.id.startsWith('m')) {
       return activeActivities;
-    } else if (screen3Category === 'locations' || selectedVerb?.id === 'v10') {
+    } else if (screen3Category === 'locations') {
       return activeLocations;
     } else if (screen3Category === 'body_parts' || selectedVerb?.id === 'v9' || selectedVerb?.id === 'm9') {
       return activeBodyParts;
