@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Volume2, Trash2, ArrowLeft, Settings, RotateCcw, Lock, X, Play, BookOpen } from 'lucide-react';
+import { Volume2, Trash2, ArrowLeft, Settings, RotateCcw, Lock, X, Play, BookOpen, ListChecks } from 'lucide-react';
 import {
   subjectCards,
   dailyShortcutCards,
@@ -10,10 +10,11 @@ import {
   numberCards,
   directionCards,
   locationCards,
+  allCards,
   CATEGORY_ROLE,
 } from './data';
 import type { AACCard } from './data';
-import { textToSpeech, saveSentence, getCustomCards, getCategories, getIcons, rephraseSentence, type CustomCardData, type IconData } from './api';
+import { textToSpeech, saveSentence, getCustomCards, getCategories, getIcons, rephraseSentence, getRoutines, getRoutineSteps, type CustomCardData, type IconData, type Routine, type RoutineStep } from './api';
 import { AuthModal } from './components/AuthModal';
 import { ParentPortal } from './components/ParentPortal';
 import './index.css';
@@ -43,6 +44,17 @@ export function App() {
   // API-fetched icons from Supabase
   const [apiIcons, setApiIcons] = useState<IconData[]>([]);
 
+  // Routine player state
+  const [routines, setRoutines] = useState<Routine[]>([]);
+  const [showRoutinesModal, setShowRoutinesModal] = useState(false);
+  const [routinesLoading, setRoutinesLoading] = useState(false);
+  const [routineError, setRoutineError] = useState('');
+  const [playingRoutine, setPlayingRoutine] = useState<Routine | null>(null);
+  const [playingSteps, setPlayingSteps] = useState<RoutineStep[]>([]);
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [confettiKey, setConfettiKey] = useState(0);
+
   // Caregiver user state (persisted in localStorage)
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string; role: string } | null>(() => {
     try {
@@ -64,6 +76,15 @@ export function App() {
       .then(([, icons]) => setApiIcons(icons))
       .catch(() => {});
   }, [parentMode]);
+
+  // Fetch routines for child-side access
+  useEffect(() => {
+    setRoutinesLoading(true);
+    getRoutines()
+      .then(data => setRoutines(data))
+      .catch(() => setRoutineError('Failed to load routines'))
+      .finally(() => setRoutinesLoading(false));
+  }, []);
 
   // Map DB Icon → AACCard (detect URL vs emoji)
   const mapIconToAAC = (icon: IconData): AACCard & { imageUrl?: string; audioUrl?: string } => ({
@@ -511,6 +532,93 @@ export function App() {
         </div>
       )}
 
+      {/* ── ROUTINE LIST MODAL ── */}
+      {showRoutinesModal && (
+        <div className="modal-overlay" style={{ zIndex: 1200 }}>
+          <div style={{ background: '#FFF', borderRadius: '24px', padding: '24px', maxWidth: '480px', width: '92%', maxHeight: '75vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#1E293B', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <ListChecks size={24} color="#7C3AED" /> 📋 လုပ်ရိုးလုပ်စဉ် (My Routines)
+              </h2>
+              <button onClick={() => setShowRoutinesModal(false)} style={{ border: 'none', background: 'none', cursor: 'pointer' }}><X size={20} /></button>
+            </div>
+
+            {/* Loading state */}
+            {routinesLoading && (
+              <div style={{ textAlign: 'center', padding: '30px', color: '#94A3B8' }}>
+                <div style={{ fontSize: '2rem', marginBottom: '8px' }}>⏳</div>
+                <p style={{ fontWeight: 700 }}>Loading...</p>
+              </div>
+            )}
+
+            {/* Error state */}
+            {routineError && !routinesLoading && (
+              <div style={{ textAlign: 'center', padding: '30px' }}>
+                <div style={{ fontSize: '2rem', marginBottom: '8px' }}>😕</div>
+                <p style={{ fontWeight: 700, color: '#DC2626' }}>ဝမ်းနည်းပါတယ်... (Sorry, something went wrong)</p>
+                <button
+                  onClick={() => {
+                    setRoutineError('');
+                    setRoutinesLoading(true);
+                    getRoutines().then(d => setRoutines(d)).catch(() => setRoutineError('Failed to load')).finally(() => setRoutinesLoading(false));
+                  }}
+                  style={{ marginTop: '12px', padding: '8px 20px', borderRadius: '10px', background: '#2563EB', color: '#FFF', border: 'none', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  ပြန်ကြိုးစားမည် (Retry)
+                </button>
+              </div>
+            )}
+
+            {/* Empty state */}
+            {!routinesLoading && !routineError && routines.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '30px', color: '#94A3B8' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '8px' }}>📋</div>
+                <p style={{ fontWeight: 700, color: '#475569' }}>မေမေ့ကို လုပ်ရိုးလုပ်စဉ် ပြင်ဆင်ခိုင်းပါ</p>
+                <p style={{ fontSize: '0.8rem' }}>(Ask your caregiver to set up a routine)</p>
+              </div>
+            )}
+
+            {/* Routine list */}
+            {!routinesLoading && !routineError && routines.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {routines.map(r => (
+                  <button
+                    key={r.id}
+                    onClick={() => {
+                      setShowRoutinesModal(false);
+                      setPlayingRoutine(r);
+                      setCurrentStepIndex(0);
+                      setShowCelebration(false);
+                      setConfettiKey(prev => prev + 1);
+                      getRoutineSteps(r.id)
+                        .then(steps => setPlayingSteps(steps))
+                        .catch(() => {
+                          setPlayingRoutine(null);
+                          setRoutineError('Failed to load routine steps');
+                          setShowRoutinesModal(true);
+                        });
+                    }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '12px', padding: '16px 20px',
+                      borderRadius: '16px', border: '1px solid #E2E8F0', background: '#FFF', cursor: 'pointer', textAlign: 'left',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.04)', transition: 'all 0.2s'
+                    }}
+                  >
+                    <div style={{ fontSize: '2rem' }}>📋</div>
+                    <div>
+                      <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#1E293B' }}>{r.name}</div>
+                      <div style={{ fontSize: '0.78rem', color: '#64748B' }}>
+                        {new Date(r.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Top Header Bar */}
       <header className="app-header">
         <div className="app-title-area">
@@ -544,6 +652,20 @@ export function App() {
             </button>
           </div>
         )}
+
+          {/* My Routines Button */}
+          {!isSentenceFinished && routines.length > 0 && (
+            <button
+              className="btn-routines-header"
+              onClick={() => setShowRoutinesModal(true)}
+              style={{
+                marginLeft: 'auto', padding: '6px 14px', borderRadius: '12px', background: '#F3E8FF', border: '1px solid #C084FC',
+                fontWeight: 700, fontSize: '0.78rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap', color: '#6B21A8'
+              }}
+            >
+              <ListChecks size={16} /> 📋 လုပ်ရိုးလုပ်စဉ်
+            </button>
+          )}
       </header>
 
       {/* Sentence Builder Bar at Top */}
@@ -885,6 +1007,134 @@ export function App() {
             )}
           </>
         )}
+
+      {/* ── ROUTINE PLAY MODE ── */}
+      {playingRoutine && !showRoutinesModal && (
+        <div className="routine-play-overlay" style={{ position: 'fixed', inset: 0, background: '#F8FAFC', zIndex: 1100, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          {/* Close button */}
+          <button
+            onClick={() => { setPlayingRoutine(null); setPlayingSteps([]); setShowCelebration(false); }}
+            style={{ position: 'absolute', top: '20px', right: '20px', padding: '10px', borderRadius: '12px', border: 'none', background: '#E2E8F0', color: '#475569', cursor: 'pointer' }}
+          >
+            <X size={22} />
+          </button>
+
+          {/* Routine name header */}
+          <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#94A3B8', marginBottom: '12px' }}>
+            {playingRoutine.name}
+          </div>
+
+          {/* Celebration state */}
+          {showCelebration ? (
+            <div style={{ textAlign: 'center' }}>
+              {/* Confetti particles */}
+              <div className="confetti-container" key={confettiKey}>
+                {Array.from({ length: 10 }, (_, i) => (
+                  <div
+                    key={i}
+                    className="confetti-particle"
+                    style={{
+                      left: `${10 + (i * 8)}%`,
+                      animationDelay: `${i * 0.1}s`,
+                      backgroundColor: ['#FCD34D', '#FDE047', '#60A5FA', '#F472B6', '#A78BFA', '#34D399'][i % 6],
+                      width: `${8 + Math.random() * 8}px`,
+                      height: `${8 + Math.random() * 8}px`,
+                    }}
+                  />
+                ))}
+              </div>
+
+              <div style={{ fontSize: '4rem', marginBottom: '12px' }}>🎉</div>
+              <h2 style={{ fontSize: '2rem', fontWeight: 900, color: '#1E293B', marginBottom: '4px' }}>
+                တော်လှပါတယ်!
+              </h2>
+              <p style={{ fontSize: '1.1rem', color: '#64748B', marginBottom: '28px' }}>
+                (You did it!)
+              </p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '280px' }}>
+                <button
+                  onClick={() => { setCurrentStepIndex(0); setShowCelebration(false); }}
+                  style={{ padding: '14px', borderRadius: '14px', background: '#2563EB', color: '#FFF', border: 'none', fontWeight: 800, fontSize: '1rem', cursor: 'pointer' }}
+                >
+                  🔄 ပြန်လုပ်မယ် (Do Again)
+                </button>
+                <button
+                  onClick={() => { setPlayingRoutine(null); setPlayingSteps([]); setShowCelebration(false); setShowRoutinesModal(true); }}
+                  style={{ padding: '14px', borderRadius: '14px', background: '#E2E8F0', color: '#475569', border: 'none', fontWeight: 800, fontSize: '1rem', cursor: 'pointer' }}
+                >
+                  📋 လုပ်ရိုးလုပ်စဉ်များ (All Routines)
+                </button>
+              </div>
+            </div>
+          ) : playingSteps.length === 0 ? (
+            /* Error state: routine has no steps */
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '12px' }}>😕</div>
+              <p style={{ fontWeight: 700, color: '#DC2626' }}>ဤလုပ်ရိုးလုပ်စဉ်တွင် အဆင့်များ မရှိပါ</p>
+              <p style={{ fontSize: '0.85rem', color: '#64748B' }}>(This routine has no steps)</p>
+              <button
+                onClick={() => { setPlayingRoutine(null); setPlayingSteps([]); }}
+                style={{ marginTop: '16px', padding: '10px 24px', borderRadius: '12px', background: '#E2E8F0', border: 'none', fontWeight: 700, cursor: 'pointer' }}
+              >
+                နောက်သို့ (Back)
+              </button>
+            </div>
+          ) : (
+            /* Step display */
+            <div style={{ textAlign: 'center', width: '100%', maxWidth: '400px' }}>
+              {/* Step counter */}
+              <div style={{ fontSize: '1rem', fontWeight: 800, color: '#94A3B8', marginBottom: '20px' }}>
+                {toBurmeseDigits(currentStepIndex + 1)} / {toBurmeseDigits(playingSteps.length)}
+              </div>
+
+              {/* Step card */}
+              {(() => {
+                const step = playingSteps[currentStepIndex];
+                const matchCard = allCards.find(c => c.id === step.icon_id);
+                return (
+                  <div style={{
+                    background: '#FFF', borderRadius: '24px', padding: '40px 24px',
+                    border: '2px solid #E2E8F0', boxShadow: '0 10px 30px rgba(0,0,0,0.06)',
+                    marginBottom: '28px', animation: 'fadeIn 0.3s ease'
+                  }}>
+                    <div style={{ fontSize: '5rem', marginBottom: '16px' }}>
+                      {matchCard ? matchCard.emoji : '⭐'}
+                    </div>
+                    <div style={{ fontSize: '1.75rem', fontWeight: 900, color: '#1E293B', marginBottom: '4px' }}>
+                      {step.label}
+                    </div>
+                    {matchCard && (
+                      <div style={{ fontSize: '0.9rem', color: '#64748B' }}>
+                        {matchCard.englishMeaning}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
+              {/* Done button */}
+              <button
+                onClick={() => {
+                  if (currentStepIndex < playingSteps.length - 1) {
+                    setCurrentStepIndex(prev => prev + 1);
+                  } else {
+                    setShowCelebration(true);
+                    setConfettiKey(prev => prev + 1);
+                  }
+                }}
+                style={{
+                  width: '100%', padding: '18px', borderRadius: '16px', background: '#16A34A', color: '#FFF',
+                  border: 'none', fontWeight: 900, fontSize: '1.2rem', cursor: 'pointer',
+                  boxShadow: '0 6px 20px rgba(22,163,74,0.3)', minHeight: '64px'
+                }}
+              >
+                ✅ ပြီးပြီ (Done)
+              </button>
+            </div>
+          )}
+        </div>
+      )}
       </main>
     </div>
   );

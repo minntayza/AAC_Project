@@ -37,6 +37,26 @@ export interface RecentSentence {
   created_at: string;
 }
 
+export interface Routine {
+  id: string;
+  name: string;
+  caregiver_id: string;
+  created_at: string;
+}
+
+export interface RoutineStep {
+  id: string;
+  routine_id: string;
+  icon_id: string;
+  label: string;
+  step_order: number;
+}
+
+export interface RoutineInput {
+  name: string;
+  steps: { icon_id: string; label: string; order: number }[];
+}
+
 export function getCategories(): Promise<CategoryData[]> {
   return fetchJson("/categories");
 }
@@ -123,6 +143,27 @@ export function updateCustomCard(id: string, card: CustomCardData): Promise<Cust
   return fetchJson(`/cards/custom/${id}`, {
     method: "PUT",
     body: JSON.stringify(card),
+  });
+}
+
+export function getRoutines(): Promise<Routine[]> {
+  return fetchJson("/routines");
+}
+
+export function getRoutineSteps(routineId: string): Promise<RoutineStep[]> {
+  return fetchJson(`/routines/${routineId}/steps`);
+}
+
+export function createRoutine(data: RoutineInput): Promise<Routine> {
+  return fetchJson("/routines", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteRoutine(routineId: string): Promise<{ ok: boolean }> {
+  return fetchJson(`/routines/${routineId}`, {
+    method: "DELETE",
   });
 }
 

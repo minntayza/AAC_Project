@@ -19,10 +19,13 @@ import {
   Volume2,
   ShieldCheck,
   Trash2,
-  Edit3
+  Edit3,
+  ListChecks,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 import { allCards } from '../data';
-import { changePassword, saveCustomCard, getCustomCards, deleteCustomCard, updateCustomCard, type CustomCardData } from '../api';
+import { changePassword, saveCustomCard, getCustomCards, deleteCustomCard, updateCustomCard, getRoutines, createRoutine, deleteRoutine, type CustomCardData, type Routine, type RoutineInput } from '../api';
 
 interface ParentPortalProps {
   user: { id: string; username: string; role: string };
@@ -31,7 +34,7 @@ interface ParentPortalProps {
 }
 
 export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogout }) => {
-  const [activeTab, setActiveTab] = useState<'library' | 'add_card' | 'story_studio' | 'settings'>('library');
+  const [activeTab, setActiveTab] = useState<'library' | 'add_card' | 'story_studio' | 'routines' | 'settings'>('library');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [customCards, setCustomCards] = useState<CustomCardData[]>([]);
 
@@ -73,9 +76,28 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
 
   const [cardSuccessMsg, setCardSuccessMsg] = useState('');
 
+  // Routine Builder State
+  const [routines, setRoutines] = useState<Routine[]>([]);
+  const [routinesLoading, setRoutinesLoading] = useState(true);
+  const [routineError, setRoutineError] = useState('');
+  const [showRoutineForm, setShowRoutineForm] = useState(false);
+  const [editingRoutineName, setEditingRoutineName] = useState('');
+  const [editingRoutineSteps, setEditingRoutineSteps] = useState<{ icon_id: string; label: string }[]>([]);
+  const [showIconPicker, setShowIconPicker] = useState(false);
+  const [iconPickerCallback, setIconPickerCallback] = useState<null | ((icon: { id: string; label: string }) => void)>(null);
+  const [routineMsg, setRoutineMsg] = useState('');
+
   // Fetch custom cards on mount
   useEffect(() => {
     getCustomCards().then(cards => setCustomCards(cards)).catch(() => {});
+  }, []);
+
+  // Fetch routines on mount
+  useEffect(() => {
+    getRoutines()
+      .then(data => setRoutines(data))
+      .catch(() => setRoutineError('Failed to load routines'))
+      .finally(() => setRoutinesLoading(false));
   }, []);
 
   // Handle Photo Upload File
@@ -392,6 +414,18 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
           </button>
 
           <button
+            onClick={() => { setActiveTab('routines'); setSidebarOpen(false); }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '14px', border: 'none',
+              background: activeTab === 'routines' ? 'linear-gradient(135deg, #2563EB, #1D4ED8)' : 'transparent',
+              color: activeTab === 'routines' ? '#FFF' : '#94A3B8', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s'
+            }}
+          >
+            <ListChecks size={20} />
+            လုပ်ရိုးလုပ်စဉ် (Routines)
+          </button>
+
+          <button
             onClick={() => { setActiveTab('settings'); setSidebarOpen(false); }}
             style={{
               display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderRadius: '14px', border: 'none',
@@ -449,6 +483,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
               {activeTab === 'library' && '📁 ကတ် စာကြည့်တိုက် (Card Library)'}
               {activeTab === 'add_card' && '➕ ကတ်အသစ် ဖန်တီးရန် (Custom Card Studio)'}
               {activeTab === 'story_studio' && '📖 မေမေ့ ၁ မိနစ် ပုံပြင် အသံလွှင့်ခန်း (Story Studio)'}
+              {activeTab === 'routines' && '📋 လုပ်ရိုးလုပ်စဉ် စီမံခန့်ခွဲရန် (Routine Builder)'}
               {activeTab === 'settings' && '⚙️ ဆက်တင်များနှင့် ပရိုဖိုင် (Settings & Profile)'}
             </h1>
           </div>
@@ -861,6 +896,245 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
           </div>
         )}
 
+        {/* ── TAB: ROUTINE BUILDER ── */}
+        {activeTab === 'routines' && (
+          <div style={{ maxWidth: '780px' }}>
+            {/* Success/Error messages */}
+            {routineMsg && (
+              <div style={{ background: '#DCFCE7', border: '1px solid #86EFAC', color: '#166534', padding: '12px 18px', borderRadius: '14px', fontWeight: 700, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Check size={18} /> {routineMsg}
+              </div>
+            )}
+            {routineError && (
+              <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#DC2626', padding: '12px 18px', borderRadius: '14px', fontWeight: 700, marginBottom: '16px' }}>
+                {routineError}
+                <button onClick={() => { setRoutineError(''); getRoutines().then(d => setRoutines(d)).catch(() => setRoutineError('Failed to load')); }} style={{ marginLeft: '12px', padding: '4px 12px', borderRadius: '8px', border: '1px solid #DC2626', background: 'transparent', color: '#DC2626', fontWeight: 700, cursor: 'pointer' }}>
+                  Retry
+                </button>
+              </div>
+            )}
+
+            {/* Routine Form (create mode) */}
+            {showRoutineForm ? (
+              <div style={{ background: '#FFF', borderRadius: '20px', padding: '24px', border: '1px solid #E2E8F0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1E293B', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <PlusCircle size={20} color="#2563EB" /> လုပ်ရိုးလုပ်စဉ်အသစ် (New Routine)
+                  </h3>
+                  <button onClick={() => setShowRoutineForm(false)} style={{ border: 'none', background: 'none', cursor: 'pointer' }}><X size={18} /></button>
+                </div>
+
+                {/* Routine Name */}
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '6px' }}>
+                    လုပ်ရိုးလုပ်စဉ် အမည် (Routine Name)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="ဥပမာ - မနက်ခင်း လုပ်ရိုးလုပ်စဉ် (Morning Routine)"
+                    value={editingRoutineName}
+                    onChange={e => setEditingRoutineName(e.target.value)}
+                    style={{ width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid #CBD5E1', fontSize: '0.95rem' }}
+                  />
+                </div>
+
+                {/* Steps List */}
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '8px' }}>
+                    လုပ်ရိုးလုပ်စဉ် အဆင့်များ (Steps)
+                  </label>
+
+                  {editingRoutineSteps.length === 0 && (
+                    <div style={{ padding: '20px', textAlign: 'center', color: '#94A3B8', background: '#F8FAFC', borderRadius: '12px', border: '2px dashed #E2E8F0', marginBottom: '12px' }}>
+                      <div style={{ fontSize: '2rem', marginBottom: '4px' }}>👣</div>
+                      <div style={{ fontWeight: 700 }}>အဆင့်များ မရှိသေးပါ (No steps yet)</div>
+                      <div style={{ fontSize: '0.8rem' }}>အောက်ပါခလုတ်ကိုနှိပ်၍ အဆင့်များ ထည့်သွင်းပါ</div>
+                    </div>
+                  )}
+
+                  {editingRoutineSteps.map((step, index) => (
+                    <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 14px', background: '#F8FAFC', borderRadius: '12px', marginBottom: '8px', border: '1px solid #E2E8F0' }}>
+                      <span style={{ fontWeight: 800, color: '#64748B', minWidth: '24px' }}>{index + 1}.</span>
+                      <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        {(() => {
+                          const matchCard = allCards.find(c => c.id === step.icon_id);
+                          return matchCard ? (
+                            <span style={{ fontSize: '1.6rem' }}>{matchCard.emoji}</span>
+                          ) : (
+                            <span style={{ fontSize: '1.2rem' }}>⭐</span>
+                          );
+                        })()}
+                        <input
+                          type="text"
+                          value={step.label}
+                          onChange={e => {
+                            const newSteps = [...editingRoutineSteps];
+                            newSteps[index] = { ...newSteps[index], label: e.target.value };
+                            setEditingRoutineSteps(newSteps);
+                          }}
+                          style={{ flex: 1, padding: '8px 10px', borderRadius: '8px', border: '1px solid #E2E8F0', fontSize: '0.9rem', fontWeight: 700 }}
+                        />
+                      </div>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <button
+                          onClick={() => {
+                            if (index === 0) return;
+                            const newSteps = [...editingRoutineSteps];
+                            [newSteps[index - 1], newSteps[index]] = [newSteps[index], newSteps[index - 1]];
+                            setEditingRoutineSteps(newSteps);
+                          }}
+                          disabled={index === 0}
+                          title="Move up"
+                          style={{ padding: '4px 6px', borderRadius: '6px', border: 'none', background: index === 0 ? '#F1F5F9' : '#E2E8F0', color: index === 0 ? '#CBD5E1' : '#475569', cursor: index === 0 ? 'not-allowed' : 'pointer' }}
+                        >
+                          <ArrowUp size={14} />
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (index === editingRoutineSteps.length - 1) return;
+                            const newSteps = [...editingRoutineSteps];
+                            [newSteps[index + 1], newSteps[index]] = [newSteps[index], newSteps[index + 1]];
+                            setEditingRoutineSteps(newSteps);
+                          }}
+                          disabled={index === editingRoutineSteps.length - 1}
+                          title="Move down"
+                          style={{ padding: '4px 6px', borderRadius: '6px', border: 'none', background: index === editingRoutineSteps.length - 1 ? '#F1F5F9' : '#E2E8F0', color: index === editingRoutineSteps.length - 1 ? '#CBD5E1' : '#475569', cursor: index === editingRoutineSteps.length - 1 ? 'not-allowed' : 'pointer' }}
+                        >
+                          <ArrowDown size={14} />
+                        </button>
+                        <button
+                          onClick={() => {
+                            const newSteps = editingRoutineSteps.filter((_, i) => i !== index);
+                            setEditingRoutineSteps(newSteps);
+                          }}
+                          title="Remove step"
+                          style={{ padding: '4px 6px', borderRadius: '6px', border: 'none', background: '#FEF2F2', color: '#EF4444', cursor: 'pointer' }}
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Add Step button */}
+                  <button
+                    onClick={() => {
+                      setIconPickerCallback(() => (icon: { id: string; label: string }) => {
+                        setEditingRoutineSteps(prev => [...prev, { icon_id: icon.id, label: icon.label }]);
+                        setShowIconPicker(false);
+                      });
+                      setShowIconPicker(true);
+                    }}
+                    style={{ width: '100%', padding: '12px', borderRadius: '12px', border: '2px dashed #93C5FD', background: '#EFF6FF', color: '#2563EB', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.9rem' }}
+                  >
+                    <PlusCircle size={18} /> အဆင့်အသစ် ထည့်မည် (Add Step)
+                  </button>
+                </div>
+
+                {/* Save / Cancel buttons */}
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    onClick={() => {
+                      setShowRoutineForm(false);
+                      setEditingRoutineName('');
+                      setEditingRoutineSteps([]);
+                    }}
+                    style={{ flex: 1, padding: '12px', borderRadius: '12px', background: '#E2E8F0', border: 'none', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem' }}
+                  >
+                    မလုပ်တော့ပါ (Cancel)
+                  </button>
+                  <button
+                    onClick={async () => {
+                      if (!editingRoutineName.trim()) { alert('လုပ်ရိုးလုပ်စဉ် အမည် ထည့်ပါ (Enter a routine name)'); return; }
+                      if (editingRoutineSteps.length === 0) { alert('အနည်းဆုံး ၁ ဆင့် ထည့်ပါ (Add at least 1 step)'); return; }
+                      try {
+                        const newRoutine = await createRoutine({
+                          name: editingRoutineName.trim(),
+                          steps: editingRoutineSteps.map((s, i) => ({ icon_id: s.icon_id, label: s.label, order: i })),
+                        });
+                        setRoutines(prev => [newRoutine, ...prev]);
+                        setShowRoutineForm(false);
+                        setEditingRoutineName('');
+                        setEditingRoutineSteps([]);
+                        setRoutineMsg('လုပ်ရိုးလုပ်စဉ် သိမ်းဆည်းပြီးပါပြီ (Routine saved!)');
+                        setTimeout(() => setRoutineMsg(''), 3000);
+                      } catch (err) {
+                        alert('သိမ်းဆည်းမှု မအောင်မြင်ပါ (Failed to save)');
+                      }
+                    }}
+                    style={{ flex: 1, padding: '12px', borderRadius: '12px', background: '#2563EB', color: '#FFF', border: 'none', fontWeight: 800, cursor: 'pointer', fontSize: '0.9rem' }}
+                  >
+                    သိမ်းဆည်းမည် (Save Routine)
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Routines List or Empty State */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <p style={{ fontSize: '0.9rem', color: '#64748B' }}>
+                    {routinesLoading ? 'Loading...' : `လုပ်ရိုးလုပ်စဉ် (${routines.length} ခု)`}
+                  </p>
+                  <button
+                    onClick={() => { setShowRoutineForm(true); setEditingRoutineName(''); setEditingRoutineSteps([]); }}
+                    style={{ padding: '10px 18px', borderRadius: '12px', background: '#2563EB', color: '#FFF', border: 'none', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem' }}
+                  >
+                    <PlusCircle size={16} /> လုပ်ရိုးလုပ်စဉ်အသစ် (Create)
+                  </button>
+                </div>
+
+                {!routinesLoading && routines.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '40px 20px', background: '#FFF', borderRadius: '20px', border: '2px dashed #E2E8F0' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '12px' }}>📋</div>
+                    <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1E293B', marginBottom: '4px' }}>
+                      လုပ်ရိုးလုပ်စဉ်များ မရှိသေးပါ (No routines yet)
+                    </div>
+                    <p style={{ fontSize: '0.85rem', color: '#64748B', marginBottom: '20px' }}>
+                      ကလေးငယ်အတွက် နေ့စဉ်လုပ်ရိုးလုပ်စဉ်များ စတင်ဖန်တီးပါ
+                    </p>
+                    <button
+                      onClick={() => { setShowRoutineForm(true); }}
+                      style={{ padding: '14px 28px', borderRadius: '14px', background: 'linear-gradient(135deg, #2563EB, #1D4ED8)', color: '#FFF', border: 'none', fontWeight: 800, cursor: 'pointer', fontSize: '1rem', boxShadow: '0 6px 16px rgba(37,99,235,0.3)' }}
+                    >
+                      ➕ လုပ်ရိုးလုပ်စဉ်အသစ် (Create Routine)
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {routines.map(r => (
+                      <div key={r.id} style={{ background: '#FFF', borderRadius: '16px', padding: '16px 20px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div>
+                          <div style={{ fontSize: '1rem', fontWeight: 800, color: '#1E293B' }}>{r.name}</div>
+                          <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '2px' }}>
+                            {new Date(r.created_at).toLocaleDateString()} | Steps: <b>—</b>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => {
+                            if (window.confirm('ဤလုပ်ရိုးလုပ်စဉ်ကို ဖျက်ရန် သေချာပါသလား? (Delete this routine?)')) {
+                              deleteRoutine(r.id)
+                                .then(() => {
+                                  setRoutines(prev => prev.filter(x => x.id !== r.id));
+                                  setRoutineMsg('လုပ်ရိုးလုပ်စဉ် ပယ်ဖျက်ပြီးပါပြီ (Routine deleted)');
+                                  setTimeout(() => setRoutineMsg(''), 3000);
+                                })
+                                .catch(() => alert('ဖျက်ရန် မအောင်မြင်ပါ'));
+                            }
+                          }}
+                          title="Delete"
+                          style={{ padding: '8px', borderRadius: '8px', border: 'none', background: '#FEF2F2', color: '#EF4444', cursor: 'pointer' }}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
         {/* ── TAB 4: SETTINGS & PROFILE ── */}
         {activeTab === 'settings' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '640px' }}>
@@ -926,6 +1200,55 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                   {passwordLoading ? 'လုပ်ဆောင်နေပါသည်...' : 'စကားဝှက် ပြောင်းလဲမည် (Update Password)'}
                 </button>
               </form>
+            </div>
+          </div>
+        )}
+        {/* ── ICON PICKER MODAL ── */}
+        {showIconPicker && (
+          <div className="modal-overlay" style={{ zIndex: 1200 }}>
+            <div style={{ background: '#FFF', borderRadius: '20px', padding: '24px', maxWidth: '560px', width: '92%', maxHeight: '80vh', overflowY: 'auto', position: 'relative' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1E293B', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <ListChecks size={20} color="#2563EB" /> သင်္ကေတရွေးချယ်ပါ (Pick an Icon)
+                </h3>
+                <button onClick={() => setShowIconPicker(false)} style={{ border: 'none', background: 'none', cursor: 'pointer' }}><X size={18} /></button>
+              </div>
+
+              {/* Group icons by category */}
+              {(['subject', 'verb', 'object', 'feeling', 'location', 'body_part', 'number', 'direction', 'shortcut'] as const).map(category => {
+                const categoryIcons = allCards.filter(c => c.category === category);
+                if (categoryIcons.length === 0) return null;
+                const categoryLabels: Record<string, string> = {
+                  subject: '👤 လူများ (People)', verb: '⚡ လုပ်ဆောင်ချက် (Actions)',
+                  object: '🍎 အရာဝတ္ထု (Objects)', feeling: '❤️ ခံစားချက် (Feelings)',
+                  location: '🏠 နေရာ (Places)', body_part: '🦶 ခန္ဓာကိုယ် (Body)',
+                  number: '🔢 ဂဏန်း (Numbers)', direction: '🧭 လမ်းကြောင်း (Directions)',
+                  shortcut: '⭐ အမြန်လမ်း (Shortcuts)'
+                };
+                return (
+                  <div key={category} style={{ marginBottom: '16px' }}>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#64748B', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      {categoryLabels[category]}
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(72px, 1fr))', gap: '8px' }}>
+                      {categoryIcons.map(card => (
+                        <button
+                          key={card.id}
+                          onClick={() => {
+                            if (iconPickerCallback) {
+                              iconPickerCallback({ id: card.id, label: card.burmese });
+                            }
+                          }}
+                          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px 6px', borderRadius: '12px', border: '1px solid #E2E8F0', background: '#FFF', cursor: 'pointer', transition: 'all 0.15s' }}
+                        >
+                          <span style={{ fontSize: '1.6rem' }}>{card.emoji}</span>
+                          <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#475569', marginTop: '2px', textAlign: 'center', lineHeight: 1.2 }}>{card.burmese}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
