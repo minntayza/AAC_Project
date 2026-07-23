@@ -40,6 +40,7 @@ export function App() {
   const [showGame, setShowGame] = useState(false);
   const [caregiverLoading, setCaregiverLoading] = useState(false);
   const [_detectedEmotion, setDetectedEmotion] = useState<string>('neutral');
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   // Requirement 5 & 6: Unified Card Renderer for Admin DB Cards vs Parent Upload Cards
   const renderCardButton = (
@@ -414,6 +415,7 @@ export function App() {
 
   const handleSpeakSentence = async () => {
     if (selectedCards.length === 0) return;
+    setIsSpeaking(true);
     const rawText = sanitizeNoKa(selectedCards.map(c => c.burmese).join(' '));
     let speakText_ = rawText;
     try {
@@ -431,6 +433,7 @@ export function App() {
     speakText(speakText_);
     logSentenceToSupabase(selectedCards);
     setIsSentenceFinished(true);
+    setIsSpeaking(false);
   };
 
   const activeActivities = dedupeCards([
@@ -734,10 +737,20 @@ export function App() {
             <button 
               className="btn btn-primary" 
               onClick={handleSpeakSentence} 
-              disabled={selectedCards.length === 0}
+              disabled={selectedCards.length === 0 || isSpeaking}
+              style={{ minWidth: '100px', position: 'relative' }}
             >
-              <Volume2 size={22} />
-              <span>ပြောမယ်</span>
+              {isSpeaking ? (
+                <>
+                  <span className="speak-spinner"></span>
+                  <span>ခဏစောင့်ပါ...</span>
+                </>
+              ) : (
+                <>
+                  <Volume2 size={22} />
+                  <span>ပြောမယ်</span>
+                </>
+              )}
             </button>
           </div>
         </div>
