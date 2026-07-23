@@ -1,14 +1,15 @@
-export type Category = 
-  | 'subject' 
-  | 'verb' 
-  | 'object' 
-  | 'body_part' 
-  | 'feeling' 
-  | 'number' 
-  | 'direction' 
-  | 'location' 
-  | 'shortcut' 
-  | 'emergency';
+export type Category =
+  | 'subject'
+  | 'verb'
+  | 'object'
+  | 'body_part'
+  | 'feeling'
+  | 'number'
+  | 'direction'
+  | 'location'
+  | 'shortcut'
+  | 'emergency'
+  | 'action';
 
 export interface AACCard {
   id: string;
@@ -26,7 +27,7 @@ export interface AACCard {
 export const CATEGORY_ROLE: Record<string, Category> = {
   food: 'object',
   feelings: 'feeling',
-  actions: 'verb',
+  actions: 'action',
   places: 'location',
   people: 'subject',
   body: 'body_part',
