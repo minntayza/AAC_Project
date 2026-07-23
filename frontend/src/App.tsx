@@ -2,15 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Volume2, Trash2, ArrowLeft, RotateCcw, Lock, X, Play, BookOpen, Menu, Gamepad2, Settings, Zap, ShoppingBag, Hash, Navigation, MapPin } from 'lucide-react';
 import AuraAACSensor from './components/AuraAACSensor';
 import {
-  subjectCards,
-  verbCards,
-  activityCards,
-  objectCards,
-  bodyPartCards,
-  feelingCards,
   numberCards,
   directionCards,
-  locationCards,
   CATEGORY_ROLE,
 } from './data';
 import type { AACCard } from './data';
@@ -977,25 +970,6 @@ export function App() {
                     <span>နေရာ</span>
                   </button>
                 </div>
-
-                {/* Render Selected Grid Category */}
-                {screen3Category === 'activities' && (
-                  <div className="card-grid">
-                    {activityCards.map(card => renderCardButton(card, () => handleCardClick(card)))}
-                  </div>
-                )}
-
-                {screen3Category === 'objects' && (
-                  <div className="card-grid">
-                    {contextObjects.map(card => renderCardButton(card, () => handleCardClick(card)))}
-                  </div>
-                )}
-
-                {screen3Category === 'body_parts' && (
-                  <div className="card-grid">
-                    {activeBodyParts.map(card => renderCardButton(card, () => handleCardClick(card)))}
-                  </div>
-                )}
 
                 {/* Render Selected Grid Category */}
                 {screen3Category === 'activities' && (
