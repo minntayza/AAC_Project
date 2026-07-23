@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Volume2, Trash2, ArrowLeft, RotateCcw, Lock, X, Play, BookOpen, Menu, Gamepad2, Settings } from 'lucide-react';
+import { Volume2, Trash2, ArrowLeft, RotateCcw, Lock, X, Play, BookOpen, Menu, Gamepad2, Settings, Zap, ShoppingBag, Hash, Navigation, MapPin } from 'lucide-react';
 import {
   subjectCards,
   verbCards,
@@ -747,7 +747,6 @@ export function App() {
         {/* COMPLETE SENTENCE SCREEN VIEW WITH HORIZONTAL CARDS */}
         {isSentenceFinished ? (
           <div className="complete-sentence-view">
-            <div className="celebration-banner">Well Done!</div>
 
             {/* Render selected cards as full AAC cards horizontally */}
             <div className="complete-sentence-cards-horizontal">
@@ -880,6 +879,7 @@ export function App() {
                     className={`category-pill ${screen3Category === 'activities' ? 'active' : ''}`}
                     onClick={() => setScreen3Category('activities')}
                   >
+                    <span><Zap size={16} /></span>
                     <span>လှုပ်ရှားမှုများ (Activities)</span>
                   </button>
 
@@ -888,6 +888,7 @@ export function App() {
                     className={`category-pill ${screen3Category === 'objects' ? 'active' : ''}`}
                     onClick={() => setScreen3Category('objects')}
                   >
+                    <span><ShoppingBag size={16} /></span>
                     <span>အရာဝတ္ထုနဲ့ မုန့် (Things & Snacks)</span>
                   </button>
 
@@ -896,6 +897,7 @@ export function App() {
                     className={`category-pill ${screen3Category === 'numbers' ? 'active' : ''}`}
                     onClick={() => setScreen3Category('numbers')}
                   >
+                    <span><Hash size={16} /></span>
                     <span>ပမာဏနဲ့ ဂဏန်း (Amounts & Numbers)</span>
                   </button>
 
@@ -904,6 +906,7 @@ export function App() {
                     className={`category-pill ${screen3Category === 'directions' ? 'active' : ''}`}
                     onClick={() => setScreen3Category('directions')}
                   >
+                    <span><Navigation size={16} /></span>
                     <span>လမ်းကြောင်း (Directions)</span>
                   </button>
 
@@ -912,6 +915,7 @@ export function App() {
                     className={`category-pill ${screen3Category === 'locations' ? 'active' : ''}`}
                     onClick={() => setScreen3Category('locations')}
                   >
+                    <span><MapPin size={16} /></span>
                     <span>နေရာ (Places & Locations)</span>
                   </button>
                 </div>
