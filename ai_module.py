@@ -114,15 +114,37 @@ def rephrase_sentence(raw_text: str) -> str | None:
         return None
 
 
-def text_to_speech(text: str) -> bytes | None:
-    """Generate Burmese speech via Google TTS (gTTS). Returns MP3 bytes or None."""
-    from gtts import gTTS
+def text_to_speech(text: str, voice: str = "my-MM-NilarNeural") -> bytes | None:
+    """Generate natural Burmese speech via Microsoft Azure Neural TTS (edge-tts) with gTTS fallback. Returns MP3 bytes or None."""
+    import asyncio
     import io
+    import logging
+
     try:
+        import edge_tts
+
+        async def _edge_gen():
+            buf = io.BytesIO()
+            communicate = edge_tts.Communicate(text, voice)
+            async for chunk in communicate.stream():
+                if chunk["type"] == "audio":
+                    buf.write(chunk["data"])
+            buf.seek(0)
+            return buf.read()
+
+        audio_bytes = asyncio.run(_edge_gen())
+        if audio_bytes and len(audio_bytes) > 0:
+            return audio_bytes
+    except Exception as err:
+        logging.warning("Edge Neural TTS failed (%s), falling back to gTTS", err)
+
+    try:
+        from gtts import gTTS
         tts = gTTS(text=text, lang="my", slow=False)
         buf = io.BytesIO()
         tts.write_to_fp(buf)
         buf.seek(0)
         return buf.read()
-    except Exception:
+    except Exception as err:
+        logging.error("gTTS fallback failed: %s", err)
         return None
