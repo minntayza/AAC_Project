@@ -7,10 +7,26 @@ interface LoadingScreenProps {
 
 export function LoadingScreen({ isLoading }: LoadingScreenProps) {
   const [showContent, setShowContent] = useState(true);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (isLoading) {
+      setProgress(0);
+      const interval = setInterval(() => {
+        setProgress(prev => {
+          if (prev >= 95) return prev;
+          const increment = Math.random() * 12 + 3;
+          return Math.min(prev + increment, 95);
+        });
+      }, 200);
+      return () => clearInterval(interval);
+    }
+  }, [isLoading]);
 
   useEffect(() => {
     if (!isLoading) {
-      const timer = setTimeout(() => setShowContent(false), 3500);
+      setProgress(100);
+      const timer = setTimeout(() => setShowContent(false), 1200);
       return () => clearTimeout(timer);
     }
     setShowContent(true);
@@ -19,74 +35,48 @@ export function LoadingScreen({ isLoading }: LoadingScreenProps) {
   if (!showContent) return null;
 
   return (
-    <div className={`space-loading-screen ${isLoading ? 'active' : 'fade-out'}`}>
-      {/* Deep Space Starfield */}
-      <div className="starfield">
-        {[...Array(120)].map((_, i) => (
-          <div key={i} className={`sf-star sf-star-${i % 4}`} style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 5}s`,
-            animationDuration: `${2 + Math.random() * 4}s`,
-            width: `${1 + Math.random() * 3}px`,
-            height: `${1 + Math.random() * 3}px`,
-          }}></div>
-        ))}
+    <div className={`loading-screen ${isLoading ? 'active' : 'fade-out'}`}>
+      {/* Floating illustrations */}
+      <div className="load-illustrations">
+        <svg className="load-illust load-illust-1" viewBox="0 0 60 60" fill="none">
+          <rect x="5" y="10" width="50" height="40" rx="8" stroke="#667eea" strokeWidth="2.5" fill="rgba(102,126,234,0.08)"/>
+          <circle cx="20" cy="28" r="4" fill="#f59e0b"/>
+          <circle cx="35" cy="24" r="3" fill="#667eea"/>
+          <rect x="14" y="36" width="32" height="3" rx="1.5" fill="#667eea" opacity="0.3"/>
+          <rect x="14" y="42" width="20" height="3" rx="1.5" fill="#667eea" opacity="0.2"/>
+        </svg>
+
+        <svg className="load-illust load-illust-2" viewBox="0 0 50 50" fill="none">
+          <circle cx="25" cy="25" r="20" stroke="#764ba2" strokeWidth="2.5" fill="rgba(118,75,162,0.08)"/>
+          <path d="M18 30 L22 22 L30 26 L34 18" stroke="#764ba2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+        </svg>
+
+        <svg className="load-illust load-illust-3" viewBox="0 0 50 50" fill="none">
+          <path d="M10 38 C10 12 40 12 40 38 Z" stroke="#f59e0b" strokeWidth="2.5" fill="rgba(245,158,11,0.08)"/>
+          <circle cx="25" cy="30" r="3" fill="#f59e0b"/>
+          <circle cx="25" cy="20" r="2" fill="#f59e0b" opacity="0.5"/>
+        </svg>
+
+        <svg className="load-illust load-illust-4" viewBox="0 0 50 50" fill="none">
+          <rect x="8" y="8" width="34" height="34" rx="6" stroke="#667eea" strokeWidth="2" fill="rgba(102,126,234,0.06)"/>
+          <path d="M16 20 L24 12 L32 20" stroke="#667eea" strokeWidth="2" strokeLinecap="round" fill="none"/>
+          <rect x="16" y="24" width="18" height="10" rx="2" fill="#667eea" opacity="0.15"/>
+        </svg>
+
+        <svg className="load-illust load-illust-5" viewBox="0 0 40 40" fill="none">
+          <path d="M20 4 C28 4 36 12 36 20 C36 28 28 36 20 36 C12 36 4 28 4 20 C4 12 12 4 20 4 Z" stroke="#764ba2" strokeWidth="2" fill="rgba(118,75,162,0.06)"/>
+          <circle cx="14" cy="18" r="2" fill="#764ba2" opacity="0.5"/>
+          <circle cx="26" cy="18" r="2" fill="#764ba2" opacity="0.5"/>
+          <path d="M14 26 Q20 30 26 26" stroke="#764ba2" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+        </svg>
       </div>
 
-      {/* Shooting Stars */}
-      <div className="shooting-star shooting-star-1"></div>
-      <div className="shooting-star shooting-star-2"></div>
-      <div className="shooting-star shooting-star-3"></div>
-
-      {/* Deep Nebula Clouds */}
-      <div className="deep-nebula deep-nebula-1"></div>
-      <div className="deep-nebula deep-nebula-2"></div>
-      <div className="deep-nebula deep-nebula-3"></div>
-
-      {/* Main Content */}
-      <div className="space-main-content">
-        {/* Space Marine Helmet */}
-        <div className="marine-helmet">
-          <div className="helmet-visor"></div>
-          <div className="helmet-glow"></div>
+      {/* Main content */}
+      <div className="load-center">
+        <div className="load-percentage">{Math.round(progress)}%</div>
+        <div className="load-bar-track">
+          <div className="load-bar-fill" style={{ width: `${progress}%` }}></div>
         </div>
-
-        {/* Orbiting Planets */}
-        <div className="orbit-ring">
-          <div className="orbit-planet orbit-planet-1">🌍</div>
-          <div className="orbit-planet orbit-planet-2">🌙</div>
-          <div className="orbit-planet orbit-planet-3">⭐</div>
-        </div>
-
-        {/* Floating Space Emojis */}
-        <div className="space-floaters">
-          <span className="floater floater-1">🚀</span>
-          <span className="floater floater-2">🛸</span>
-          <span className="floater floater-3">🌌</span>
-          <span className="floater floater-4">☄️</span>
-          <span className="floater floater-5">🔭</span>
-        </div>
-
-        {/* Title */}
-        <div className="space-title-area">
-          <h1 className="space-main-title">🚀 အာကာသ စူးစမ်းရှာဖွေရေး 🚀</h1>
-          <p className="space-main-subtitle">Space Adventure Loading...</p>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="space-progress-wrap">
-          <div className="space-progress-track">
-            <div className="space-progress-fill"></div>
-            <div className="space-progress-glow"></div>
-          </div>
-          <p className="space-progress-label">Preparing your journey...</p>
-        </div>
-      </div>
-
-      {/* Bottom Tagline */}
-      <div className="space-bottom-tag">
-        <p>✨ ကလေးများ ၏ အာကာသ စူးစူးမြတ်မြတ် ခြင်း ✨</p>
       </div>
     </div>
   );
