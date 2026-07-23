@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Volume2, Trash2, ArrowLeft, RotateCcw, Lock, X, Play, BookOpen, Menu, Gamepad2, Settings, Zap, ShoppingBag, Hash, Navigation, MapPin } from 'lucide-react';
+import { Volume2, Trash2, ArrowLeft, RotateCcw, Lock, X, Play, BookOpen, Menu, Gamepad2, Settings, Zap, ShoppingBag, MapPin } from 'lucide-react';
 import AuraAACSensor from './components/AuraAACSensor';
-import {
-  numberCards,
-  directionCards,
-  CATEGORY_ROLE,
-} from './data';
+import { CATEGORY_ROLE } from './data';
 import type { AACCard } from './data';
 import { textToSpeech, saveSentence, getCustomCards, getCategories, getIcons, rephraseSentence, logEmotion, type CustomCardData, type IconData } from './api';
 import { AuthModal } from './components/AuthModal';
@@ -13,7 +9,7 @@ import { ParentPortal } from './components/ParentPortal';
 import { ConcentrationGame } from './components/ConcentrationGame';
 import './index.css';
 
-type Screen3Category = 'objects' | 'numbers' | 'directions' | 'locations' | 'body_parts' | 'feelings' | 'activities';
+type Screen3Category = 'food_drinks' | 'locations' | 'feelings' | 'activities';
 
 // Burmese digit helper
 const toBurmeseDigits = (num: number): string => {
@@ -24,7 +20,7 @@ const toBurmeseDigits = (num: number): string => {
 export function App() {
   const [selectedCards, setSelectedCards] = useState<(AACCard & { audioUrl?: string })[]>([]);
   const [currentStep, setCurrentStep] = useState<number>(1);
-  const [screen3Category, setScreen3Category] = useState<Screen3Category>('objects');
+  const [screen3Category, setScreen3Category] = useState<Screen3Category>('food_drinks');
   const [isSentenceFinished, setIsSentenceFinished] = useState(false);
   const [rephrasedText, setRephrasedText] = useState<string | null>(null);
 
@@ -213,9 +209,9 @@ export function App() {
     ...customCards.filter(c => c.category === 'verb' && c.card_type !== 'story_1min').map(mapCustomToAAC)
   ]);
 
-  const activeObjects = dedupeCards([
-    ...apiByRole('object'),
-    ...customCards.filter(c => (c.category === 'object' || !c.category) && c.card_type !== 'story_1min').map(mapCustomToAAC)
+  const activeFoodDrinks = dedupeCards([
+    ...apiIcons.filter(icon => icon.category_id === 'food' || icon.category_id === 'drinks').map(mapIconToAAC),
+    ...customCards.filter(c => (c.category === 'food' || c.category === 'drinks' || c.category === 'object') && c.card_type !== 'story_1min').map(mapCustomToAAC)
   ]);
 
   const activeLocations = dedupeCards([
@@ -226,11 +222,6 @@ export function App() {
   const activeFeelings = dedupeCards([
     ...apiByRole('feeling'),
     ...customCards.filter(c => c.category === 'feeling' && c.card_type !== 'story_1min').map(mapCustomToAAC)
-  ]);
-
-  const activeBodyParts = dedupeCards([
-    ...apiByRole('body_part'),
-    ...customCards.filter(c => c.category === 'body_part' && c.card_type !== 'story_1min').map(mapCustomToAAC)
   ]);
 
   const activeShortcuts = dedupeCards([
@@ -379,7 +370,7 @@ export function App() {
   const handleClear = () => {
     setSelectedCards([]);
     setCurrentStep(1);
-    setScreen3Category('objects');
+    setScreen3Category('food_drinks');
     setIsSentenceFinished(false);
     setRephrasedText(null);
   };
@@ -396,10 +387,10 @@ export function App() {
 
       if (newSelected.length === 0) {
         setCurrentStep(1);
-        setScreen3Category('objects');
+        setScreen3Category('food_drinks');
       } else if (newSelected.length === 1) {
         setCurrentStep(2);
-        setScreen3Category('objects');
+        setScreen3Category('food_drinks');
       } else {
         setCurrentStep(3);
       }
@@ -434,18 +425,6 @@ export function App() {
   const activeActivities = dedupeCards([
     ...apiByRole('action'),
     ...customCards.filter(c => (c.category === 'action' || (c as any).subCategory === 'activity') && c.card_type !== 'story_1min').map(mapCustomToAAC)
-  ]);
-
-  const activeNumbers = dedupeCards([
-    ...apiByRole('number'),
-    ...numberCards,
-    ...customCards.filter(c => c.category === 'number' && c.card_type !== 'story_1min').map(mapCustomToAAC)
-  ]);
-
-  const activeDirections = dedupeCards([
-    ...apiByRole('direction'),
-    ...directionCards,
-    ...customCards.filter(c => c.category === 'direction' && c.card_type !== 'story_1min').map(mapCustomToAAC)
   ]);
 
   const handleStartOver = () => {
@@ -834,11 +813,20 @@ export function App() {
                 <div className="category-pill-bar">
                   <button 
                     type="button"
-                    className={`category-pill ${screen3Category === 'objects' ? 'active' : ''}`}
-                    onClick={() => setScreen3Category('objects')}
+                    className={`category-pill ${screen3Category === 'food_drinks' ? 'active' : ''}`}
+                    onClick={() => setScreen3Category('food_drinks')}
                   >
                     <span><ShoppingBag size={16} /></span>
-                    <span>အရာဝတ္ထုနဲ့ မုန့်</span>
+                    <span>အစားအသောက်</span>
+                  </button>
+
+                  <button 
+                    type="button"
+                    className={`category-pill ${screen3Category === 'feelings' ? 'active' : ''}`}
+                    onClick={() => setScreen3Category('feelings')}
+                  >
+                    <span>😊</span>
+                    <span>ခံစားချက်</span>
                   </button>
 
                   <button 
@@ -847,25 +835,7 @@ export function App() {
                     onClick={() => setScreen3Category('activities')}
                   >
                     <span><Zap size={16} /></span>
-                    <span>လှုပ်ရှားမှုများ</span>
-                  </button>
-
-                  <button 
-                    type="button"
-                    className={`category-pill ${screen3Category === 'numbers' ? 'active' : ''}`}
-                    onClick={() => setScreen3Category('numbers')}
-                  >
-                    <span><Hash size={16} /></span>
-                    <span>ပမာဏနဲ့ ဂဏန်း</span>
-                  </button>
-
-                  <button 
-                    type="button"
-                    className={`category-pill ${screen3Category === 'directions' ? 'active' : ''}`}
-                    onClick={() => setScreen3Category('directions')}
-                  >
-                    <span><Navigation size={16} /></span>
-                    <span>လမ်းကြောင်း</span>
+                    <span>လှုပ်ရှားမှု</span>
                   </button>
 
                   <button 
@@ -878,24 +848,10 @@ export function App() {
                   </button>
                 </div>
 
-                {screen3Category === 'activities' && (
+                {screen3Category === 'food_drinks' && (
                   iconsLoading ? <SkeletonGrid /> : (
                   <div className="card-grid">
-                    {activeActivities.map(card => renderCardButton(card, () => handleCardClick(card)))}
-                  </div>)
-                )}
-
-                {screen3Category === 'objects' && (
-                  iconsLoading ? <SkeletonGrid /> : (
-                  <div className="card-grid">
-                    {activeObjects.map(card => renderCardButton(card, () => handleCardClick(card)))}
-                  </div>)
-                )}
-
-                {screen3Category === 'body_parts' && (
-                  iconsLoading ? <SkeletonGrid /> : (
-                  <div className="card-grid">
-                    {activeBodyParts.map(card => renderCardButton(card, () => handleCardClick(card)))}
+                    {activeFoodDrinks.map(card => renderCardButton(card, () => handleCardClick(card)))}
                   </div>)
                 )}
 
@@ -906,16 +862,11 @@ export function App() {
                   </div>)
                 )}
 
-                {screen3Category === 'numbers' && (
+                {screen3Category === 'activities' && (
+                  iconsLoading ? <SkeletonGrid /> : (
                   <div className="card-grid">
-                    {activeNumbers.map(card => renderCardButton(card, () => handleCardClick(card)))}
-                  </div>
-                )}
-
-                {screen3Category === 'directions' && (
-                  <div className="card-grid">
-                    {activeDirections.map(card => renderCardButton(card, () => handleCardClick(card)))}
-                  </div>
+                    {activeActivities.map(card => renderCardButton(card, () => handleCardClick(card)))}
+                  </div>)
                 )}
 
                 {screen3Category === 'locations' && (
