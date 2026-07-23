@@ -94,7 +94,36 @@ export function LoadingScreen({ isLoading }: LoadingScreenProps) {
       <div className="load-center">
         <div className="load-logo">
           <div className="load-logo-icon">
-            <img src="/assets/logo.png" alt="AAC Logo" className="load-logo-img" />
+            <svg viewBox="0 0 120 120" className="load-logo-svg" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <clipPath id="fl-clip">
+                  <path d="M118,60 L109,69.8 L96.9,75.3 L101.6,87.8 L101,101 L87.8,101.6 L75.3,96.9 L69.8,109 L60,118 L50.2,109 L44.7,96.9 L32.2,101.6 L19,101 L18.4,87.8 L23.1,75.3 L11,69.8 L2,60 L11,50.2 L23.1,44.7 L32.2,32.2 L19,19 L32.2,18.4 L44.7,23.1 L50.2,11 L60,2 L69.8,11 L75.3,23.1 L87.8,18.4 L101,19 L101.6,32.2 L96.9,44.7 L109,50.2 Z"/>
+                </clipPath>
+                <filter id="fl-wave" x="-10%" y="-10%" width="120%" height="120%">
+                  <feTurbulence type="turbulence" baseFrequency="0.025" numOctaves="2" result="noise" seed="3">
+                    <animate attributeName="baseFrequency" values="0.025;0.045;0.025" dur="5s" repeatCount="indefinite"/>
+                  </feTurbulence>
+                  <feDisplacementMap in="SourceGraphic" in2="noise" scale="3.5" xChannelSelector="R" yChannelSelector="G"/>
+                </filter>
+                <filter id="fl-glow" x="-30%" y="-30%" width="160%" height="160%">
+                  <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>
+                  <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0  0 0.5 0 0 0  0 0 1 0 0  0 0 0 0.4 0" result="glow"/>
+                  <feMerge>
+                    <feMergeNode in="glow"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+                <linearGradient id="fl-border" x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#667eea"/>
+                  <stop offset="50%" stopColor="#764ba2"/>
+                  <stop offset="100%" stopColor="#667eea"/>
+                </linearGradient>
+              </defs>
+              <g filter="url(#fl-wave)">
+                <image href="/assets/logo.png" clipPath="url(#fl-clip)" x="0" y="0" width="120" height="120" preserveAspectRatio="xMidYMid slice"/>
+                <path d="M118,60 L109,69.8 L96.9,75.3 L101.6,87.8 L101,101 L87.8,101.6 L75.3,96.9 L69.8,109 L60,118 L50.2,109 L44.7,96.9 L32.2,101.6 L19,101 L18.4,87.8 L23.1,75.3 L11,69.8 L2,60 L11,50.2 L23.1,44.7 L32.2,32.2 L19,19 L32.2,18.4 L44.7,23.1 L50.2,11 L60,2 L69.8,11 L75.3,23.1 L87.8,18.4 L101,19 L101.6,32.2 L96.9,44.7 L109,50.2 Z" fill="none" stroke="url(#fl-border)" strokeWidth="2.5" strokeLinejoin="round" filter="url(#fl-glow)"/>
+              </g>
+            </svg>
           </div>
           <div className="load-logo-text">အသံ</div>
           <div className="load-logo-sub">AAC Communication</div>
