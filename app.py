@@ -83,14 +83,32 @@ def register():
         username = data.get("username", "").strip()
         password = data.get("password", "")
         role = data.get("role", "user")
+        child_nickname = data.get("child_nickname", "").strip()
+        child_gender = data.get("child_gender", "").strip()
+        child_birth_year = data.get("child_birth_year", "").strip()
+
         if not username or not password:
             return jsonify({"error": "Username and password required"}), 400
         if len(password) < 8:
             return jsonify({"error": "Password must be at least 8 characters"}), 400
-        user = create_user(username, generate_password_hash(password), role)
+        user = create_user(
+            username, 
+            generate_password_hash(password), 
+            role,
+            child_nickname=child_nickname,
+            child_gender=child_gender,
+            child_birth_year=child_birth_year
+        )
         session["user_id"] = user["id"]
         session["role"] = user["role"]
-        return jsonify({"id": user["id"], "username": user["username"], "role": user["role"]}), 201
+        return jsonify({
+            "id": user["id"], 
+            "username": user["username"], 
+            "role": user["role"],
+            "child_nickname": user.get("child_nickname", ""),
+            "child_gender": user.get("child_gender", ""),
+            "child_birth_year": user.get("child_birth_year", "")
+        }), 201
     except Exception as e:
         err_msg = str(e)
         if "duplicate key" in err_msg.lower() or "unique" in err_msg.lower() or "already taken" in err_msg.lower():
@@ -299,13 +317,15 @@ def save_sent():
         return jsonify({"error": "Failed to save sentence", "detail": str(e)}), 500
 
 
-@app.route("/api/analytics/sentences")
-def analytics_sentences():
+@app.route("/api/analytics/sentences", methods=["GET"])
+def sentence_analytics():
     try:
         user_id = session.get("user_id") or request.args.get("user_id")
-        return jsonify(get_sentence_analytics(user_id))
+        stats = get_sentence_analytics(user_id)
+        return jsonify(stats)
     except Exception as e:
-        return jsonify({"error": "Failed to fetch analytics", "detail": str(e)}), 500
+        return jsonify({"error": "Failed to load sentence analytics", "detail": str(e)}), 500
+
 
 
 # ──────────────────────────────────────────────

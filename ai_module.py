@@ -82,6 +82,7 @@ def rephrase_sentence(raw_text: str) -> str | None:
     """Rephrase card-concatenated Burmese into natural Burmese via Claude on proxy."""
     import requests
     import logging
+    import re
     base = ANTHROPIC_BASE_URL or "https://proxy.vibecode.tours"
     try:
         resp = requests.post(
@@ -95,7 +96,8 @@ def rephrase_sentence(raw_text: str) -> str | None:
                     "role": "user",
                     "content": (
                         "Rewrite this AAC card-built Burmese into natural spoken Burmese. "
-                        "Add proper particles. Output ONLY the result.\n\n"
+                        "DO NOT add subject particle 'က' or ' က ' after subjects (e.g. use 'မေမေ စားမယ်' instead of 'မေမေ က စားမယ်' or 'အမေက စားမယ်'). "
+                        "Output ONLY the result.\n\n"
                         f"Input: {raw_text}\nNatural:"
                     )
                 }]
@@ -108,6 +110,9 @@ def rephrase_sentence(raw_text: str) -> str | None:
         if not choices:
             return None
         result = choices[0]["message"]["content"].strip().strip('"').strip("'")
+        if result:
+            # Strip any subject particle 'က' inserted after subject words
+            result = re.sub(r'(\S+)\s*က\s*', r'\1 ', result).strip()
         logging.warning("Rephrase: '%s' -> '%s'", raw_text, result)
         return result if result and result != raw_text else None
     except Exception:

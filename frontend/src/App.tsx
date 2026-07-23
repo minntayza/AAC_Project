@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Volume2, Trash2, ArrowLeft, Settings, RotateCcw, Lock, X, Play, BookOpen } from 'lucide-react';
+import { Volume2, Trash2, ArrowLeft, RotateCcw, Lock, X, Play, BookOpen, Menu, Gamepad2, Settings, Zap, ShoppingBag, Hash, Navigation, MapPin } from 'lucide-react';
+import AuraAACSensor from './components/AuraAACSensor';
 import {
   subjectCards,
   verbCards,
@@ -13,9 +14,10 @@ import {
   CATEGORY_ROLE,
 } from './data';
 import type { AACCard } from './data';
-import { textToSpeech, saveSentence, getCustomCards, getCategories, getIcons, rephraseSentence, type CustomCardData, type IconData } from './api';
+import { textToSpeech, saveSentence, getCustomCards, getCategories, getIcons, rephraseSentence, logEmotion, type CustomCardData, type IconData } from './api';
 import { AuthModal } from './components/AuthModal';
 import { ParentPortal } from './components/ParentPortal';
+import { ConcentrationGame } from './components/ConcentrationGame';
 import './index.css';
 
 type Screen3Category = 'objects' | 'numbers' | 'directions' | 'locations' | 'body_parts' | 'feelings' | 'activities';
@@ -32,6 +34,13 @@ export function App() {
   const [screen3Category, setScreen3Category] = useState<Screen3Category>('objects');
   const [isSentenceFinished, setIsSentenceFinished] = useState(false);
   const [, setRephrasedText] = useState<string | null>(null);
+
+  // Side drawer & game state
+  const [showDrawer, setShowDrawer] = useState(false);
+  const [showGame, setShowGame] = useState(false);
+  const [caregiverLoading, setCaregiverLoading] = useState(false);
+  const [_detectedEmotion, setDetectedEmotion] = useState<string>('neutral');
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   // Requirement 5 & 6: Unified Card Renderer for Admin DB Cards vs Parent Upload Cards
   const renderCardButton = (
@@ -105,10 +114,8 @@ export function App() {
   const [showStoriesModal, setShowStoriesModal] = useState(false);
   const [playingStoryId, setPlayingStoryId] = useState<string | null>(null);
 
-  // API-fetched icons from Supabase + loading state
+  // API-fetched icons from Supabase
   const [apiIcons, setApiIcons] = useState<IconData[]>([]);
-  const [isIconsLoading, setIsIconsLoading] = useState(true);
-  const lastClickRef = React.useRef<number>(0);
 
   // Caregiver user state (persisted in localStorage)
   const [currentUser, setCurrentUser] = useState<{ id: string; username: string; role: string } | null>(() => {
@@ -125,22 +132,11 @@ export function App() {
     getCustomCards(currentUser?.id).then(cards => setCustomCards(cards)).catch(() => {});
   }, [parentMode, currentUser?.id]);
 
-  // Fetch icons + categories from Supabase API on mount and parentMode change with fast preloading
+  // Fetch icons + categories from Supabase API on mount and parentMode change
   useEffect(() => {
-    setIsIconsLoading(true);
     Promise.all([getCategories(), getIcons()])
-      .then(([, icons]) => {
-        setApiIcons(icons);
-        // Preload photo images in parallel
-        icons.forEach(icon => {
-          if (icon.image_url && icon.image_url.startsWith('http')) {
-            const img = new Image();
-            img.src = icon.image_url;
-          }
-        });
-      })
-      .catch(() => {})
-      .finally(() => setIsIconsLoading(false));
+      .then(([, icons]) => setApiIcons(icons))
+      .catch(() => {});
   }, [parentMode]);
 
   // Map DB Icon → AACCard (detect URL vs emoji, flag as admin card)
@@ -190,16 +186,8 @@ export function App() {
     is_admin: false,
   });
 
-  // Helper to remove duplicate cards strictly by normalized Burmese label + synonyms
-  const normalizeBurmese = (text: string) => {
-    if (!text) return '';
-    return text
-      .trim()
-      .toLowerCase()
-      .replace(/[\s\u200B-\u200D\uFEFF\u200C]/g, '')
-      .replace(/အမေ/g, 'မေမေ')
-      .replace(/အဖေ/g, 'ဖေဖေ');
-  };
+  // Helper to remove duplicate cards strictly by normalized Burmese label
+  const normalizeBurmese = (text: string) => text ? text.trim().toLowerCase().replace(/[\s\u200B-\u200D\uFEFF\u200C]/g, '') : '';
 
   const dedupeCards = <T extends { id: string; burmese: string }>(cards: T[]): T[] => {
     const seen = new Set<string>();
@@ -358,10 +346,6 @@ export function App() {
   };
 
   const handleCardClick = (card: AACCard & { audioUrl?: string }) => {
-    const now = Date.now();
-    if (now - lastClickRef.current < 350) return;
-    lastClickRef.current = now;
-
     if (card.category === 'shortcut' || card.category === 'emergency') {
       setSelectedCards([card]);
       speakText(card.burmese, card.audioUrl);
@@ -451,6 +435,7 @@ export function App() {
 
   const handleSpeakSentence = async () => {
     if (selectedCards.length === 0) return;
+    setIsSpeaking(true);
     const rawText = sanitizeNoKa(selectedCards.map(c => c.burmese).join(' '));
     let speakText_ = rawText;
     try {
@@ -468,6 +453,7 @@ export function App() {
     speakText(speakText_);
     logSentenceToSupabase(selectedCards);
     setIsSentenceFinished(true);
+    setIsSpeaking(false);
   };
 
   const activeActivities = dedupeCards([
@@ -525,6 +511,12 @@ export function App() {
     );
   }
 
+  if (showGame) {
+    return (
+      <ConcentrationGame onBack={() => setShowGame(false)} />
+    );
+  }
+
   return (
     <div className="app-container">
       {/* Caregiver Auth Modal Overlay */}
@@ -535,15 +527,59 @@ export function App() {
         />
       )}
 
-      {/* Hidden Caregiver Settings Icon on top right */}
-      <button 
-        className="hidden-parent-icon"
-        onClick={handleOpenParentModal}
-        aria-label="Caregiver Portal"
-        title="Caregiver Portal"
-      >
-        <Settings size={18} />
-      </button>
+      {/* Side Drawer Overlay */}
+      {showDrawer && (
+        <div className="drawer-overlay" onClick={() => setShowDrawer(false)}>
+          <div className="drawer-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="drawer-header">
+              <h2 className="drawer-title">Menu</h2>
+              <button className="drawer-close-btn" onClick={() => setShowDrawer(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="drawer-content">
+              <button
+                className="drawer-item drawer-game-item"
+                onClick={() => { setShowDrawer(false); setShowGame(true); }}
+              >
+                <span className="drawer-item-icon game-icon-bounce"><Gamepad2 size={20} /></span>
+                <div className="drawer-item-text">
+                  <span className="drawer-item-label">Memory Game</span>
+                  <span className="drawer-item-sublabel">တိရစ္ဆာန် memory ကစားပွဲ</span>
+                </div>
+              </button>
+              <button
+                className="drawer-item"
+                onClick={() => {
+                  setShowDrawer(false);
+                  setCaregiverLoading(true);
+                  setTimeout(() => {
+                    setCaregiverLoading(false);
+                    handleOpenParentModal();
+                  }, 1200);
+                }}
+              >
+                <span className="drawer-item-icon"><Settings size={20} /></span>
+                <div className="drawer-item-text">
+                  <span className="drawer-item-label">Caregiver Settings</span>
+                  <span className="drawer-item-sublabel">မိဘ/ဆရာမ ပြင်ဆင်ရန်</span>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Caregiver Loading Overlay */}
+      {caregiverLoading && (
+        <div className="caregiver-loading-overlay">
+          <div className="caregiver-loading-spinner">
+            <div className="spinner-ring"></div>
+                <span className="spinner-icon"><Settings size={20} /></span>
+          </div>
+          <p className="caregiver-loading-text">ဝင်ရောက်နေပါသည်...</p>
+        </div>
+      )}
 
       {/* Caregiver Portal Math Question Modal Overlay */}
       {showPortalModal && (
@@ -591,17 +627,17 @@ export function App() {
         <div className="modal-overlay" style={{ zIndex: 1200 }}>
           <div className="portal-modal" style={{ maxWidth: '540px', width: '92%', borderRadius: '24px', padding: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#1E293B', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <BookOpen size={24} color="#EAB308" /> မေမေ့ ၁ မိနစ် ပုံပြင်များ (Mom's Stories)
+              <h2 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#1F2937', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <BookOpen size={24} color="#667eea" /> မေမေ့ ၁ မိနစ် ပုံပြင်များ (Mom's Stories)
               </h2>
-              <button onClick={() => setShowStoriesModal(false)} style={{ border: 'none', background: 'none', cursor: 'pointer' }}><X size={20} /></button>
+              <button onClick={() => setShowStoriesModal(false)} style={{ border: 'none', background: '#F3F4F6', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#6B7280' }}><X size={18} /></button>
             </div>
 
             {storyCards.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '30px', color: '#64748B' }}>
-                <div style={{ fontSize: '3rem', marginBottom: '8px' }}>📖</div>
-                <p style={{ fontWeight: '700' }}>မေမေ့ပုံပြင်များ မရှိသေးပါ</p>
-                <p style={{ fontSize: '0.82rem' }}>မိဘထိန်းချုပ်ခန်းမှ ၁ မိနစ် ပုံပြင်များ အသံသွင်း၍ ထည့်သွင်းနိုင်ပါသည်</p>
+              <div style={{ textAlign: 'center', padding: '30px', color: '#667eea' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '8px' }}><BookOpen size={48} /></div>
+                <p style={{ fontWeight: '700', color: '#1F2937' }}>မေမေ့ပုံပြင်များ မရှိသေးပါ</p>
+                <p style={{ fontSize: '0.82rem', color: '#9CA3AF' }}>မိဘထိန်းချုပ်ခန်းမှ ၁ မိနစ် ပုံပြင်များ အသံသွင်း၍ ထည့်သွင်းနိုင်ပါသည်</p>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '380px', overflowY: 'auto' }}>
@@ -614,21 +650,21 @@ export function App() {
                     }}
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px',
-                      borderRadius: '16px', border: playingStoryId === story.id ? '2px solid #EAB308' : '1px solid #E2E8F0',
-                      background: playingStoryId === story.id ? '#FEF9C3' : '#FFF', cursor: 'pointer', textAlign: 'left',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.04)', transition: 'all 0.2s'
+                      borderRadius: '16px', border: playingStoryId === story.id ? '2px solid #667eea' : '2px solid rgba(102, 126, 234, 0.12)',
+                      background: playingStoryId === story.id ? '#F5F3FF' : '#FFFFFF', cursor: 'pointer', textAlign: 'left',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.06)', transition: 'all 0.2s'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                      <div style={{ fontSize: '2rem' }}>{story.emoji || '📖'}</div>
+                      <div style={{ fontSize: '2rem' }}>{story.emoji || <BookOpen size={28} />}</div>
                       <div>
-                        <div style={{ fontSize: '1rem', fontWeight: 800, color: '#1E293B' }}>{story.burmese}</div>
-                        <div style={{ fontSize: '0.78rem', color: '#64748B' }}>{story.englishMeaning}</div>
+                        <div style={{ fontSize: '1rem', fontWeight: 800, color: '#1F2937' }}>{story.burmese}</div>
+                        <div style={{ fontSize: '0.78rem', color: '#667eea' }}>{story.englishMeaning}</div>
                       </div>
                     </div>
 
-                    <div style={{ width: '40px', height: '40px', background: '#FEF08A', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#854D0E' }}>
-                      <Play size={20} fill="#854D0E" />
+                    <div style={{ width: '40px', height: '40px', background: 'rgba(102, 126, 234, 0.1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#667eea' }}>
+                      <Play size={20} fill="#667eea" />
                     </div>
                   </button>
                 ))}
@@ -637,7 +673,7 @@ export function App() {
 
             <button
               onClick={() => setShowStoriesModal(false)}
-              style={{ marginTop: '20px', width: '100%', padding: '12px', borderRadius: '12px', background: '#1E293B', color: '#FFF', border: 'none', fontWeight: 800, cursor: 'pointer' }}
+              style={{ marginTop: '20px', width: '100%', padding: '12px', borderRadius: '14px', background: '#F5F3FF', color: '#667eea', border: '2px solid rgba(102, 126, 234, 0.15)', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.95rem' }}
             >
               ပိတ်မည် (Close)
             </button>
@@ -648,19 +684,34 @@ export function App() {
       {/* Top Header Bar */}
       <header className="app-header">
         <div className="app-title-area">
-          <span className="app-title-text" style={{ minWidth: '40px' }}></span>
+          <button
+            className="hamburger-btn"
+            onClick={() => setShowDrawer(true)}
+            aria-label="Open menu"
+          >
+            <Menu size={22} />
+          </button>
+          <AuraAACSensor onEmotionChange={(emotion) => {
+            setDetectedEmotion(emotion);
+            logEmotion(emotion).catch(() => {});
+            if (emotion === 'distressed') {
+              setScreen3Category('feelings');
+            } else if (emotion === 'happy') {
+              setScreen3Category('activities');
+            }
+          }} />
         </div>
 
         {/* Step Navigation Pills */}
         {!isSentenceFinished && (
-          <div className="step-indicator" style={{ marginLeft: '36px' }}>
+          <div className="step-indicator" style={{ marginLeft: 'auto' }}>
             <button 
               className={`step-pill ${currentStep === 1 ? 'active' : ''}`}
               onClick={() => setCurrentStep(1)}
             >
               ၁။ ဘယ်သူလဲဟင်
             </button>
-            <span style={{ color: '#94A3B8', fontSize: '0.8rem' }}>➔</span>
+              <span style={{ color: '#9CA3AF', fontSize: '0.8rem' }}>&#8594;</span>
             <button 
               className={`step-pill ${currentStep === 2 ? 'active' : ''}`}
               onClick={() => { if (selectedCards.length >= 1) setCurrentStep(2); }}
@@ -668,7 +719,7 @@ export function App() {
             >
               ၂။ ဘာလုပ်ချင်လဲ
             </button>
-            <span style={{ color: '#94A3B8', fontSize: '0.8rem' }}>➔</span>
+              <span style={{ color: '#9CA3AF', fontSize: '0.8rem' }}>&#8594;</span>
             <button 
               className={`step-pill ${currentStep === 3 ? 'active' : ''}`}
               onClick={() => { if (selectedCards.length >= 2) setCurrentStep(3); }}
@@ -686,7 +737,6 @@ export function App() {
           <div className="sentence-display">
             {selectedCards.length === 0 ? (
               <div className="sentence-placeholder">
-                <span>✨</span>
                 <span>ပုံလေးတွေ နှိပ်ပြီး ပြောကြည့်ရအောင် (Tap pictures to build sentence)</span>
               </div>
             ) : (
@@ -715,10 +765,20 @@ export function App() {
             <button 
               className="btn btn-primary" 
               onClick={handleSpeakSentence} 
-              disabled={selectedCards.length === 0}
+              disabled={selectedCards.length === 0 || isSpeaking}
+              style={{ minWidth: '100px', position: 'relative' }}
             >
-              <Volume2 size={22} />
-              <span>ပြောမယ်</span>
+              {isSpeaking ? (
+                <>
+                  <span className="speak-spinner"></span>
+                  <span>ခဏစောင့်ပါ...</span>
+                </>
+              ) : (
+                <>
+                  <Volume2 size={22} />
+                  <span>ပြောမယ်</span>
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -730,7 +790,6 @@ export function App() {
         {/* COMPLETE SENTENCE SCREEN VIEW WITH HORIZONTAL CARDS */}
         {isSentenceFinished ? (
           <div className="complete-sentence-view">
-            <div className="celebration-banner">🎉 🌟 👏</div>
 
             {/* Render selected cards horizontally without description text or borders */}
             <div className="complete-sentence-cards-horizontal">
@@ -745,27 +804,27 @@ export function App() {
               ))}
             </div>
 
+            {rephrasedText && (
+              <div className="rephrase-banner">
+                <span className="rephrase-icon"><Lock size={18} /></span>
+                <span>ပြောမည့်စာကြောင်း: {rephrasedText}</span>
+              </div>
+            )}
+
             <div className="complete-actions">
               <button className="btn btn-primary" style={{ padding: '12px 28px', fontSize: '1.15rem' }} onClick={handleSpeakSentence}>
                 <Volume2 size={22} />
-                <span>🔊 ပြန်ပြောမယ်</span>
+                <span>ပြန်ပြောမယ်</span>
               </button>
               
               <button className="btn-start-over" onClick={handleStartOver}>
                 <RotateCcw size={22} />
-                <span>🔄 အစက ပြန်စမယ်</span>
+                <span>အစက ပြန်စမယ်</span>
               </button>
             </div>
           </div>
         ) : (
           <>
-            {isIconsLoading && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 14px', background: '#EFF6FF', borderRadius: '14px', border: '1px solid #BFDBFE', color: '#1D4ED8', fontSize: '0.88rem', fontWeight: 700, width: 'fit-content', marginBottom: '12px' }}>
-                <span style={{ display: 'inline-block', width: '14px', height: '14px', border: '2px solid #2563EB', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }}></span>
-                ဓာတ်ပုံများ မြန်ဆန်စွာ ရယူနေသည်... (Loading photo cards...)
-              </div>
-            )}
-
             {/* SCREEN 1: Subjects & Daily Shortcuts */}
             {currentStep === 1 && (
               <>
@@ -773,8 +832,7 @@ export function App() {
                 <div>
                   <div className="section-header">
                     <h2 className="section-title">
-                      <span>👤</span>
-                      <span>၁။ ဘယ်သူလဲဟင်?</span>
+                      <span>၁။ ဘယ်သူလဲဟင်? (Who is it?)</span>
                     </h2>
                   </div>
                   <div className="card-grid">
@@ -786,19 +844,18 @@ export function App() {
                 <div style={{ marginTop: '16px' }}>
                   <div className="section-header">
                     <h2 className="section-title">
-                      <span>⭐</span>
-                      <span>ခဏခဏ ပြောတာတွေ</span>
+                      <span>ခဏခဏ ပြောတာတွေ (Daily Shortcuts & Mom's Voice)</span>
                     </h2>
                   </div>
                   <div className="card-grid">
                     {/* Mom's Bedtime Stories Folder Card */}
                     <button 
                       className="aac-card category-shortcut" 
-                      style={{ background: 'linear-gradient(135deg, #FEF08A, #FDE047)', border: '2px solid #EAB308' }}
+                      style={{ background: 'rgba(250, 204, 21, 0.12)', border: '1.5px solid rgba(250, 204, 21, 0.3)' }}
                       onClick={() => setShowStoriesModal(true)}
                     >
-                      <div className="card-emoji">📖</div>
-                      <div className="card-text" style={{ color: '#854D0E', fontWeight: 800 }}>မေမေ့ပုံပြင်များ</div>
+                      <div className="card-emoji"><BookOpen size={28} /></div>
+                      <div className="card-text" style={{ color: '#facc15', fontWeight: 800 }}>မေမေ့ပုံပြင်များ</div>
                     </button>
 
                     {activeShortcuts.map(card => renderCardButton(card, () => handleCardClick(card)))}
@@ -812,8 +869,7 @@ export function App() {
               <div>
                 <div className="section-header">
                   <h2 className="section-title">
-                    <span>⚡</span>
-                    <span>၂။ ဘာလုပ်ချင်လဲ / ဘယ်လိုနေလဲ?</span>
+                    <span>၂။ ဘာလုပ်ချင်လဲ / ဘယ်လိုနေလဲ? (Actions & Modals)</span>
                   </h2>
                 </div>
                 <div className="card-grid">
@@ -827,34 +883,33 @@ export function App() {
               <>
                 <div className="section-header">
                   <h2 className="section-title">
-                    <span>🎯</span>
                     <span>
                       ၃။ {selectedVerbCard ? selectedVerbCard.burmese : ''}
                     </span>
                   </h2>
                   {screen3Category === 'activities' && (
-                    <span className="section-badge" style={{ backgroundColor: '#CCFBF1', color: '#0F766E' }}>
-                      ⚽ လှုပ်ရှားမှု ရွေးရအောင်
+                    <span className="section-badge">
+                      လှုပ်ရှားမှု ရွေးရအောင် (Pick Activity)
                     </span>
                   )}
                   {screen3Category === 'locations' && (
-                    <span className="section-badge" style={{ backgroundColor: '#F3E8FF', color: '#9333EA' }}>
-                      🧭 ဘယ်နေရာမှာလဲ ပြောရအောင်
+                    <span className="section-badge">
+                      ဘယ်နေရာမှာလဲ ပြောရအောင် (Pick Location)
                     </span>
                   )}
                   {screen3Category === 'numbers' && (
-                    <span className="section-badge" style={{ backgroundColor: '#CCFBF1', color: '#0D9488' }}>
-                      🔢 ပမာဏနဲ့ ဂဏန်းလေး ရွေးရအောင်
+                    <span className="section-badge">
+                      ပမာဏနဲ့ ဂဏန်းလေး ရွေးရအောင် (Pick Amount/Number)
                     </span>
                   )}
                   {screen3Category === 'objects' && (selectedVerbCard?.id === 'v1' || selectedVerbCard?.id === 'v2') && (
-                    <span className="section-badge" style={{ backgroundColor: '#BFDBFE', color: '#1D4ED8' }}>
-                      🍎 မုန့်/ပစ္စည်း ပြီးရင် ပမာဏမေးပါမည်
+                    <span className="section-badge">
+                      မုန့်/ပစ္စည်း ပြီးရင် ပမာဏမေးပါမည် (Pick Object)
                     </span>
                   )}
                   {screen3Category === 'feelings' && (
-                    <span className="section-badge" style={{ backgroundColor: '#FFEDD5', color: '#C2410C' }}>
-                      ❤️ ခံစားချက်/အခြေအနေ ရွေးရအောင်
+                    <span className="section-badge">
+                      ခံစားချက်/အခြေအနေ ရွေးရအောင် (Pick Feeling)
                     </span>
                   )}
                 </div>
@@ -866,8 +921,8 @@ export function App() {
                     className={`category-pill ${screen3Category === 'activities' ? 'active' : ''}`}
                     onClick={() => setScreen3Category('activities')}
                   >
-                    <span>⚽</span>
-                    <span>လှုပ်ရှားမှုများ</span>
+                    <span><Zap size={16} /></span>
+                    <span>လှုပ်ရှားမှုများ (Activities)</span>
                   </button>
 
                   <button 
@@ -875,8 +930,8 @@ export function App() {
                     className={`category-pill ${screen3Category === 'objects' ? 'active' : ''}`}
                     onClick={() => setScreen3Category('objects')}
                   >
-                    <span>🍎</span>
-                    <span>အရာဝတ္ထုနဲ့ မုန့်</span>
+                    <span><ShoppingBag size={16} /></span>
+                    <span>အရာဝတ္ထုနဲ့ မုန့် (Things & Snacks)</span>
                   </button>
 
                   <button 
@@ -884,8 +939,8 @@ export function App() {
                     className={`category-pill ${screen3Category === 'numbers' ? 'active' : ''}`}
                     onClick={() => setScreen3Category('numbers')}
                   >
-                    <span>🔢</span>
-                    <span>ပမာဏနဲ့ ဂဏန်း</span>
+                    <span><Hash size={16} /></span>
+                    <span>ပမာဏနဲ့ ဂဏန်း (Amounts & Numbers)</span>
                   </button>
 
                   <button 
@@ -893,8 +948,8 @@ export function App() {
                     className={`category-pill ${screen3Category === 'directions' ? 'active' : ''}`}
                     onClick={() => setScreen3Category('directions')}
                   >
-                    <span>🧭</span>
-                    <span>လမ်းကြောင်း</span>
+                    <span><Navigation size={16} /></span>
+                    <span>လမ်းကြောင်း (Directions)</span>
                   </button>
 
                   <button 
@@ -902,8 +957,8 @@ export function App() {
                     className={`category-pill ${screen3Category === 'locations' ? 'active' : ''}`}
                     onClick={() => setScreen3Category('locations')}
                   >
-                    <span>🏠</span>
-                    <span>နေရာ</span>
+                    <span><MapPin size={16} /></span>
+                    <span>နေရာ (Places & Locations)</span>
                   </button>
                 </div>
 

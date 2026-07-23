@@ -90,23 +90,41 @@ def authenticate_user(username: str, password: str) -> dict | None:
     return None
 
 
-def create_user(username: str, password_hash: str, role: str = "user") -> dict:
+def create_user(
+    username: str, 
+    password_hash: str, 
+    role: str = "user",
+    child_nickname: str = "",
+    child_gender: str = "",
+    child_birth_year: str = ""
+) -> dict:
     user_id = str(uuid.uuid4())
     user_record = {
         "id": user_id,
         "username": username,
         "password_hash": password_hash,
         "role": role,
+        "child_nickname": child_nickname,
+        "child_gender": child_gender,
+        "child_birth_year": child_birth_year,
         "created_at": datetime.now().isoformat()
     }
     db = get_db()
     if db is not None:
         try:
-            result = db.table("users").insert({
+            insert_data = {
                 "username": username,
                 "password_hash": password_hash,
-                "role": role
-            }).execute()
+                "role": role,
+            }
+            if child_nickname:
+                insert_data["child_nickname"] = child_nickname
+            if child_gender:
+                insert_data["child_gender"] = child_gender
+            if child_birth_year:
+                insert_data["child_birth_year"] = child_birth_year
+
+            result = db.table("users").insert(insert_data).execute()
             if result.data:
                 return result.data[0]
         except Exception as e:
@@ -119,6 +137,7 @@ def create_user(username: str, password_hash: str, role: str = "user") -> dict:
     local_data.setdefault("users", []).append(user_record)
     _save_local_db(local_data)
     return user_record
+
 
 
 def change_password(user_id: str, new_password_hash: str) -> bool:
@@ -432,10 +451,117 @@ def get_recent_sentences(user_id: str, limit: int = 10) -> list[dict]:
         except Exception as e:
             logger.error("get_recent_sentences failed: %s", e)
 
+def get_sentence_analytics(user_id: str | None = None) -> dict:
     local_data = _load_local_db()
-    user_sents = [s for s in local_data.get("sentences", []) if s.get("user_id") == user_id]
-    user_sents.sort(key=lambda x: x.get("created_at", ""), reverse=True)
-    return user_sents[:limit]
+    sentences = local_data.get("sentences", [])
+    
+    db = get_db()
+    if db is not None:
+        try:
+            query = db.table("sentences").select("*")
+            if user_id:
+                query = query.eq("user_id", user_id)
+            result = query.execute()
+            if result.data:
+                sentences = result.data
+        except Exception as e:
+            logger.warning("Supabase get_sentence_analytics failed: %s", e)
+
+    now = datetime.now()
+    from collections import defaultdict, Counter
+
+    daily_counts = defaultdict(int)
+    weekly_counts = defaultdict(int)
+    monthly_counts = defaultdict(int)
+    category_counts = defaultdict(int)
+
+    word_counter = Counter()
+    sentence_counter = Counter()
+
+    daily_logs = defaultdict(list)
+    weekly_logs = defaultdict(list)
+
+    for s in sentences:
+        dt_str = s.get("created_at") or ""
+        try:
+            dt = datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
+        except Exception:
+            dt = now
+
+        day_key = dt.strftime("%Y-%m-%d")
+        week_key = f"Week {dt.isocalendar()[1]} ({dt.strftime('%b %Y')})"
+        month_key = dt.strftime("%b %Y")
+        time_str = dt.strftime("%I:%M %p")
+
+        daily_counts[day_key] += 1
+        weekly_counts[week_key] += 1
+        monthly_counts[month_key] += 1
+
+        text_my = s.get("text_my", "").strip()
+        text_en = s.get("text_en", "").strip()
+
+        if text_my:
+            sentence_counter[text_my] += 1
+            words = text_my.split()
+            for w in words:
+                if len(w) > 0:
+                    word_counter[w] += 1
+
+        sentence_item = {
+            "text_my": text_my,
+            "text_en": text_en,
+            "time": time_str
+        }
+        daily_logs[day_key].append(sentence_item)
+        weekly_logs[week_key].append(sentence_item)
+
+        # Categorize words spoken
+        if any(v in text_my for v in ["လိုချင်", "စား", "သောက်", "လုပ်", "သွား", "ကစား", "ဖတ်", "ကြည့်", "အိပ်"]):
+            category_counts["Actions & Verbs"] += 1
+        if any(p in text_my for p in ["သား", "သမီး", "မေမေ", "ဖေဖေ", "တီချယ်", "သူငယ်ချင်း", "သူ"]):
+            category_counts["People & Subjects"] += 1
+        if any(o in text_my for o in ["ရေ", "မုန့်", "ကစားစရာ", "သီး", "စာအုပ်", "ဖုန်း"]):
+            category_counts["Objects & Foods"] += 1
+        if any(f in text_my for f in ["ပျော်", "နာ", "ဝမ်းနည်း", "ခံစား", "ကြောက်", "ပင်ပန်း"]):
+            category_counts["Feelings & Health"] += 1
+
+    # Format top words
+    top_words = [{"word": word, "count": count} for word, count in word_counter.most_common(12)]
+
+    # Format top sentences
+    top_sentences = [{"sentence": sent, "count": count} for sent, count in sentence_counter.most_common(10)]
+
+    # Format daily report
+    daily_report = []
+    for d_key in sorted(daily_logs.keys(), reverse=True):
+        daily_report.append({
+            "date": d_key,
+            "count": len(daily_logs[d_key]),
+            "sentences": daily_logs[d_key]
+        })
+
+    # Format weekly report
+    weekly_report = []
+    for w_key in sorted(weekly_logs.keys(), reverse=True):
+        weekly_report.append({
+            "week": w_key,
+            "count": len(weekly_logs[w_key]),
+            "sentences": weekly_logs[w_key]
+        })
+
+    return {
+        "total_sentences": len(sentences),
+        "daily": dict(daily_counts),
+        "weekly": dict(weekly_counts),
+        "monthly": dict(monthly_counts),
+        "categories": dict(category_counts),
+        "top_words": top_words,
+        "top_sentences": top_sentences,
+        "daily_report": daily_report,
+        "weekly_report": weekly_report
+    }
+
+
 
 
 # ── Routines ──

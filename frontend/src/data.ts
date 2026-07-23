@@ -15,14 +15,12 @@ export interface AACCard {
   burmese: string;
   englishMeaning: string;
   category: Category;
-  subCategory?: string;
+  subCategory?: 'verb' | 'activity' | 'modal'; // Distinction for Step 2 Cards
   emoji: string;
   imageUrl?: string;           // Supabase storage URL
   audioUrl?: string;           // Custom voice recording
   contextForVerbs?: string[];  // Specified verbs where this card is relevant
 }
-
-export const activityCards: AACCard[] = [];
 
 // Maps DB category_ids to AAC grammar roles
 export const CATEGORY_ROLE: Record<string, Category> = {
@@ -67,21 +65,35 @@ export const dailyShortcutCards: AACCard[] = [
   { id: 'sh8', burmese: 'ကြောက်တယ်', englishMeaning: 'I am scared', category: 'shortcut', emoji: '😨' },
 ];
 
-// Kid-Friendly Verbs & Modals
+// Requirement 3: Categorized Verbs, Activities & Modals in Step 2
 export const verbCards: AACCard[] = [
-  { id: 'v1', burmese: 'လိုချင်တယ်', englishMeaning: 'want', category: 'verb', emoji: '🤲' },
-  { id: 'v2', burmese: 'လိုတယ်', englishMeaning: 'need', category: 'verb', emoji: '❗' },
-  { id: 'v3', burmese: 'ခံစားရတယ်', englishMeaning: 'feel', category: 'verb', emoji: '❤️' },
-  { id: 'v4', burmese: 'ဖြစ်တယ်', englishMeaning: 'am / is', category: 'verb', emoji: '👤' },
-  { id: 'v5', burmese: 'လုပ်နိုင်တယ်', englishMeaning: 'can do', category: 'verb', emoji: '👍' },
-  { id: 'v6', burmese: 'မလုပ်နိုင်ဘူး', englishMeaning: 'cannot do', category: 'verb', emoji: '👎' },
-  { id: 'v7', burmese: 'လုပ်မယ်', englishMeaning: 'will do', category: 'verb', emoji: '⚡' },
-  { id: 'v8', burmese: 'မလုပ်ချင်ဘူး', englishMeaning: 'do not want', category: 'verb', emoji: '🙅' },
-  { id: 'v9', burmese: 'နာတယ်', englishMeaning: 'hurt', category: 'verb', emoji: '🤕' },
-  { id: 'v10', burmese: 'သွားချင်တယ်', englishMeaning: 'want to go', category: 'verb', emoji: '🚶' },
+  // 🔵 Verbs (ကြိယာများ)
+  { id: 'v1', burmese: 'စားမယ်', englishMeaning: 'eat', category: 'verb', subCategory: 'verb', emoji: '🍽️' },
+  { id: 'v2', burmese: 'သောက်မယ်', englishMeaning: 'drink', category: 'verb', subCategory: 'verb', emoji: '🥤' },
+  { id: 'v10', burmese: 'သွားမယ်', englishMeaning: 'go', category: 'verb', subCategory: 'verb', emoji: '🚶' },
+
+  // 🟢 Activities (လှုပ်ရှားမှုများ - moved from Objects)
+  { id: 'a1', burmese: 'ကစားမယ်', englishMeaning: 'play', category: 'verb', subCategory: 'activity', emoji: '⚽' },
+  { id: 'a2', burmese: 'စာဖတ်မယ်', englishMeaning: 'read', category: 'verb', subCategory: 'activity', emoji: '📚' },
+  { id: 'a3', burmese: 'ရေချိုးမယ်', englishMeaning: 'bath', category: 'verb', subCategory: 'activity', emoji: '🚿' },
+  { id: 'a4', burmese: 'တီဗီကြည့်မယ်', englishMeaning: 'watch TV', category: 'verb', subCategory: 'activity', emoji: '📺' },
+  { id: 'a5', burmese: 'အိပ်မယ်', englishMeaning: 'sleep', category: 'verb', subCategory: 'activity', emoji: '💤' },
+  { id: 'a6', burmese: 'ဆေးသောက်မယ်', englishMeaning: 'take medicine', category: 'verb', subCategory: 'activity', emoji: '💊' },
+
+  // 🟠 Modals (သဘောထားနှင့် အကူအညီများ)
+  { id: 'm1', burmese: 'လိုချင်တယ်', englishMeaning: 'want', category: 'verb', subCategory: 'modal', emoji: '🤲' },
+  { id: 'm2', burmese: 'လိုတယ်', englishMeaning: 'need', category: 'verb', subCategory: 'modal', emoji: '❗' },
+  { id: 'm3', burmese: 'ခံစားရတယ်', englishMeaning: 'feel', category: 'verb', subCategory: 'modal', emoji: '❤️' },
+  { id: 'm4', burmese: 'ဖြစ်တယ်', englishMeaning: 'is / am', category: 'verb', subCategory: 'modal', emoji: '👤' },
+  { id: 'm5', burmese: 'လုပ်နိုင်တယ်', englishMeaning: 'can do', category: 'verb', subCategory: 'modal', emoji: '👍' },
+  { id: 'm6', burmese: 'မလုပ်နိုင်ဘူး', englishMeaning: 'cannot do', category: 'verb', subCategory: 'modal', emoji: '👎' },
+  { id: 'm9', burmese: 'နာတယ်', englishMeaning: 'hurt', category: 'verb', subCategory: 'modal', emoji: '🤕' },
 ];
 
-// Objects, Activities & Things for Modals and Verbs
+// Dedicated Activities array for Step 3 (Loaded dynamically from DB photo cards & custom cards)
+export const activityCards: AACCard[] = [];
+
+// Clean Objects & Foods (No action verbs here!)
 export const objectCards: AACCard[] = [
   { id: 'o1', burmese: 'ရေ', englishMeaning: 'water', category: 'object', emoji: '💧' },
   { id: 'o2', burmese: 'အစားအစာ', englishMeaning: 'food', category: 'object', emoji: '🍎' },
@@ -92,17 +104,11 @@ export const objectCards: AACCard[] = [
   { id: 'o7', burmese: 'အနားယူချိန်', englishMeaning: 'break time', category: 'object', emoji: '⏱️' },
   { id: 'o8', burmese: 'ဖုန်း / Tablet', englishMeaning: 'phone / tablet', category: 'object', emoji: '📱' },
   { id: 'o9', burmese: 'စာအုပ်', englishMeaning: 'book', category: 'object', emoji: '📖' },
-  { id: 'o10', burmese: 'ကစား', englishMeaning: 'play', category: 'object', emoji: '⚽' },
-  { id: 'o11', burmese: 'စာဖတ်', englishMeaning: 'read', category: 'object', emoji: '📚' },
-  { id: 'o12', burmese: 'အိပ်', englishMeaning: 'sleep', category: 'object', emoji: '💤' },
-  { id: 'o13', burmese: 'ရေချိုး', englishMeaning: 'bath', category: 'object', emoji: '🚿' },
-  { id: 'o14', burmese: 'တီဗီကြည့်', englishMeaning: 'watch TV', category: 'object', emoji: '📺' },
-  { id: 'o15', burmese: 'ဆေးသောက်', englishMeaning: 'take medicine', category: 'object', emoji: '💊' },
   { id: 'o16', burmese: 'ထပ်ပြီး', englishMeaning: 'more', category: 'object', emoji: '➕' },
   { id: 'o17', burmese: 'ရပ်ပါ', englishMeaning: 'stop', category: 'emergency', emoji: '🛑' },
 ];
 
-// Body parts for "နာတယ်" (v9)
+// Body parts for "နာတယ်" (m9)
 export const bodyPartCards: AACCard[] = [
   { id: 'bp1', burmese: 'ခေါင်း', englishMeaning: 'head', category: 'body_part', emoji: '🗣️' },
   { id: 'bp2', burmese: 'ဗိုက်', englishMeaning: 'stomach', category: 'body_part', emoji: '🤰' },
@@ -112,7 +118,7 @@ export const bodyPartCards: AACCard[] = [
   { id: 'bp6', burmese: 'နား', englishMeaning: 'ear', category: 'body_part', emoji: '👂' },
 ];
 
-// Feelings & Adjectives for "ခံစားရတယ်" (v3) & "ဖြစ်တယ်" (v4)
+// Feelings & Adjectives for "ခံစားရတယ်" (m3) & "ဖြစ်တယ်" (m4)
 export const feelingCards: AACCard[] = [
   { id: 'f1', burmese: 'ပျော်တယ်', englishMeaning: 'happy', category: 'feeling', emoji: '😀' },
   { id: 'f2', burmese: 'ဝမ်းနည်းတယ်', englishMeaning: 'sad', category: 'feeling', emoji: '😢' },

@@ -162,4 +162,33 @@ export function updateCustomCard(id: string, card: CustomCardData, userId?: stri
   });
 }
 
+export function logEmotion(emotion: string): Promise<{ ok: boolean }> {
+  return fetchJson("/emotions/log", {
+    method: "POST",
+    body: JSON.stringify({ emotion }),
+  });
+}
+
+export interface EmotionLogEntry {
+  id: string;
+  user_id: string;
+  emotion: string;
+  timestamp: string;
+}
+
+export function getEmotionHistory(): Promise<EmotionLogEntry[]> {
+  return fetchJson("/emotions/history");
+}
+
+export interface EmotionStats {
+  total: number;
+  counts: Record<string, number>;
+  daily: Record<string, number>;
+  hourly: Record<string, number>;
+}
+
+export function getEmotionStats(): Promise<EmotionStats> {
+  return fetchJson("/emotions/stats");
+}
+
 
