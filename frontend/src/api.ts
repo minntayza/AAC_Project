@@ -37,26 +37,6 @@ export interface RecentSentence {
   created_at: string;
 }
 
-export interface Routine {
-  id: string;
-  name: string;
-  caregiver_id: string;
-  created_at: string;
-}
-
-export interface RoutineStep {
-  id: string;
-  routine_id: string;
-  icon_id: string;
-  label: string;
-  step_order: number;
-}
-
-export interface RoutineInput {
-  name: string;
-  steps: { icon_id: string; label: string; order: number }[];
-}
-
 export function getCategories(): Promise<CategoryData[]> {
   return fetchJson("/categories");
 }
@@ -97,11 +77,43 @@ export function loginUser(username: string, password: string): Promise<{ id: str
   });
 }
 
-export function registerUser(username: string, password: string, role = "user"): Promise<{ id: string; username: string; role: string }> {
+export function registerUser(
+  username: string, 
+  password: string, 
+  role = "caregiver",
+  child_nickname = "",
+  child_gender = "",
+  child_birth_year = ""
+): Promise<{ id: string; username: string; role: string; child_nickname?: string; child_gender?: string; child_birth_year?: string }> {
   return fetchJson("/auth/register", {
     method: "POST",
-    body: JSON.stringify({ username, password, role }),
+    body: JSON.stringify({ username, password, role, child_nickname, child_gender, child_birth_year }),
   });
+}
+
+export interface SentenceAnalyticsData {
+  total_sentences: number;
+  daily: Record<string, number>;
+  weekly: Record<string, number>;
+  monthly: Record<string, number>;
+  categories: Record<string, number>;
+  top_words: Array<{ word: string; count: number }>;
+  top_sentences: Array<{ sentence: string; count: number }>;
+  daily_report: Array<{
+    date: string;
+    count: number;
+    sentences: Array<{ text_my: string; text_en: string; time: string }>;
+  }>;
+  weekly_report: Array<{
+    week: string;
+    count: number;
+    sentences: Array<{ text_my: string; text_en: string; time: string }>;
+  }>;
+}
+
+export function getSentenceAnalytics(userId?: string): Promise<SentenceAnalyticsData> {
+  const qs = userId ? `?user_id=${encodeURIComponent(userId)}` : "";
+  return fetchJson(`/analytics/sentences${qs}`);
 }
 
 export function changePassword(userId: string, newPassword: string): Promise<{ ok: boolean; message?: string }> {
@@ -143,27 +155,6 @@ export function updateCustomCard(id: string, card: CustomCardData): Promise<Cust
   return fetchJson(`/cards/custom/${id}`, {
     method: "PUT",
     body: JSON.stringify(card),
-  });
-}
-
-export function getRoutines(): Promise<Routine[]> {
-  return fetchJson("/routines");
-}
-
-export function getRoutineSteps(routineId: string): Promise<RoutineStep[]> {
-  return fetchJson(`/routines/${routineId}/steps`);
-}
-
-export function createRoutine(data: RoutineInput): Promise<Routine> {
-  return fetchJson("/routines", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
-}
-
-export function deleteRoutine(routineId: string): Promise<{ ok: boolean }> {
-  return fetchJson(`/routines/${routineId}`, {
-    method: "DELETE",
   });
 }
 

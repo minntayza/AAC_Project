@@ -15,11 +15,14 @@ export interface AACCard {
   burmese: string;
   englishMeaning: string;
   category: Category;
+  subCategory?: string;
   emoji: string;
   imageUrl?: string;           // Supabase storage URL
   audioUrl?: string;           // Custom voice recording
   contextForVerbs?: string[];  // Specified verbs where this card is relevant
 }
+
+export const activityCards: AACCard[] = [];
 
 // Maps DB category_ids to AAC grammar roles
 export const CATEGORY_ROLE: Record<string, Category> = {
