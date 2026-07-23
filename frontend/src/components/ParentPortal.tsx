@@ -470,11 +470,11 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
               </button>
             )}
             <h1 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#000000', textShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
-              {activeTab === 'library' && '📁 ကတ် စာကြည့်တိုက် (Card Library)'}
-              {activeTab === 'add_card' && '➕ ကတ်အသစ် ဖန်တီးရန် (Custom Card Studio)'}
-              {activeTab === 'story_studio' && '📖 မေမေ့ ၁ မိနစ် ပုံပြင် အသံလွှင့်ခန်း (Story Studio)'}
-              {activeTab === 'analytics' && '📊 ကလေး၏ စကားပြော အချက်အလက် (Analytics Board)'}
-              {activeTab === 'settings' && '⚙️ ဆက်တင်များနှင့် ပရိုဖိုင် (Settings & Profile)'}
+              {activeTab === 'library' && 'ကတ် စာကြည့်တိုက် (Card Library)'}
+              {activeTab === 'add_card' && 'ကတ်အသစ် ဖန်တီးရန် (Custom Card Studio)'}
+              {activeTab === 'story_studio' && 'မေမေ့ ၁ မိနစ် ပုံပြင် အသံလွှင့်ခန်း (Story Studio)'}
+              {activeTab === 'analytics' && 'ကလေး၏ စကားပြော အချက်အလက် (Analytics Board)'}
+              {activeTab === 'settings' && 'ဆက်တင်များနှင့် ပရိုဖိုင် (Settings & Profile)'}
             </h1>
           </div>
 
@@ -507,9 +507,9 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                 <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#000000', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Sparkles size={18} color="#667eea" /> မိဘများ ဖန်တီးထားသော ကတ်များ (Custom Cards)
                 </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '14px' }}>
-                  {customCards.map((c) => (
-                    <div key={c.id} style={{ background: '#FFF9E6', borderRadius: '16px', padding: '14px', border: '2px solid rgba(102, 126, 234, 0.12)', boxShadow: '0 4px 16px rgba(0, 0, 0, 0.06)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', position: 'relative' }}>
+                <div className="portal-card-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '14px' }}>
+                  {customCards.map((c, i) => (
+                    <div key={c.id} className="portal-grid-card" style={{ animationDelay: `${i * 0.05}s` }}>
 
                       {/* Action buttons (Edit & Delete) */}
                       <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', gap: '4px' }}>
@@ -544,7 +544,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
 
                       {c.audio_url && (
                         <span style={{ marginTop: '4px', fontSize: '0.68rem', background: '#ECFDF5', color: '#059669', padding: '2px 6px', borderRadius: '8px', fontWeight: 700 }}>
-                          🎙️ Mom's Voice
+                           Mom's Voice
                         </span>
                       )}
                     </div>
@@ -557,9 +557,9 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
             <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#000000', marginBottom: '12px' }}>
               မူလ ဓာတ်ပုံ ကတ်များ (Default Photo Cards)
             </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '12px' }}>
-              {apiIcons.map(icon => (
-                <div key={icon.id} style={{ background: '#FFF9E6', borderRadius: '16px', padding: '14px', border: '2px solid rgba(102, 126, 234, 0.12)', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.06)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+            <div className="portal-card-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '12px' }}>
+              {apiIcons.map((icon, i) => (
+                <div key={icon.id} className="portal-grid-card" style={{ animationDelay: `${i * 0.04}s` }}>
                   {icon.image_url?.startsWith('http') ? (
                     <img src={icon.image_url} alt={icon.label_my} style={{ width: '56px', height: '56px', objectFit: 'contain', borderRadius: '12px' }} />
                   ) : (
@@ -737,7 +737,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                 {cardMediaMode === 'emoji' ? (
                   <input
                     type="text"
-                    placeholder="Enter emoji (e.g. 🍦, 🚗, 🧸)"
+                    placeholder="Enter emoji"
                     value={cardEmoji}
                     onChange={e => setCardEmoji(e.target.value)}
                     style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1px solid rgba(102, 126, 234, 0.15)', fontSize: '1.2rem', textAlign: 'center', background: '#F9FAFB', color: '#000000' }}

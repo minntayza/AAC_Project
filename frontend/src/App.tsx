@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Volume2, Trash2, ArrowLeft, RotateCcw, Lock, X, Play, BookOpen, Menu } from 'lucide-react';
+import { Volume2, Trash2, ArrowLeft, RotateCcw, Lock, X, Play, BookOpen, Menu, Gamepad2, Settings } from 'lucide-react';
 import {
   subjectCards,
   verbCards,
@@ -507,7 +507,7 @@ export function App() {
         <div className="drawer-overlay" onClick={() => setShowDrawer(false)}>
           <div className="drawer-panel" onClick={(e) => e.stopPropagation()}>
             <div className="drawer-header">
-              <h2 className="drawer-title">🎈 Menu</h2>
+              <h2 className="drawer-title">Menu</h2>
               <button className="drawer-close-btn" onClick={() => setShowDrawer(false)}>
                 <X size={20} />
               </button>
@@ -517,7 +517,7 @@ export function App() {
                 className="drawer-item drawer-game-item"
                 onClick={() => { setShowDrawer(false); setShowGame(true); }}
               >
-                <span className="drawer-item-icon game-icon-bounce">🎮</span>
+                <span className="drawer-item-icon game-icon-bounce"><Gamepad2 size={20} /></span>
                 <div className="drawer-item-text">
                   <span className="drawer-item-label">Memory Game</span>
                   <span className="drawer-item-sublabel">တိရစ္ဆာန် memory ကစားပွဲ</span>
@@ -534,7 +534,7 @@ export function App() {
                   }, 1200);
                 }}
               >
-                <span className="drawer-item-icon">⚙️</span>
+                <span className="drawer-item-icon"><Settings size={20} /></span>
                 <div className="drawer-item-text">
                   <span className="drawer-item-label">Caregiver Settings</span>
                   <span className="drawer-item-sublabel">မိဘ/ဆရာမ ပြင်ဆင်ရန်</span>
@@ -550,7 +550,7 @@ export function App() {
         <div className="caregiver-loading-overlay">
           <div className="caregiver-loading-spinner">
             <div className="spinner-ring"></div>
-            <span className="spinner-icon">⚙️</span>
+                <span className="spinner-icon"><Settings size={20} /></span>
           </div>
           <p className="caregiver-loading-text">ဝင်ရောက်နေပါသည်...</p>
         </div>
@@ -610,7 +610,7 @@ export function App() {
 
             {storyCards.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '30px', color: '#667eea' }}>
-                <div style={{ fontSize: '3rem', marginBottom: '8px' }}>📖</div>
+                <div style={{ fontSize: '3rem', marginBottom: '8px' }}><BookOpen size={48} /></div>
                 <p style={{ fontWeight: '700', color: '#1F2937' }}>မေမေ့ပုံပြင်များ မရှိသေးပါ</p>
                 <p style={{ fontSize: '0.82rem', color: '#9CA3AF' }}>မိဘထိန်းချုပ်ခန်းမှ ၁ မိနစ် ပုံပြင်များ အသံသွင်း၍ ထည့်သွင်းနိုင်ပါသည်</p>
               </div>
@@ -631,7 +631,7 @@ export function App() {
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                      <div style={{ fontSize: '2rem' }}>{story.emoji || '📖'}</div>
+                      <div style={{ fontSize: '2rem' }}>{story.emoji || <BookOpen size={28} />}</div>
                       <div>
                         <div style={{ fontSize: '1rem', fontWeight: 800, color: '#1F2937' }}>{story.burmese}</div>
                         <div style={{ fontSize: '0.78rem', color: '#667eea' }}>{story.englishMeaning}</div>
@@ -678,7 +678,7 @@ export function App() {
             >
               ၁။ ဘယ်သူလဲဟင်
             </button>
-              <span style={{ color: '#9CA3AF', fontSize: '0.8rem' }}>➔</span>
+              <span style={{ color: '#9CA3AF', fontSize: '0.8rem' }}>&#8594;</span>
             <button 
               className={`step-pill ${currentStep === 2 ? 'active' : ''}`}
               onClick={() => { if (selectedCards.length >= 1) setCurrentStep(2); }}
@@ -686,7 +686,7 @@ export function App() {
             >
               ၂။ ဘာလုပ်ချင်လဲ
             </button>
-              <span style={{ color: '#9CA3AF', fontSize: '0.8rem' }}>➔</span>
+              <span style={{ color: '#9CA3AF', fontSize: '0.8rem' }}>&#8594;</span>
             <button 
               className={`step-pill ${currentStep === 3 ? 'active' : ''}`}
               onClick={() => { if (selectedCards.length >= 2) setCurrentStep(3); }}
@@ -704,7 +704,6 @@ export function App() {
           <div className="sentence-display">
             {selectedCards.length === 0 ? (
               <div className="sentence-placeholder">
-                <span>✨</span>
                 <span>ပုံလေးတွေ နှိပ်ပြီး ပြောကြည့်ရအောင် (Tap pictures to build sentence)</span>
               </div>
             ) : (
@@ -748,7 +747,7 @@ export function App() {
         {/* COMPLETE SENTENCE SCREEN VIEW WITH HORIZONTAL CARDS */}
         {isSentenceFinished ? (
           <div className="complete-sentence-view">
-            <div className="celebration-banner">🎉 🌟 👏</div>
+            <div className="celebration-banner">Well Done!</div>
 
             {/* Render selected cards as full AAC cards horizontally */}
             <div className="complete-sentence-cards-horizontal">
@@ -766,7 +765,7 @@ export function App() {
 
             {rephrasedText && (
               <div className="rephrase-banner">
-                <span className="rephrase-icon">🤖</span>
+                <span className="rephrase-icon"><Lock size={18} /></span>
                 <span>ပြောမည့်စာကြောင်း: {rephrasedText}</span>
               </div>
             )}
@@ -774,12 +773,12 @@ export function App() {
             <div className="complete-actions">
               <button className="btn btn-primary" style={{ padding: '12px 28px', fontSize: '1.15rem' }} onClick={handleSpeakSentence}>
                 <Volume2 size={22} />
-                <span>🔊 ပြန်ပြောမယ်</span>
+                <span>ပြန်ပြောမယ်</span>
               </button>
               
               <button className="btn-start-over" onClick={handleStartOver}>
                 <RotateCcw size={22} />
-                <span>🔄 အစက ပြန်စမယ်</span>
+                <span>အစက ပြန်စမယ်</span>
               </button>
             </div>
           </div>
@@ -814,7 +813,7 @@ export function App() {
                       style={{ background: 'rgba(250, 204, 21, 0.12)', border: '1.5px solid rgba(250, 204, 21, 0.3)' }}
                       onClick={() => setShowStoriesModal(true)}
                     >
-                      <div className="card-emoji">📖</div>
+                      <div className="card-emoji"><BookOpen size={28} /></div>
                       <div className="card-text" style={{ color: '#facc15', fontWeight: 800 }}>မေမေ့ပုံပြင်များ</div>
                     </button>
 
@@ -829,7 +828,6 @@ export function App() {
               <div>
                 <div className="section-header">
                   <h2 className="section-title">
-                    <span>⚡</span>
                     <span>၂။ ဘာလုပ်ချင်လဲ / ဘယ်လိုနေလဲ? (Actions & Modals)</span>
                   </h2>
                 </div>
@@ -844,34 +842,33 @@ export function App() {
               <>
                 <div className="section-header">
                   <h2 className="section-title">
-                    <span>🎯</span>
                     <span>
                       ၃။ {selectedVerbCard ? selectedVerbCard.burmese : ''} (Details & Activities)
                     </span>
                   </h2>
                   {screen3Category === 'activities' && (
                     <span className="section-badge">
-                      ⚽ လှုပ်ရှားမှု ရွေးရအောင် (Pick Activity)
+                      လှုပ်ရှားမှု ရွေးရအောင် (Pick Activity)
                     </span>
                   )}
                   {screen3Category === 'locations' && (
                     <span className="section-badge">
-                      🧭 ဘယ်နေရာမှာလဲ ပြောရအောင် (Pick Location)
+                      ဘယ်နေရာမှာလဲ ပြောရအောင် (Pick Location)
                     </span>
                   )}
                   {screen3Category === 'numbers' && (
                     <span className="section-badge">
-                      🔢 ပမာဏနဲ့ ဂဏန်းလေး ရွေးရအောင် (Pick Amount/Number)
+                      ပမာဏနဲ့ ဂဏန်းလေး ရွေးရအောင် (Pick Amount/Number)
                     </span>
                   )}
                   {screen3Category === 'objects' && (selectedVerbCard?.id === 'v1' || selectedVerbCard?.id === 'v2') && (
                     <span className="section-badge">
-                      🍎 မုန့်/ပစ္စည်း ပြီးရင် ပမာဏမေးပါမည် (Pick Object)
+                      မုန့်/ပစ္စည်း ပြီးရင် ပမာဏမေးပါမည် (Pick Object)
                     </span>
                   )}
                   {screen3Category === 'feelings' && (
                     <span className="section-badge">
-                      ❤️ ခံစားချက်/အခြေအနေ ရွေးရအောင် (Pick Feeling)
+                      ခံစားချက်/အခြေအနေ ရွေးရအောင် (Pick Feeling)
                     </span>
                   )}
                 </div>
@@ -883,7 +880,6 @@ export function App() {
                     className={`category-pill ${screen3Category === 'activities' ? 'active' : ''}`}
                     onClick={() => setScreen3Category('activities')}
                   >
-                    <span>⚽</span>
                     <span>လှုပ်ရှားမှုများ (Activities)</span>
                   </button>
 
@@ -892,7 +888,6 @@ export function App() {
                     className={`category-pill ${screen3Category === 'objects' ? 'active' : ''}`}
                     onClick={() => setScreen3Category('objects')}
                   >
-                    <span>🍎</span>
                     <span>အရာဝတ္ထုနဲ့ မုန့် (Things & Snacks)</span>
                   </button>
 
@@ -901,7 +896,6 @@ export function App() {
                     className={`category-pill ${screen3Category === 'numbers' ? 'active' : ''}`}
                     onClick={() => setScreen3Category('numbers')}
                   >
-                    <span>🔢</span>
                     <span>ပမာဏနဲ့ ဂဏန်း (Amounts & Numbers)</span>
                   </button>
 
@@ -910,7 +904,6 @@ export function App() {
                     className={`category-pill ${screen3Category === 'directions' ? 'active' : ''}`}
                     onClick={() => setScreen3Category('directions')}
                   >
-                    <span>🧭</span>
                     <span>လမ်းကြောင်း (Directions)</span>
                   </button>
 
@@ -919,7 +912,6 @@ export function App() {
                     className={`category-pill ${screen3Category === 'locations' ? 'active' : ''}`}
                     onClick={() => setScreen3Category('locations')}
                   >
-                    <span>🏠</span>
                     <span>နေရာ (Places & Locations)</span>
                   </button>
                 </div>
