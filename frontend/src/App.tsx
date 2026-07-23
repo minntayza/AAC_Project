@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Volume2, Trash2, ArrowLeft, RotateCcw, Lock, X, Play, BookOpen, Menu, Gamepad2, Settings, Zap, ShoppingBag, Hash, Navigation, MapPin } from 'lucide-react';
+import AuraAACSensor from './components/AuraAACSensor';
 import {
   subjectCards,
   verbCards,
@@ -38,6 +39,7 @@ export function App() {
   const [showDrawer, setShowDrawer] = useState(false);
   const [showGame, setShowGame] = useState(false);
   const [caregiverLoading, setCaregiverLoading] = useState(false);
+  const [_detectedEmotion, setDetectedEmotion] = useState<string>('neutral');
 
   // Requirement 5 & 6: Unified Card Renderer for Admin DB Cards vs Parent Upload Cards
   const renderCardButton = (
@@ -666,7 +668,7 @@ export function App() {
           >
             <Menu size={22} />
           </button>
-          <span className="app-title-text" style={{ minWidth: '40px' }}></span>
+          <AuraAACSensor onEmotionChange={(e) => setDetectedEmotion(e)} />
         </div>
 
         {/* Step Navigation Pills */}
