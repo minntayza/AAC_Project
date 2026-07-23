@@ -87,12 +87,12 @@ export function App() {
         {card.imageUrl ? (
           <img src={card.imageUrl} alt="" className="card-image" />
         ) : (
-          <div className="card-emoji">{card.emoji || (isMomVoiceCard ? '🎙️' : '⭐')}</div>
+          <div className="card-emoji">{''}</div>
         )}
         <div className="card-text">{card.burmese}</div>
         {isMomVoiceCard && (
           <div style={{ position: 'absolute', top: '6px', right: '6px', background: '#10B981', color: '#FFF', borderRadius: '50%', width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', boxShadow: '0 2px 6px rgba(0,0,0,0.15)' }}>
-            🔊
+            <Volume2 size={12} />
           </div>
         )}
       </button>
@@ -357,8 +357,29 @@ export function App() {
     if (currentStep === 1) {
       setCurrentStep(2);
     } else if (currentStep === 2) {
-      if (card.category === 'action') {
-        // Actions (run, play, sleep, etc.) → finish sentence immediately
+      const cardId = (card.id || '').toLowerCase();
+      const eng = (card.englishMeaning || '').toLowerCase();
+      const bur = card.burmese || '';
+      const sub = card.subCategory;
+
+      const isEat = cardId === 'v1' || cardId === 'eat' || eng.includes('eat') || bur.includes('စား');
+      const isDrink = cardId === 'v2' || cardId === 'drink' || eng.includes('drink') || bur.includes('သောက်');
+      const isGo = cardId === 'v10' || cardId === 'go' || eng.includes('go') || bur.includes('သွား');
+      const isHurt = cardId === 'v9' || cardId === 'm9' || eng.includes('hurt') || bur.includes('နာ');
+      const isFeel = cardId === 'm3' || cardId === 'm4' || cardId === 'v3' || cardId === 'v4' || eng.includes('feel') || bur.includes('ခံစား');
+      const isWantNeed = cardId === 'm1' || cardId === 'm2' || eng.includes('want') || eng.includes('need') || bur.includes('လိုချင်') || bur.includes('လိုတယ်');
+
+      const isVerbType = sub === 'verb' || sub === 'modal' || isEat || isDrink || isGo || isHurt || isFeel || isWantNeed;
+      void isVerbType;
+      const isActionType = sub === 'activity' || 
+                           (sub as string) === 'action' || 
+                           (card.category as string) === 'action' || 
+                           cardId.startsWith('a') || 
+                           cardId.startsWith('act') || 
+                           ['badmintor','bath','bicycle','football','play','read','run','sleep','swim','act1','act2','act3','act4','act5','act6','act7'].includes(cardId);
+
+      if (isActionType && !isEat && !isDrink && !isGo) {
+        // Actions: Finish sentence immediately & route to final page!
         logSentenceToSupabase(newSelected);
         setIsSentenceFinished(true);
       } else if (card.category === 'verb') {
@@ -665,7 +686,7 @@ export function App() {
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                      <div style={{ fontSize: '2rem' }}>{story.emoji || <BookOpen size={28} />}</div>
+                      <div style={{ fontSize: '2rem' }}><BookOpen size={28} /></div>
                       <div>
                         <div style={{ fontSize: '1rem', fontWeight: 800, color: '#1F2937' }}>{story.burmese}</div>
                         <div style={{ fontSize: '0.78rem', color: '#667eea' }}>{story.englishMeaning}</div>
@@ -754,7 +775,7 @@ export function App() {
                   {(card as any).imageUrl ? (
                     <img src={(card as any).imageUrl} alt="" className="chip-image" />
                   ) : (
-                    <span className="chip-emoji">{card.emoji}</span>
+                    <span className="chip-emoji"></span>
                   )}
                   <span>{card.burmese}</span>
                 </div>
@@ -807,7 +828,7 @@ export function App() {
                   {card.imageUrl ? (
                     <img src={card.imageUrl} alt="" className="complete-card-img" />
                   ) : (
-                    <div className="complete-card-emoji">{card.emoji || '⭐'}</div>
+                    <div className="complete-card-emoji">{''}</div>
                   )}
                 </div>
               ))}
@@ -971,7 +992,7 @@ export function App() {
                   </button>
                 </div>
 
-                {/* Render Selected Grid Category */}
+
                 {screen3Category === 'activities' && (
                   <div className="card-grid">
                     {activeActivities.map(card => renderCardButton(card, () => handleCardClick(card)))}

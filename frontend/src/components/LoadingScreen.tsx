@@ -73,7 +73,25 @@ export function LoadingScreen({ isLoading }: LoadingScreenProps) {
 
       {/* Main content */}
       <div className="load-center">
-        <div className="load-percentage">{Math.round(progress)}%</div>
+        <div className="load-logo">
+          <div className="load-logo-icon">
+            <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" style={{width: '48px', height: '48px'}}>
+              <circle cx="30" cy="30" r="28" stroke="url(#grad1)" strokeWidth="3" fill="none"/>
+              <path d="M18 22 C18 22 22 18 30 18 C38 18 42 22 42 22" stroke="url(#grad1)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+              <circle cx="22" cy="28" r="2.5" fill="#667eea"/>
+              <circle cx="38" cy="28" r="2.5" fill="#764ba2"/>
+              <path d="M22 36 C22 36 26 40 30 40 C34 40 38 36 38 36" stroke="url(#grad1)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+              <defs>
+                <linearGradient id="grad1" x1="0" y1="0" x2="60" y2="60">
+                  <stop offset="0%" stopColor="#667eea"/>
+                  <stop offset="100%" stopColor="#764ba2"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <div className="load-logo-text">အသံ</div>
+          <div className="load-logo-sub">AAC Communication</div>
+        </div>
         <div className="load-bar-track">
           <div className="load-bar-fill" style={{ width: `${progress}%` }}></div>
         </div>
