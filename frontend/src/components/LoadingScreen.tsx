@@ -71,9 +71,65 @@ export function LoadingScreen({ isLoading }: LoadingScreenProps) {
         </svg>
       </div>
 
+      {/* Floating music notes */}
+      <div className="load-notes">
+        {['♪', '♫', '♬', '♩', '♪', '♫'].map((note, i) => (
+          <span
+            key={i}
+            className="load-note"
+            style={{
+              left: `${10 + i * 15}%`,
+              animationDelay: `${i * 1.2}s`,
+              animationDuration: `${5 + i * 0.8}s`,
+            }}
+          >{note}</span>
+        ))}
+      </div>
+
+      {/* Floating particles */}
+      <div className="load-particles">
+        {Array.from({ length: 30 }).map((_, i) => (
+          <div
+            key={i}
+            className="load-particle"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 5}s`,
+              animationDuration: `${3 + Math.random() * 4}s`,
+              width: `${3 + Math.random() * 7}px`,
+              height: `${3 + Math.random() * 7}px`,
+              opacity: 0.15 + Math.random() * 0.25,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Morphing background shapes */}
+      <div className="load-shapes">
+        <div className="load-shape"></div>
+        <div className="load-shape"></div>
+        <div className="load-shape"></div>
+        <div className="load-shape"></div>
+        <div className="load-shape"></div>
+        <div className="load-shape"></div>
+      </div>
+
       {/* Main content */}
       <div className="load-center">
-        <div className="load-percentage">{Math.round(progress)}%</div>
+        <div className="load-logo">
+          <div className="load-logo-icon">
+            <div className="sound-waves">
+              <div className="sound-ring"></div>
+              <div className="sound-ring"></div>
+              <div className="sound-ring"></div>
+              <div className="sound-ring"></div>
+            </div>
+            <img src="/assets/logo.png" alt="AAC Logo" className="load-logo-img" />
+          </div>
+          <div className="load-logo-text">အသံ</div>
+          <div className="load-logo-sub">AAC Communication</div>
+        </div>
         <div className="load-bar-track">
           <div className="load-bar-fill" style={{ width: `${progress}%` }}></div>
         </div>

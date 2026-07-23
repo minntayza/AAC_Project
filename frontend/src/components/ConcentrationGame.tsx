@@ -193,8 +193,8 @@ export function ConcentrationGame({ onBack }: Props) {
 
         <div className="game-select-screen">
           <div className="game-title-emoji">🎮</div>
-          <h1 className="game-title">Memory Game</h1>
-          <p className="game-subtitle">တိရစ္ဆာန်လေးတွေ ရှာပါ (Find the animals!)</p>
+          <h1 className="game-title">မှတ်ဉာဏ်ကစားပွဲ</h1>
+          <p className="game-subtitle">တိရစ္ဆာန်လေးတွေ ရှာပါ</p>
 
           <div className="difficulty-options">
             {(['easy', 'medium', 'hard'] as Difficulty[]).map(diff => (
@@ -206,9 +206,9 @@ export function ConcentrationGame({ onBack }: Props) {
                 <span className="difficulty-icon">
                   {diff === 'easy' ? '🌟' : diff === 'medium' ? '🌟🌟' : '🌟🌟🌟'}
                 </span>
-                <span className="difficulty-label">{DIFFICULTY_CONFIG[diff].burmese} ({DIFFICULTY_CONFIG[diff].label})</span>
+                <span className="difficulty-label">{DIFFICULTY_CONFIG[diff].burmese}</span>
                 <span className="difficulty-desc">
-                  {DIFFICULTY_CONFIG[diff].pairs} pairs / {DIFFICULTY_CONFIG[diff].pairs * 2} cards
+                  {DIFFICULTY_CONFIG[diff].pairs} စုံ / {DIFFICULTY_CONFIG[diff].pairs * 2} ပုံ
                 </span>
               </button>
             ))}
@@ -227,13 +227,13 @@ export function ConcentrationGame({ onBack }: Props) {
           <div className="win-trophy">
             <Trophy size={64} color="#F59E0B" />
           </div>
-          <h1 className="win-title">🎉 သာပြီ! 🎉</h1>
-          <p className="win-subtitle">Congratulations!</p>
+          <h1 className="win-title">သာပြီ!</h1>
+          <p className="win-subtitle">ဂုဏ်ယူပါတယ်!</p>
 
           <div className="win-stats">
             <div className="win-stat">
               <Star size={20} color="#F59E0B" />
-              <span>{moves} moves</span>
+              <span>{moves} ကြိမ်</span>
             </div>
             <div className="win-stat">
               <span>⏱️</span>
@@ -244,14 +244,14 @@ export function ConcentrationGame({ onBack }: Props) {
           <div className="win-actions">
             <button className="game-btn game-btn-primary" onClick={() => startGame(difficulty)}>
               <RotateCcw size={20} />
-              <span>ထပ်ကစားမည် (Play Again)</span>
+              <span>ထပ်ကစားမည်</span>
             </button>
             <button className="game-btn game-btn-secondary" onClick={() => setScreen('select')}>
-              <span>🔄 Level ပြောင်းမည် (Change Level)</span>
+              <span>အဆင့်ပြောင်းမည်</span>
             </button>
             <button className="game-btn game-btn-back" onClick={onBack}>
               <ArrowLeft size={20} />
-              <span>ပြန်မည် (Back)</span>
+              <span>ပြန်မည်</span>
             </button>
           </div>
         </div>
@@ -268,13 +268,13 @@ export function ConcentrationGame({ onBack }: Props) {
         </button>
         <div className="game-info-bar">
           <span className="game-info-item">
-            ⏱️ {formatTime(timer)}
+            {formatTime(timer)}
           </span>
           <span className="game-info-item">
-            🎯 {moves} moves
+            {moves} ကြိမ်
           </span>
           <span className="game-info-item">
-            ⭐ {cards.filter(c => c.isMatched).length / 2}/{DIFFICULTY_CONFIG[difficulty].pairs}
+            {cards.filter(c => c.isMatched).length / 2}/{DIFFICULTY_CONFIG[difficulty].pairs}
           </span>
         </div>
         <button className="game-restart-btn" onClick={() => startGame(difficulty)}>
@@ -284,8 +284,8 @@ export function ConcentrationGame({ onBack }: Props) {
 
       {screen === 'preview' && (
         <div className="preview-banner">
-          <span className="preview-icon">👀</span>
-          <span>မှတ်ထားပါ... (Memorize the positions!)</span>
+          <span className="preview-icon"></span>
+          <span>မှတ်ထားပါ...</span>
         </div>
       )}
 
@@ -304,7 +304,7 @@ export function ConcentrationGame({ onBack }: Props) {
               >
                 <div className="game-card-inner">
                   <div className="game-card-front">
-                    <span className="card-back-pattern">❓</span>
+                    <span className="card-back-pattern">✦</span>
                   </div>
                   <div className="game-card-back">
                     <span className="card-animal-emoji">{card.emoji}</span>
