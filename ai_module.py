@@ -29,7 +29,7 @@ def process_image_for_aac(image_bytes: bytes) -> dict:
     client = get_anthropic()
     response = client.messages.create(
         model="mimo-v2.5-pro",
-        max_tokens=3000,
+        max_tokens=10000,
         messages=[{
             "role": "user",
             "content": [
@@ -69,7 +69,7 @@ def suggest_sentences(time_of_day: str, recent_icons: list[str], mood: str = "")
     )
     response = client.messages.create(
         model="claude-haiku-4-5",
-        max_tokens=200,
+        max_tokens=10000,
         messages=[{"role": "user", "content": prompt}]
     )
     text = response.content[0].text
@@ -90,7 +90,7 @@ def rephrase_sentence(raw_text: str) -> str | None:
             headers={"Authorization": f"Bearer {ANTHROPIC_API_KEY}", "Content-Type": "application/json"},
             json={
                 "model": "mimo-v2.5-pro",
-                "max_tokens": 3000,
+                "max_tokens": 10000,
                 "temperature": 0.3,
                 "messages": [{
                     "role": "user",

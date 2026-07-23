@@ -45,6 +45,7 @@ export const CATEGORY_ROLE: Record<string, Category> = {
   verbs: 'verb',
   shortcuts: 'shortcut',
   choices: 'verb',
+  drinks: 'object',
 };
 
 // Kid-Friendly Burmese Subjects

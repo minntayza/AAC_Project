@@ -230,6 +230,11 @@ export function App() {
     ...customCards.filter(c => c.category === 'body_part' && c.card_type !== 'story_1min').map(mapCustomToAAC)
   ]);
 
+  const activeActions = dedupeCards([
+    ...apiByRole('action'),
+    ...customCards.filter(c => c.category === 'action' && c.card_type !== 'story_1min').map(mapCustomToAAC)
+  ]);
+
   const activeShortcuts = dedupeCards([
     ...apiByRole('shortcut'),
     ...customCards.filter(c => (c.category === 'shortcut' || c.card_type === 'custom_voice') && c.card_type !== 'story_1min').map(mapCustomToAAC)
@@ -343,7 +348,7 @@ export function App() {
     });
   };
 
-  const handleCardClick = (card: AACCard & { audioUrl?: string }) => {
+  const handleCardClick = (card: AACCard & { audioUrl?: string; category_id?: string }) => {
     if (card.category === 'shortcut' || card.category === 'emergency') {
       setSelectedCards([card]);
       speakText(card.burmese, card.audioUrl);
@@ -359,46 +364,29 @@ export function App() {
     if (currentStep === 1) {
       setCurrentStep(2);
     } else if (currentStep === 2) {
-      const cardId = (card.id || '').toLowerCase();
-      const eng = (card.englishMeaning || '').toLowerCase();
-      const bur = card.burmese || '';
-      const sub = card.subCategory;
-
-      const isEat = cardId === 'v1' || cardId === 'eat' || eng.includes('eat') || bur.includes('စား');
-      const isDrink = cardId === 'v2' || cardId === 'drink' || eng.includes('drink') || bur.includes('သောက်');
-      const isGo = cardId === 'v10' || cardId === 'go' || eng.includes('go') || bur.includes('သွား');
-      const isHurt = cardId === 'v9' || cardId === 'm9' || eng.includes('hurt') || bur.includes('နာ');
-      const isFeel = cardId === 'm3' || cardId === 'm4' || cardId === 'v3' || cardId === 'v4' || eng.includes('feel') || bur.includes('ခံစား');
-      const isWantNeed = cardId === 'm1' || cardId === 'm2' || eng.includes('want') || eng.includes('need') || bur.includes('လိုချင်') || bur.includes('လိုတယ်');
-
-      const isVerbType = sub === 'verb' || sub === 'modal' || isEat || isDrink || isGo || isHurt || isFeel || isWantNeed;
-      const isActionType = sub === 'activity' || 
-                           sub === 'action' || 
-                           (card.category as string) === 'action' || 
-                           cardId.startsWith('a') || 
-                           cardId.startsWith('act') || 
-                           ['badmintor','bath','bicycle','football','play','read','run','sleep','swim','act1','act2','act3','act4','act5','act6','act7'].includes(cardId);
-
-      if (isActionType && !isEat && !isDrink && !isGo) {
-        // Actions: Finish sentence immediately & route to final page!
+      if (card.category === 'action') {
+        // Actions (run, play, sleep, etc.) → finish sentence immediately
         logSentenceToSupabase(newSelected);
         setIsSentenceFinished(true);
-      } else if (isVerbType || isEat || isDrink || isGo) {
-        // Verbs: Route to context-specific Page 3
+      } else if (card.category === 'verb') {
+        // Verbs → route to context-specific Step 3
         setCurrentStep(3);
-        if (isEat || isDrink || isWantNeed) {
-          setScreen3Category('objects'); // Foods, drinks, snacks, objects
-        } else if (isGo) {
-          setScreen3Category('locations'); // Places & locations
-        } else if (isHurt) {
-          setScreen3Category('body_parts'); // Body parts
-        } else if (isFeel) {
-          setScreen3Category('feelings'); // Feelings
+        const id = (card.id || '').toLowerCase();
+        const eng = (card.englishMeaning || '').toLowerCase();
+        const bur = card.burmese || '';
+
+        if (eng.includes('eat') || bur.includes('စား') || id === 'eat') {
+          setScreen3Category('objects'); // food items
+        } else if (eng.includes('drink') || bur.includes('သောက်') || id === 'drink') {
+          setScreen3Category('objects'); // drinks/food
+        } else if (eng.includes('go') || bur.includes('သွား') || id === 'go') {
+          setScreen3Category('locations');
         } else {
-          setScreen3Category('objects');
+          // Other verbs/choices → activities or objects
+          setScreen3Category('activities');
         }
       } else {
-        // Fallback default for Page 2
+        // Fallback for unknown category
         logSentenceToSupabase(newSelected);
         setIsSentenceFinished(true);
       }
@@ -471,7 +459,8 @@ export function App() {
 
   const activeActivities = dedupeCards([
     ...apiByRole('verb'),
-    ...customCards.filter(c => (c.category === 'verb' || (c as any).subCategory === 'activity') && c.card_type !== 'story_1min').map(mapCustomToAAC)
+    ...apiByRole('action'),
+    ...customCards.filter(c => (c.category === 'verb' || c.category === 'action' || (c as any).subCategory === 'activity') && c.card_type !== 'story_1min').map(mapCustomToAAC)
   ]);
 
   const activeNumbers = dedupeCards([
@@ -492,12 +481,15 @@ export function App() {
 
   const getContextObjects = (): (AACCard & { audioUrl?: string; imageUrl?: string; is_admin?: boolean })[] => {
     const selectedVerb = selectedCards.find(c => c.category === 'verb');
-    const verbId = (selectedVerb?.id || '').toLowerCase();
-    const verbEng = (selectedVerb?.englishMeaning || '').toLowerCase();
+    if (!selectedVerb) return activeObjects;
 
-    const isEat = verbId === 'eat' || verbId === 'v1' || verbEng.includes('eat') || (selectedVerb as any)?.category_id === 'food';
-    const isDrink = verbId === 'drink' || verbId === 'v2' || verbEng.includes('drink');
-    const isGo = verbId === 'go' || verbId === 'v10' || verbEng.includes('go');
+    const verbId = (selectedVerb.id || '').toLowerCase();
+    const verbEng = (selectedVerb.englishMeaning || '').toLowerCase();
+    const verbBur = selectedVerb.burmese || '';
+
+    const isEat = verbId === 'eat' || verbEng.includes('eat') || verbBur.includes('စား');
+    const isDrink = verbId === 'drink' || verbEng.includes('drink') || verbBur.includes('သောက်');
+    const isGo = verbId === 'go' || verbEng.includes('go') || verbBur.includes('သွား');
 
     if (isEat || isDrink) {
       return dedupeCards(
@@ -511,21 +503,14 @@ export function App() {
       return activeLocations;
     }
 
-    if (screen3Category === 'activities' || selectedVerb?.subCategory === 'modal' || selectedVerb?.id.startsWith('m')) {
-      return activeActivities;
-    } else if (screen3Category === 'locations') {
-      return activeLocations;
-    } else if (screen3Category === 'body_parts' || selectedVerb?.id === 'v9' || selectedVerb?.id === 'm9') {
-      return activeBodyParts;
-    } else if (screen3Category === 'feelings' || selectedVerb?.id === 'v3' || selectedVerb?.id === 'v4' || selectedVerb?.id === 'm3' || selectedVerb?.id === 'm4') {
-      return activeFeelings;
-    } else if (screen3Category === 'numbers') {
-      return activeNumbers;
-    } else if (screen3Category === 'directions') {
-      return activeDirections;
-    } else {
-      return activeObjects;
-    }
+    // Fallback to screen3Category pills
+    if (screen3Category === 'activities') return activeActivities;
+    if (screen3Category === 'locations') return activeLocations;
+    if (screen3Category === 'body_parts') return activeBodyParts;
+    if (screen3Category === 'feelings') return activeFeelings;
+    if (screen3Category === 'numbers') return activeNumbers;
+    if (screen3Category === 'directions') return activeDirections;
+    return activeObjects;
   };
 
 
@@ -904,7 +889,7 @@ export function App() {
                   </h2>
                 </div>
                 <div className="card-grid">
-                  {activeVerbs.map(card => renderCardButton(card, () => handleCardClick(card)))}
+                  {[...activeVerbs, ...activeActions].map(card => renderCardButton(card, () => handleCardClick(card)))}
                 </div>
               </div>
             )}
