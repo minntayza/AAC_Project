@@ -17,7 +17,7 @@ from db import (
     create_routine, get_routines, get_routine_steps, delete_routine,
     save_custom_card, get_custom_cards, delete_custom_card, update_custom_card,
 )
-from ai_module import process_image_for_aac, suggest_sentences, rephrase_sentence, text_to_speech
+from ai_module import process_image_for_aac, suggest_sentences, summarize_conversation, text_to_speech
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-me")
@@ -244,17 +244,18 @@ def suggest():
         return jsonify({"error": "Failed to generate suggestions", "detail": str(e)}), 500
 
 
-@app.route("/api/ai/rephrase_sentence", methods=["POST"])
-def rephrase():
+@app.route("/api/ai/summarize", methods=["POST"])
+def summarize():
     try:
         data = request.get_json() or {}
-        raw = data.get("text", "")
-        if not raw:
+        text = data.get("text", "")
+        if not text:
             return jsonify({"error": "No text provided"}), 400
-        rephrased = rephrase_sentence(raw)
-        return jsonify({"original": raw, "rephrased": rephrased or raw})
+        summary = summarize_conversation(text)
+        return jsonify({"summary": summary})
     except Exception as e:
-        return jsonify({"error": "Rephrase failed", "detail": str(e)}), 500
+        return jsonify({"error": "Summarization failed", "detail": str(e)}), 500
+
 
 
 # ──────────────────────────────────────────────

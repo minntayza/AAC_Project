@@ -3,44 +3,51 @@ import os
 import base64
 import json
 import mimetypes
-from anthropic import Anthropic
+import logging
+import requests
 
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
-ANTHROPIC_BASE_URL = os.environ.get("ANTHROPIC_BASE_URL")
+ANTHROPIC_BASE_URL = (os.environ.get("ANTHROPIC_BASE_URL") or "https://api.anthropic.com").rstrip("/")
 ELEVENLABS_API_KEY = os.environ.get("ELEVENLABS_API_KEY")
 
-_anthropic: Anthropic | None = None
+logger = logging.getLogger(__name__)
 
 
-def get_anthropic() -> Anthropic:
-    global _anthropic
-    if _anthropic is None:
-        kwargs = {"api_key": ANTHROPIC_API_KEY}
-        if ANTHROPIC_BASE_URL:
-            kwargs["base_url"] = ANTHROPIC_BASE_URL
-        _anthropic = Anthropic(**kwargs)
-    return _anthropic
+def _call_anthropic(body: dict) -> dict:
+    resp = requests.post(
+        f"{ANTHROPIC_BASE_URL}/v1/messages",
+        headers={
+            "x-api-key": ANTHROPIC_API_KEY,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json",
+        },
+        json=body,
+        timeout=120,
+    )
+    if resp.status_code != 200:
+        raise RuntimeError(f"Anthropic API error {resp.status_code}: {resp.text[:300]}")
+    return resp.json()
+
+
+def _extract_text(response: dict) -> str:
+    blocks = response.get("content", [])
+    for b in blocks:
+        if b.get("type") == "text":
+            return b["text"]
+    return blocks[-1].get("text", "") if blocks else ""
 
 
 def process_image_for_aac(image_bytes: bytes) -> dict:
     """Send image to Claude → caption + Burmese translation (mimo-v2.5-pro)."""
     mime = mimetypes.guess_type("image")[0] or "image/jpeg"
     b64 = base64.b64encode(image_bytes).decode("utf-8")
-    client = get_anthropic()
-    response = client.messages.create(
-        model="mimo-v2.5-pro",
-        max_tokens=10000,
-        messages=[{
+    response = _call_anthropic({
+        "model": "mimo-v2.5-pro",
+        "max_tokens": 10000,
+        "messages": [{
             "role": "user",
             "content": [
-                {
-                    "type": "image",
-                    "source": {
-                        "type": "base64",
-                        "media_type": mime,
-                        "data": b64
-                    }
-                },
+                {"type": "image", "source": {"type": "base64", "media_type": mime, "data": b64}},
                 {
                     "type": "text",
                     "text": (
@@ -52,67 +59,50 @@ def process_image_for_aac(image_bytes: bytes) -> dict:
                 }
             ]
         }]
-    )
-    text = response.content[0].text
+    })
+    text = _extract_text(response)
     start = text.find("{")
     end = text.rfind("}") + 1
     return json.loads(text[start:end])
 
 
 def suggest_sentences(time_of_day: str, recent_icons: list[str], mood: str = "") -> list[str]:
-    """Get 3-4 context-aware sentence suggestions (claude-haiku-4-5)."""
-    client = get_anthropic()
+    """Get 3-4 context-aware sentence suggestions (mimo-v2.5-pro)."""
     prompt = (
         f"Time: {time_of_day}. Recent icon taps: {recent_icons}. Mood: {mood or 'neutral'}.\n"
         "Suggest 3 short sentences (in Burmese) a non-verbal autistic child might want to say. "
         "Keep each 2-5 words. Return as JSON array of strings."
     )
-    response = client.messages.create(
-        model="mimo-v2.5-pro",
-        max_tokens=10000,
-        messages=[{"role": "user", "content": prompt}]
-    )
-    text = response.content[0].text
+    response = _call_anthropic({
+        "model": "mimo-v2.5-pro",
+        "max_tokens": 10000,
+        "messages": [{"role": "user", "content": prompt}]
+    })
+    text = _extract_text(response)
     start = text.find("[")
     end = text.rfind("]") + 1
     return json.loads(text[start:end])
 
 
-def rephrase_sentence(raw_text: str) -> str | None:
-    """Rephrase card-concatenated Burmese into natural spoken Burmese via Claude."""
-    import re
-    import logging
-    client = get_anthropic()
-    try:
-        response = client.messages.create(
-            model="mimo-v2.5-pro",
-            max_tokens=10000,
-            temperature=0.3,
-            messages=[{
-                "role": "user",
-                "content": (
-                    "Rewrite this AAC card-built Burmese into natural spoken Burmese. "
-                    "DO NOT add subject particle 'က' or ' က ' after subjects (e.g. use 'မေမေ စားမယ်' instead of 'မေမေ က စားမယ်' or 'အမေက စားမယ်'). "
-                    "Output ONLY the result.\n\n"
-                    f"Input: {raw_text}\nNatural:"
-                )
-            }]
-        )
-        result = response.content[0].text.strip().strip('"').strip("'")
-        if result:
-            result = re.sub(r'(\S+)\s*က\s*', r'\1 ', result).strip()
-        logging.warning("Rephrase: '%s' -> '%s'", raw_text, result)
-        return result if result and result != raw_text else None
-    except Exception as e:
-        logging.error("Rephrase failed: %s", e)
-        return None
+def summarize_conversation(conversation_text: str) -> str:
+    """Summarize Burmese AAC conversation data into concise Burmese (mimo-v2.5-pro)."""
+    prompt = (
+        f"Below are Burmese AAC sentences from a child. Summarize in 2-3 Burmese sentences "
+        f"what the child wants about food/drinks and actions. Output only the summary.\n\n"
+        f"Sentences: {conversation_text}\n\nSummary:"
+    )
+    response = _call_anthropic({
+        "model": "mimo-v2.5-pro",
+        "max_tokens": 10000,
+        "messages": [{"role": "user", "content": prompt}]
+    })
+    return _extract_text(response).strip().strip('"').strip("'")
 
 
 def text_to_speech(text: str, voice: str = "my-MM-NilarNeural") -> bytes | None:
     """Generate natural Burmese speech via Microsoft Azure Neural TTS (edge-tts) with gTTS fallback. Returns MP3 bytes or None."""
     import asyncio
     import io
-    import logging
 
     try:
         import edge_tts
@@ -130,7 +120,7 @@ def text_to_speech(text: str, voice: str = "my-MM-NilarNeural") -> bytes | None:
         if audio_bytes and len(audio_bytes) > 0:
             return audio_bytes
     except Exception as err:
-        logging.warning("Edge Neural TTS failed (%s), falling back to gTTS", err)
+        logger.warning("Edge Neural TTS failed (%s), falling back to gTTS", err)
 
     try:
         from gtts import gTTS
@@ -140,5 +130,5 @@ def text_to_speech(text: str, voice: str = "my-MM-NilarNeural") -> bytes | None:
         buf.seek(0)
         return buf.read()
     except Exception as err:
-        logging.error("gTTS fallback failed: %s", err)
+        logger.error("gTTS fallback failed: %s", err)
         return None

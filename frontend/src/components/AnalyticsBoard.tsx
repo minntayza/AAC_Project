@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart3, TrendingUp, Calendar, Activity, Sparkles, RefreshCw, Volume2, MessageSquare, Award, Clock } from 'lucide-react';
-import { getSentenceAnalytics, textToSpeech, getEmotionStats, type SentenceAnalyticsData, type EmotionStats } from '../api';
+import { getSentenceAnalytics, textToSpeech, getEmotionStats, summarizeConversation, type SentenceAnalyticsData, type EmotionStats } from '../api';
 
 interface AnalyticsBoardProps {
   userId?: string;
@@ -13,6 +13,29 @@ export const AnalyticsBoard: React.FC<AnalyticsBoardProps> = ({ userId, childNic
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [reportTab, setReportTab] = useState<'top_sentences' | 'top_words' | 'daily_logs' | 'weekly_logs'>('top_sentences');
+  const [summary, setSummary] = useState<string | null>(null);
+  const [summarizing, setSummarizing] = useState(false);
+
+  const handleSummarize = async () => {
+    if (!analytics) return;
+    setSummarizing(true);
+    setSummary(null);
+    const allText = [
+      ...(analytics.daily_report || []).flatMap(d => d.sentences.map(s => s.text_my)),
+      ...(analytics.weekly_report || []).flatMap(w => w.sentences.map(s => s.text_my)),
+    ].filter(Boolean).join('\n');
+    if (!allText) {
+      setSummarizing(false);
+      return;
+    }
+    try {
+      const res = await summarizeConversation(allText);
+      setSummary(res.summary);
+    } catch {
+      setSummary('အချုပ်အချက်ကို ထုတ်ယူ၍ မရပါ');
+    }
+    setSummarizing(false);
+  };
 
   const fetchAnalytics = () => {
     setLoading(true);
@@ -96,13 +119,41 @@ export const AnalyticsBoard: React.FC<AnalyticsBoardProps> = ({ userId, childNic
           </div>
         </div>
 
-        <button 
-          onClick={fetchAnalytics}
-          style={{ padding: '10px 16px', borderRadius: '12px', background: 'rgba(255,255,255,0.2)', color: '#FFF', border: 'none', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
-        >
-          <RefreshCw size={16} /> အချက်အလက် ပြန်ယူမည်
-        </button>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <button 
+            onClick={handleSummarize}
+            disabled={summarizing}
+            style={{ padding: '10px 16px', borderRadius: '12px', background: 'rgba(255,255,255,0.25)', color: '#FFF', border: 'none', fontWeight: 700, fontSize: '0.85rem', cursor: summarizing ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '6px', opacity: summarizing ? 0.6 : 1 }}
+          >
+            <Sparkles size={16} /> {summarizing ? 'အချုပ်ချုပ် နေသည်...' : 'အချုပ်ချုပ်'}
+          </button>
+          <button 
+            onClick={fetchAnalytics}
+            style={{ padding: '10px 16px', borderRadius: '12px', background: 'rgba(255,255,255,0.2)', color: '#FFF', border: 'none', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
+            <RefreshCw size={16} /> အချက်အလက် ပြန်ယူမည်
+          </button>
+        </div>
       </div>
+
+      {/* AI Summary Card */}
+      {summary && (
+        <div style={{ background: 'linear-gradient(135deg, #FEF3C7, #FDE68A)', borderRadius: '20px', padding: '20px 24px', border: '1px solid #F59E0B', boxShadow: '0 4px 12px rgba(245,158,11,0.15)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+            <Sparkles size={20} color="#D97706" />
+            <span style={{ fontWeight: 800, fontSize: '1rem', color: '#92400E' }}>AI အချုပ်ချုပ်</span>
+            <button 
+              onClick={() => setSummary(null)}
+              style={{ marginLeft: 'auto', background: 'rgba(0,0,0,0.1)', border: 'none', borderRadius: '8px', padding: '4px 10px', cursor: 'pointer', fontWeight: 700, fontSize: '0.78rem', color: '#92400E' }}
+            >
+              ပိတ်မည်
+            </button>
+          </div>
+          <p style={{ color: '#78350F', fontWeight: 600, fontSize: '1rem', lineHeight: 1.6, margin: 0 }}>
+            {summary}
+          </p>
+        </div>
+      )}
 
       {/* Summary Metric Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
@@ -126,10 +177,10 @@ export const AnalyticsBoard: React.FC<AnalyticsBoardProps> = ({ userId, childNic
             </div>
           </div>
           <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0F172A' }}>
-            {topWords.length > 0 ? topWords[0].word : 'မရှိသေးပါ'}
+            {analytics?.top_food_action_word?.word || 'မရှိသေးပါ'}
           </div>
           <div style={{ fontSize: '0.75rem', color: '#D97706', fontWeight: 700, marginTop: '4px' }}>
-            {topWords.length > 0 ? `${topWords[0].count} ကြိမ် အသုံးပြုထားသည်` : 'အချက်အလက် မရှိသေးပါ'}
+            {analytics?.top_food_action_word?.count ? `${analytics.top_food_action_word.count} ကြိမ် အသုံးပြုထားသည်` : 'အချက်အလက် မရှိသေးပါ'}
           </div>
         </div>
 
@@ -141,7 +192,7 @@ export const AnalyticsBoard: React.FC<AnalyticsBoardProps> = ({ userId, childNic
             </div>
           </div>
           <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0F172A' }}>
-            {categoryEntries.length > 0 ? categoryEntries.sort((a, b) => b[1] - a[1])[0][0] : 'မရှိသေးပါ'}
+            {categoryEntries.filter(([k]) => k === 'Objects & Foods' || k === 'Actions & Verbs').sort((a, b) => b[1] - a[1])[0]?.[0] || 'မရှိသေးပါ'}
           </div>
         </div>
       </div>

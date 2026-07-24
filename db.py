@@ -562,12 +562,15 @@ def get_sentence_analytics(user_id: str | None = None) -> dict:
     now = datetime.now()
     from collections import defaultdict, Counter
 
+    FOOD_ACTION_KEYWORDS = ["စား", "သောက်", "လုပ်", "သွား", "ကစား", "ဖတ်", "ကြည့်", "အိပ်", "ရေ", "မုန့်", "ကစားစရာ", "သီး", "စာအုပ်", "ဖုန်း", "ထမင်း", "နို့", "ရေချိုး", "လက်ဆေး", "ပြေး"]
+
     daily_counts = defaultdict(int)
     weekly_counts = defaultdict(int)
     monthly_counts = defaultdict(int)
     category_counts = defaultdict(int)
 
     word_counter = Counter()
+    food_action_word_counter = Counter()
     sentence_counter = Counter()
 
     daily_logs = defaultdict(list)
@@ -598,6 +601,8 @@ def get_sentence_analytics(user_id: str | None = None) -> dict:
             for w in words:
                 if len(w) > 0:
                     word_counter[w] += 1
+                    if any(kw in w for kw in FOOD_ACTION_KEYWORDS):
+                        food_action_word_counter[w] += 1
 
         sentence_item = {
             "text_my": text_my,
@@ -641,6 +646,9 @@ def get_sentence_analytics(user_id: str | None = None) -> dict:
             "sentences": weekly_logs[w_key]
         })
 
+    top_food_action = food_action_word_counter.most_common(1)
+    top_food_action_word = {"word": top_food_action[0][0], "count": top_food_action[0][1]} if top_food_action else {"word": "မရှိသေးပါ", "count": 0}
+
     return {
         "total_sentences": len(sentences),
         "daily": dict(daily_counts),
@@ -650,7 +658,8 @@ def get_sentence_analytics(user_id: str | None = None) -> dict:
         "top_words": top_words,
         "top_sentences": top_sentences,
         "daily_report": daily_report,
-        "weekly_report": weekly_report
+        "weekly_report": weekly_report,
+        "top_food_action_word": top_food_action_word
     }
 
 

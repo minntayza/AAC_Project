@@ -46,13 +46,6 @@ export function getIcons(categoryId?: string): Promise<IconData[]> {
   return fetchJson(`/icons${qs}`);
 }
 
-export function rephraseSentence(text: string): Promise<{ original: string; rephrased: string }> {
-  return fetchJson("/ai/rephrase_sentence", {
-    method: "POST",
-    body: JSON.stringify({ text }),
-  });
-}
-
 export function textToSpeech(text: string): Promise<Response> {
   return fetch(`${API_BASE}/tts?text=${encodeURIComponent(text)}`, {
     credentials: "include",
@@ -99,6 +92,7 @@ export interface SentenceAnalyticsData {
   categories: Record<string, number>;
   top_words: Array<{ word: string; count: number }>;
   top_sentences: Array<{ sentence: string; count: number }>;
+  top_food_action_word: { word: string; count: number };
   daily_report: Array<{
     date: string;
     count: number;
@@ -189,6 +183,13 @@ export interface EmotionStats {
 
 export function getEmotionStats(): Promise<EmotionStats> {
   return fetchJson("/emotions/stats");
+}
+
+export function summarizeConversation(text: string): Promise<{ summary: string }> {
+  return fetchJson("/ai/summarize", {
+    method: "POST",
+    body: JSON.stringify({ text }),
+  });
 }
 
 

@@ -504,13 +504,13 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
             </div>
 
             {/* Custom Created Cards with Edit & Delete */}
-            {customCards.length > 0 && (
+            {customCards.filter(c => c.card_type !== 'story_1min').length > 0 && (
               <div style={{ marginBottom: '28px' }}>
                 <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#000000', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Sparkles size={18} color="#667eea" /> မိဘများ ဖန်တီးထားသော ကတ်များ
                 </h3>
                 <div className="portal-card-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '14px' }}>
-                  {customCards.map((c, i) => (
+                  {customCards.filter(c => c.card_type !== 'story_1min').map((c, i) => (
                     <div key={c.id} className="portal-grid-card" style={{ animationDelay: `${i * 0.05}s` }}>
 
                       {/* Action buttons (Edit & Delete) */}
@@ -541,12 +541,12 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                       <div style={{ fontSize: '0.75rem', color: '#667eea' }}>{c.englishMeaning}</div>
 
                       <div style={{ marginTop: '8px', fontSize: '0.68rem', padding: '2px 8px', borderRadius: '10px', background: '#F5F3FF', color: '#667eea', fontWeight: 700 }}>
-                        ??????????: {c.category}
+                        အမျိုးအစား: {c.category}
                       </div>
 
                       {c.audio_url && (
                         <span style={{ marginTop: '4px', fontSize: '0.68rem', background: '#ECFDF5', color: '#059669', padding: '2px 6px', borderRadius: '8px', fontWeight: 700 }}>
-                           ????????
+                          မိခင်အသံ
                         </span>
                       )}
                     </div>
@@ -570,7 +570,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                   <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#000000', marginTop: '6px' }}>{icon.label_my}</div>
                   <div style={{ fontSize: '0.75rem', color: '#667eea' }}>{icon.label_en}</div>
                   <div style={{ marginTop: '6px', fontSize: '0.68rem', padding: '2px 8px', borderRadius: '10px', background: '#F5F3FF', color: '#667eea', fontWeight: 700 }}>
-                    ??????????: {icon.category_id}
+                    အမျိုးအစား: {icon.category_id}
                   </div>
                 </div>
               ))}
@@ -604,9 +604,9 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#6B7280', display: 'block', marginBottom: '4px' }}>
-                    ????????? ????????????????
-                  </label>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#6B7280', display: 'block', marginBottom: '4px' }}>
+                      English Meaning
+                    </label>
                   <input
                     type="text"
                     value={editingCard.englishMeaning}
@@ -629,7 +629,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                     <option value="object">Object (မုန့် / အရာဝတ္ထုများ)</option>
                     <option value="location">Location (နေရာများ)</option>
                     <option value="feeling">Feeling (ခံစားချက်များ)</option>
-                    <option value="shortcut">???????????????</option>
+                    <option value="shortcut">အတိုကောက် / အရေးပေါ် (Shortcut / Emergency)</option>
                   </select>
                 </div>
 
@@ -702,11 +702,11 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#6B7280', display: 'block', marginBottom: '6px' }}>
-                    ????????? ????????????????
+                    English Meaning
                   </label>
                   <input
                     type="text"
-                    placeholder="???? - ?????????"
+                    placeholder="e.g. ice cream"
                     value={cardEnglish}
                     onChange={e => setCardEnglish(e.target.value)}
                     style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1px solid rgba(102, 126, 234, 0.15)', fontSize: '0.9rem', background: '#F9FAFB', color: '#000000' }}
@@ -739,7 +739,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                 {cardMediaMode === 'emoji' ? (
                   <input
                     type="text"
-                    placeholder="Emoji ??????"
+                    placeholder="Emoji ထည့်ပါ"
                     value={cardEmoji}
                     onChange={e => setCardEmoji(e.target.value)}
                     style={{ width: '100%', padding: '10px 14px', borderRadius: '12px', border: '1px solid rgba(102, 126, 234, 0.15)', fontSize: '1.2rem', textAlign: 'center', background: '#F9FAFB', color: '#000000' }}
@@ -776,14 +776,14 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                     onClick={() => setCardAudioMode('ai_speech')}
                     style={{ flex: 1, padding: '10px', borderRadius: '12px', border: '1px solid rgba(102, 126, 234, 0.15)', background: cardAudioMode === 'ai_speech' ? '#ECFDF5' : '#F9FAFB', color: cardAudioMode === 'ai_speech' ? '#059669' : '#6B7280', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                   >
-                    <Volume2 size={18} /> AI ???
+                    <Volume2 size={18} /> AI အသံ
                   </button>
                   <button
                     type="button"
                     onClick={() => setCardAudioMode('custom_voice')}
                     style={{ flex: 1, padding: '10px', borderRadius: '12px', border: '1px solid rgba(102, 126, 234, 0.15)', background: cardAudioMode === 'custom_voice' ? '#ECFDF5' : '#F9FAFB', color: cardAudioMode === 'custom_voice' ? '#059669' : '#6B7280', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                   >
-                    <Mic size={18} /> ???????? (မိခင်အသံသွင်းမည်)
+                    <Mic size={18} /> မိခင်အသံသွင်းမည်
                   </button>
                 </div>
 
@@ -795,7 +795,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                         onClick={startRecordingVoice}
                         style={{ padding: '10px 20px', borderRadius: '30px', background: '#EF4444', color: '#FFF', border: 'none', fontWeight: 800, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(239,68,68,0.3)' }}
                       >
-                        <Mic size={18} /> မိခင်အသံ သွင်းမည် (Record ????????)
+                        <Mic size={18} /> မိခင်အသံ သွင်းမည် (Record Voice)
                       </button>
                     ) : (
                       <button
@@ -910,7 +910,7 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.9rem', color: '#6B7280' }}>
                 <div><b>အသုံးပြုသူအမည် (Username):</b> {user.username}</div>
-                <div><b>?????????? ??????????:</b> {user.role}</div>
+                <div><b>အခန်းကဏ္ဍ (Role):</b> {user.role}</div>
                 {user.child_nickname && (
                   <div><b>ကလေး၏ အမည် (Child Nickname):</b> {user.child_nickname}</div>
                 )}
@@ -920,8 +920,8 @@ export const ParentPortal: React.FC<ParentPortalProps> = ({ user, onExit, onLogo
                 {user.child_birth_year && (
                   <div><b>မွေးသက္ကရာဇ် (Birth Year):</b> {user.child_birth_year}</div>
                 )}
-                <div><b>?????????? ID:</b> <code>{user.id}</code></div>
-                <div><b>??????????? ???????:</b> <span style={{ color: '#10B981', fontWeight: 700 }}>✓ Remembered (Auto-Saved)</span></div>
+                <div><b>အသုံးပြုသူ ID:</b> <code>{user.id}</code></div>
+                <div><b>အကောင့်အခြေအနေ:</b> <span style={{ color: '#10B981', fontWeight: 700 }}>✓ Remembered (Auto-Saved)</span></div>
               </div>
             </div>
 

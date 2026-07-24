@@ -3,7 +3,7 @@ import { Volume2, Trash2, ArrowLeft, RotateCcw, Lock, X, Play, BookOpen, Menu, G
 import AuraAACSensor from './components/AuraAACSensor';
 import { CATEGORY_ROLE } from './data';
 import type { AACCard } from './data';
-import { textToSpeech, saveSentence, getCustomCards, getCategories, getIcons, rephraseSentence, logEmotion, type CustomCardData, type IconData } from './api';
+import { textToSpeech, saveSentence, getCustomCards, getCategories, getIcons, logEmotion, type CustomCardData, type IconData } from './api';
 import { AuthModal } from './components/AuthModal';
 import { ParentPortal } from './components/ParentPortal';
 import { ConcentrationGame } from './components/ConcentrationGame';
@@ -22,7 +22,7 @@ export function App() {
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [screen3Category, setScreen3Category] = useState<Screen3Category>('food_drinks');
   const [isSentenceFinished, setIsSentenceFinished] = useState(false);
-  const [rephrasedText, setRephrasedText] = useState<string | null>(null);
+
 
   // Side drawer & game state
   const [showDrawer, setShowDrawer] = useState(false);
@@ -393,7 +393,6 @@ export function App() {
     setCurrentStep(1);
     setScreen3Category('food_drinks');
     setIsSentenceFinished(false);
-    setRephrasedText(null);
   };
 
   const handleBack = () => {
@@ -425,18 +424,6 @@ export function App() {
     setIsSpeaking(true);
     const rawText = sanitizeNoKa(selectedCards.map(c => c.burmese).join(' '));
     let speakText_ = rawText;
-    try {
-      const { rephrased } = await rephraseSentence(rawText);
-      if (rephrased && rephrased !== rawText) {
-        speakText_ = sanitizeNoKa(rephrased);
-        setRephrasedText(speakText_);
-      } else {
-        setRephrasedText(null);
-      }
-    } catch (e) {
-      console.warn('Rephrase failed, using original:', e);
-      setRephrasedText(null);
-    }
     speakText(speakText_);
     logSentenceToSupabase(selectedCards);
     setIsSentenceFinished(true);
@@ -757,12 +744,6 @@ export function App() {
               ))}
             </div>
 
-            {rephrasedText && (
-              <div className="rephrase-banner">
-                <span className="rephrase-icon"><Lock size={18} /></span>
-                <span>ပြောမည့်စာကြောင်း: {rephrasedText}</span>
-              </div>
-            )}
 
             <div className="complete-actions">
               <button className="btn btn-primary" style={{ padding: '12px 28px', fontSize: '1.15rem' }} onClick={handleSpeakSentence}>
